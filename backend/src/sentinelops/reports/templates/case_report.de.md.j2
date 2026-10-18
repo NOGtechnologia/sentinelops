@@ -1,0 +1,139 @@
+{#- Every {{ value }} is escaped by finalize=md_escape; use |code or |block for log data. -#}
+# Fallbericht: {{ r.case.title_de }}
+
+| | |
+|---|---|
+| Fall-ID | {{ r.case.case_id|code }} |
+| Status | {{ r.case.status }} |
+| Priorität | {{ r.priority.level }} (Score {{ r.priority.score }}) |
+| Bearbeiter | {{ r.case.assignee or "-" }} |
+| Zeitraum (UTC) | {{ r.case.window_start }} – {{ r.case.window_end }} |
+| Erstellt | {{ r.metadata.created_at }} |
+
+> SentinelOps ergänzt bestehende SIEM/EDR-Produkte. Alle Aussagen verweisen auf Belege (E…); Hypothesen sind gekennzeichnet.
+
+## Kurzfassung
+
+{% set s = r.ai_summary or {} %}
+{% set out = s.output or {} %}
+{% if s.source == "ai" %}
+*KI-generiert, geprüft gegen Belege* – Anbieter {{ s.provider }}, Modell {{ s.model }}, Prompt {{ s.prompt_version }}, Validierung: **{{ s.validation_status }}**.
+{% else %}
+*Deterministische Vorlagen-Zusammenfassung* (ohne KI) – Validierung: **{{ s.validation_status or "-" }}**.
+{% endif %}
+
+{{ out.summary or "-" }}
+
+### Bestätigte Fakten
+
+{% for f in out.facts or [] %}
+- {{ f.statement }} ({{ f.evidence|join(", ") }})
+{% else %}
+- keine
+{% endfor %}
+
+### Hypothesen (nicht bestätigt)
+
+{% for h in out.hypotheses or [] %}
+- *[{{ h.confidence }}]* {{ h.statement }} ({{ h.evidence|join(", ") }}) – würde bestätigt durch: {{ h.would_confirm }}
+{% else %}
+- keine
+{% endfor %}
+
+### Fehlende Informationen
+
+{% for m in out.missing_information or [] %}
+- {{ m.item }}: {{ m.why_relevant }}
+{% else %}
+- keine
+{% endfor %}
+{% if s.rejected %}
+
+### Verworfene KI-Aussagen (Transparenz)
+
+{% for x in s.rejected %}
+- [{{ x.section }}] {{ x.statement }} – {{ x.reasons|join("; ") }}
+{% endfor %}
+{% endif %}
+{% if r.injection_findings %}
+
+### Hinweis: mögliche Prompt-Injection in Logdaten
+
+Die folgenden Inhalte sehen wie Anweisungen an eine KI aus. Sie werden nur als Daten angezeigt und nie befolgt.
+
+{% for i in r.injection_findings %}
+- Ereignis {{ i.event_id|code }}, Feld {{ i.field|code }}, Muster {{ i.pattern }}: {{ i.excerpt|code }}
+{% endfor %}
+{% endif %}
+
+## Priorität mit Begründung
+
+| Beitrag | Faktor | Belege |
+|---:|---|---|
+{% for f in r.priority.factors %}
+| {{ "%+d"|format(f.contribution) }} | {{ f.label_de }} | {{ f.evidence|join(", ") }} |
+{% endfor %}
+| **{{ r.priority.score }}** | **Summe → {{ r.priority.level }}** | |
+
+## Alarme
+
+| Regel | Version | Titel | Schweregrad | Ereignisse | Zeitfenster (UTC) |
+|---|---:|---|---|---:|---|
+{% for a in r.alerts %}
+| {{ a.rule_id|code }} | {{ a.rule_version }} | {{ a.title_de }} | {{ a.level }} | {{ a.event_ids|length }} | {{ a.window_start }} – {{ a.window_end }} |
+{% endfor %}
+
+## Empfohlene nächste Schritte
+
+{% for st in r.recommendations %}
+1. **{{ st.title_de }}** ({{ st.step_id|code }}){% if st.action %} – Maßnahme, freigabepflichtig{% endif %} – begründet durch {{ st.reason_rules|join(", ") }}
+{% else %}
+- keine
+{% endfor %}
+
+## Maßnahmen und Freigaben
+
+{% for ac in r.actions %}
+- {{ ac.step_id|code }} {{ ac.parameters|tojson|code }} – Status **{{ ac.status }}**, vorgeschlagen von {{ ac.proposed_by }} am {{ ac.proposed_at }}{% if ac.approval %}; {{ ac.approval.decision }} von {{ ac.approval.approver }} am {{ ac.approval.decided_at }}: {{ ac.approval.reason }}{% endif %}{% if ac.execution %}; Ausführung: {{ ac.execution.details }}{% endif %}
+
+{% else %}
+- keine Maßnahmen vorgeschlagen
+{% endfor %}
+
+## Timeline
+
+| Zeit (UTC) | Art | Aktion | Benutzer | Host | Quell-IP | Regeln |
+|---|---|---|---|---|---|---|
+{% for t in r.timeline %}
+{% if t.kind == "event" %}
+| {{ t.time }} | Ereignis | {{ t.action }} ({{ t.outcome }}) | {{ t.user|code if t.user else "-" }} | {{ t.host|code if t.host else "-" }} | {{ t.source_ip or "-" }} | {{ t.rules|join(", ") }} |
+{% elif t.kind == "alert" %}
+| {{ t.time }} | **Alarm** | {{ t.rule_id }} {{ t.title_de }} | | | | |
+{% else %}
+| {{ t.time }} | Lücke | {{ t.seconds }} s bis {{ t.until }} | | | | |
+{% endif %}
+{% endfor %}
+
+## Belegauszüge
+
+{% for e in r.evidence %}
+### {{ e.ref or e.event_id }} – {{ e.time }}
+
+{{ e.raw|block }}
+
+{% endfor %}
+## Analystennotizen
+
+{% for n in r.notes %}
+- {{ n.created_at }} – {{ n.author }}: {{ n.text }}
+{% else %}
+- keine
+{% endfor %}
+
+## Metadaten
+
+| Schlüssel | Wert |
+|---|---|
+{% for k, v in r.metadata.items() %}
+| {{ k }} | {{ v|code }} |
+{% endfor %}
