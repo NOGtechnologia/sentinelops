@@ -52,8 +52,8 @@ def check_route_permissions(app: FastAPI) -> None:
         for method in (route.methods or set()) - {"HEAD", "OPTIONS"}
     }
     # Second, independent source: the OpenAPI document.
-    for path, operations in app.openapi().get("paths", {}).items():
-        declared.update(f"{method.upper()} {path}" for method in operations if path.startswith("/api/"))
+    for path, path_item in app.openapi().get("paths", {}).items():
+        declared.update(f"{method.upper()} {path}" for method in path_item if path.startswith("/api/"))
     app.openapi_schema = None  # rebuilt lazily after all routes are registered
     missing = sorted(declared - set(mapped))
     if missing:

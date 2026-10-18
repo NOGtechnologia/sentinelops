@@ -380,7 +380,10 @@ async def test_quality_views(client: httpx.AsyncClient) -> None:
 
 
 async def test_upload_and_token_ingest(client: httpx.AsyncClient, tmp_path: Path) -> None:
-    line = b'{"ts": 1773309000000, "seq": 777001, "gateway": "vpn01", "type": "auth_fail", "result": "fail", "user": "x.y"}\n'
+    line = (
+        b'{"ts": 1773309000000, "seq": 777001, "gateway": "vpn01", "type": "auth_fail", "result": "fail", '
+        b'"user": "x.y"}\n'
+    )
     files = {"file": ("vpn.ndjson", line, "application/x-ndjson")}
     up = await client.post(
         "/api/v1/uploads", data={"source_type": "json:musterfirma_vpn"}, files=files, headers=auth("admin")
