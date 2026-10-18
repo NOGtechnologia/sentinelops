@@ -1,0 +1,29 @@
+title: Brute force against a single account
+id: 0c0295e8-9ba0-5576-9cd2-d47bacdfce1f
+name: so_auth_001
+status: stable
+description: Many failed logons for one account within a short time window (Windows 4625, SSH, VPN).
+author: SentinelOps
+date: 2026-10-18
+tags:
+  - attack.credential-access
+  - attack.t1110.001
+correlation:
+  type: event_count
+  rules:
+    - so_helper_logon_failed
+  group-by:
+    - user.name
+  timespan: 10m
+  condition:
+    gte: 15
+falsepositives:
+  - Misconfigured service or script with an outdated password
+  - User repeatedly mistyping after a password change (usually spread over a longer time)
+level: high
+sentinelops:
+  rule_id: SO-AUTH-001
+  version: 1
+  title_de: Brute Force auf ein Konto
+  description_de: Viele fehlgeschlagene Anmeldungen für ein Konto in kurzer Zeit.
+  playbooks: [VERIFY_ACCOUNT_ACTIVITY, BLOCK_SOURCE_IP, RESET_PASSWORD, COLLECT_ADDITIONAL_LOGS]

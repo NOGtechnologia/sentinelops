@@ -1,0 +1,30 @@
+title: Account created and deleted shortly afterwards
+id: 1003d39b-dd33-5cb5-b704-29571c97bc58
+name: so_acc_001
+status: stable
+description: A user account is created and deleted again within a short time window (temporary attacker account).
+author: SentinelOps
+date: 2026-10-18
+tags:
+  - attack.persistence
+  - attack.stealth
+  - attack.t1136.002
+  - attack.t1070
+correlation:
+  type: temporal_ordered
+  rules:
+    - so_helper_user_created
+    - so_helper_user_deleted
+  group-by:
+    - user.target.name
+  timespan: 60m
+falsepositives:
+  - Provisioning errors corrected immediately by IT
+level: medium
+sentinelops:
+  rule_id: SO-ACC-001
+  version: 1
+  title_de: Konto angelegt und kurz darauf gelöscht
+  description_de: Ein Benutzerkonto wird angelegt und kurz darauf wieder gelöscht.
+  playbooks: [VERIFY_ACCOUNT_ACTIVITY, REVIEW_GROUP_MEMBERSHIP, COLLECT_ADDITIONAL_LOGS]
+  privilege_change: true

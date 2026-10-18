@@ -1,0 +1,22 @@
+# SentinelOps metadata for curated, unmodified SigmaHQ rules (DRL 1.1).
+# Keyed by the Sigma rule id (UUID).
+d99b79d2-0a6f-4f46-ad8b-260b6e17f982:
+  rule_id: SIGMAHQ-D99B79D2
+  version: 1
+  title_de: Sicherheitsprotokoll gelöscht (SigmaHQ)
+  description_de: Ein Windows-Ereignisprotokoll wurde gelöscht (SigmaHQ-Regel).
+  playbooks: [ISOLATE_HOST, COLLECT_ADDITIONAL_LOGS]
+c265cf08-3f99-46c1-8d59-328247057d57:
+  rule_id: SIGMAHQ-C265CF08
+  version: 1
+  title_de: Benutzer zur lokalen Administratorengruppe hinzugefügt (SigmaHQ)
+  description_de: Ein Mitglied wurde der lokalen Gruppe Administratoren hinzugefügt (SigmaHQ-Regel).
+  playbooks: [REVIEW_GROUP_MEMBERSHIP, VERIFY_ACCOUNT_ACTIVITY]
+  privilege_change: true
+0ac15ec3-d24f-4246-aa2a-3077bb1cf90e:
+  rule_id: SIGMAHQ-0AC15EC3
+  version: 1
+  title_de: Privilegierter Linux-Benutzer angelegt (SigmaHQ)
+  description_de: Ein neuer Linux-Benutzer mit UID/GID 0 oder in den Gruppen wheel/sudo wurde angelegt (SigmaHQ-Regel).
+  playbooks: [REVIEW_GROUP_MEMBERSHIP, VERIFY_ACCOUNT_ACTIVITY, ISOLATE_HOST]
+  privilege_change: true

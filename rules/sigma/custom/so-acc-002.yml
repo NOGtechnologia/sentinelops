@@ -1,0 +1,33 @@
+title: Password reset by another, non-administrative account
+id: 2b968e92-5ba9-5054-8511-13d60056b335
+name: so_acc_002
+status: stable
+description: The password of an account was reset by a different account that is not an expected password administrator (placeholder password_admins).
+author: SentinelOps
+date: 2026-10-18
+tags:
+  - attack.persistence
+  - attack.t1098
+logsource:
+  product: sentinelops
+  category: iam
+detection:
+  selection:
+    event.action: password-reset
+  filter_admins:
+    user.name|expand: '%password_admins%'
+  filter_self:
+    user.name|fieldref: user.target.name
+  filter_machine_account:
+    user.name|endswith: '$'
+  condition: selection and not 1 of filter_*
+falsepositives:
+  - Delegated helpdesk accounts that are not on the password_admins list
+level: high
+sentinelops:
+  rule_id: SO-ACC-002
+  version: 1
+  title_de: Passwort-Reset durch fremdes Konto
+  description_de: Das Passwort eines Kontos wurde von einem anderen Konto zurückgesetzt, das kein erwarteter Passwort-Administrator ist.
+  playbooks: [VERIFY_ACCOUNT_ACTIVITY, RESET_PASSWORD, DISABLE_ACCOUNT]
+  privilege_change: true

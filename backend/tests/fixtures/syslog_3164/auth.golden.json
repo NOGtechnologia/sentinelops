@@ -1,0 +1,454 @@
+[
+  {
+    "position": 1,
+    "status": "accepted",
+    "event": {
+      "event.id": "7d13d2d9bb09efa0cdcfd76714aaa1f1",
+      "@timestamp": "2026-03-12T02:10:01.000000Z",
+      "event.original_time": "Mar 12 03:10:01",
+      "event.time_quality": "inferred_year",
+      "event.ingested": "2026-03-12T12:00:00.000000Z",
+      "event.kind": "event",
+      "event.category": [
+        "authentication"
+      ],
+      "event.type": [
+        "info"
+      ],
+      "event.action": "invalid-user",
+      "event.outcome": "failure",
+      "event.provider": "sshd",
+      "user.name": "oracle",
+      "host.name": "srv-lnx01",
+      "host.os.type": "linux",
+      "source.ip": "203.0.113.77",
+      "source.port": 40112,
+      "process.pid": "2211",
+      "log.source_type": "syslog_3164",
+      "log.raw_record_id": "9a044229daa156020eb08eb8542c117e",
+      "message": "Invalid user oracle from 203.0.113.77 port 40112",
+      "original": {
+        "linux.pattern": "sshd_invalid_user",
+        "syslog.appname": "sshd"
+      }
+    }
+  },
+  {
+    "position": 2,
+    "status": "accepted",
+    "event": {
+      "event.id": "07d4605053d958ce65aa115c12f1ac70",
+      "@timestamp": "2026-03-12T02:10:01.000000Z",
+      "event.original_time": "Mar 12 03:10:01",
+      "event.time_quality": "inferred_year",
+      "event.ingested": "2026-03-12T12:00:00.000000Z",
+      "event.kind": "event",
+      "event.category": [
+        "authentication"
+      ],
+      "event.type": [
+        "start"
+      ],
+      "event.action": "logon-failed",
+      "event.outcome": "failure",
+      "event.provider": "sshd",
+      "user.name": "oracle",
+      "host.name": "srv-lnx01",
+      "host.os.type": "linux",
+      "source.ip": "203.0.113.77",
+      "source.port": 40112,
+      "auth.method": "password",
+      "process.pid": "2211",
+      "log.source_type": "syslog_3164",
+      "log.raw_record_id": "4a15b4bced33110858494c13ee60efa5",
+      "message": "Failed password for invalid user oracle from 203.0.113.77 port 40112 ssh2",
+      "original": {
+        "linux.pattern": "sshd_failed_password",
+        "sshd.invalid_user": true,
+        "syslog.appname": "sshd"
+      }
+    }
+  },
+  {
+    "position": 3,
+    "status": "accepted",
+    "event": {
+      "event.id": "9c541f12fec1a167654251b63cbfd2cf",
+      "@timestamp": "2026-03-12T02:10:03.000000Z",
+      "event.original_time": "Mar 12 03:10:03",
+      "event.time_quality": "inferred_year",
+      "event.ingested": "2026-03-12T12:00:00.000000Z",
+      "event.kind": "event",
+      "event.category": [
+        "authentication"
+      ],
+      "event.type": [
+        "start"
+      ],
+      "event.action": "logon-failed",
+      "event.outcome": "failure",
+      "event.provider": "sshd",
+      "user.name": "root",
+      "host.name": "srv-lnx01",
+      "host.os.type": "linux",
+      "source.ip": "203.0.113.77",
+      "source.port": 40114,
+      "auth.method": "password",
+      "process.pid": "2213",
+      "log.source_type": "syslog_3164",
+      "log.raw_record_id": "48029276212db1c6f9a4bbe39194e1ef",
+      "message": "Failed password for root from 203.0.113.77 port 40114 ssh2",
+      "original": {
+        "linux.pattern": "sshd_failed_password",
+        "syslog.appname": "sshd"
+      }
+    }
+  },
+  {
+    "position": 4,
+    "status": "accepted",
+    "event": {
+      "event.id": "e36cb55639f6a6d13f263c094d8a51fc",
+      "@timestamp": "2026-03-12T02:10:03.000000Z",
+      "event.original_time": "Mar 12 03:10:03",
+      "event.time_quality": "inferred_year",
+      "event.ingested": "2026-03-12T12:00:00.000000Z",
+      "event.kind": "event",
+      "event.category": [
+        "authentication"
+      ],
+      "event.type": [
+        "info"
+      ],
+      "event.action": "pam-auth-failure",
+      "event.outcome": "failure",
+      "event.provider": "sshd",
+      "user.name": "root",
+      "user.target.name": "root",
+      "host.name": "srv-lnx01",
+      "host.os.type": "linux",
+      "source.ip": "203.0.113.77",
+      "process.pid": "2213",
+      "log.source_type": "syslog_3164",
+      "log.raw_record_id": "4caf5da584d73cd10b9f118141e042d0",
+      "message": "pam_unix(sshd:auth): authentication failure; logname= uid=0 euid=0 tty=ssh ruser= rhost=203.0.113.77  user=root",
+      "original": {
+        "linux.pattern": "pam_unix_auth_failure",
+        "pam.service": "sshd",
+        "syslog.appname": "sshd"
+      }
+    }
+  },
+  {
+    "position": 5,
+    "status": "accepted",
+    "event": {
+      "event.id": "c3a7b402f726658b0cf7a364c753ba27",
+      "@timestamp": "2026-03-12T02:12:44.000000Z",
+      "event.original_time": "Mar 12 03:12:44",
+      "event.time_quality": "inferred_year",
+      "event.ingested": "2026-03-12T12:00:00.000000Z",
+      "event.kind": "event",
+      "event.category": [
+        "authentication"
+      ],
+      "event.type": [
+        "start"
+      ],
+      "event.action": "logon",
+      "event.outcome": "success",
+      "event.provider": "sshd",
+      "user.name": "root",
+      "host.name": "srv-lnx01",
+      "host.os.type": "linux",
+      "source.ip": "203.0.113.77",
+      "source.port": 40210,
+      "auth.method": "password",
+      "process.pid": "2290",
+      "log.source_type": "syslog_3164",
+      "log.raw_record_id": "c4483e8d8f118d18c8108440cf4058cd",
+      "message": "Accepted password for root from 203.0.113.77 port 40210 ssh2",
+      "original": {
+        "linux.pattern": "sshd_accepted",
+        "syslog.appname": "sshd"
+      }
+    }
+  },
+  {
+    "position": 6,
+    "status": "accepted",
+    "event": {
+      "event.id": "d30ba4702fedcab7ebbad4ff1d94b72f",
+      "@timestamp": "2026-03-12T02:12:44.000000Z",
+      "event.original_time": "Mar 12 03:12:44",
+      "event.time_quality": "inferred_year",
+      "event.ingested": "2026-03-12T12:00:00.000000Z",
+      "event.kind": "event",
+      "event.category": [
+        "session"
+      ],
+      "event.type": [
+        "start"
+      ],
+      "event.action": "session-opened",
+      "event.outcome": "success",
+      "event.provider": "sshd",
+      "user.target.name": "root",
+      "host.name": "srv-lnx01",
+      "host.os.type": "linux",
+      "process.pid": "2290",
+      "log.source_type": "syslog_3164",
+      "log.raw_record_id": "34b2f725a281f2d662d7f2d4dbec893a",
+      "message": "pam_unix(sshd:session): session opened for user root(uid=0) by (uid=0)",
+      "original": {
+        "linux.pattern": "pam_session_opened",
+        "pam.service": "sshd",
+        "syslog.appname": "sshd"
+      }
+    }
+  },
+  {
+    "position": 7,
+    "status": "accepted",
+    "event": {
+      "event.id": "f1592fdc61ae8b31a77a7979e152caac",
+      "@timestamp": "2026-03-12T02:13:10.000000Z",
+      "event.original_time": "Mar 12 03:13:10",
+      "event.time_quality": "inferred_year",
+      "event.ingested": "2026-03-12T12:00:00.000000Z",
+      "event.kind": "event",
+      "event.category": [
+        "process"
+      ],
+      "event.type": [
+        "start"
+      ],
+      "event.action": "sudo-exec",
+      "event.outcome": "success",
+      "event.provider": "sudo",
+      "user.name": "root",
+      "user.target.name": "root",
+      "host.name": "srv-lnx01",
+      "host.os.type": "linux",
+      "process.name": "useradd",
+      "process.command_line": "/usr/sbin/useradd -o -u 0 backdoor",
+      "log.source_type": "syslog_3164",
+      "log.raw_record_id": "454f01ee8c35b607e1e705a8d7441bad",
+      "message": "    root : TTY=pts/0 ; PWD=/root ; USER=root ; COMMAND=/usr/sbin/useradd -o -u 0 backdoor",
+      "original": {
+        "linux.pattern": "sudo_command",
+        "sudo.tty": "pts/0",
+        "syslog.appname": "sudo"
+      }
+    }
+  },
+  {
+    "position": 8,
+    "status": "accepted",
+    "event": {
+      "event.id": "a46143f1e838e75f606d3282bd639315",
+      "@timestamp": "2026-03-12T02:13:10.000000Z",
+      "event.original_time": "Mar 12 03:13:10",
+      "event.time_quality": "inferred_year",
+      "event.ingested": "2026-03-12T12:00:00.000000Z",
+      "event.kind": "event",
+      "event.category": [
+        "iam"
+      ],
+      "event.type": [
+        "user",
+        "creation"
+      ],
+      "event.action": "user-created",
+      "event.outcome": "success",
+      "event.provider": "useradd",
+      "user.target.name": "backdoor",
+      "user.target.id": "0",
+      "group.id": "0",
+      "host.name": "srv-lnx01",
+      "host.os.type": "linux",
+      "process.pid": "2301",
+      "log.source_type": "syslog_3164",
+      "log.raw_record_id": "83cb7fb7a30b5603fad5e50fab78c8b0",
+      "message": "new user: name=backdoor, UID=0, GID=0, home=/root, shell=/bin/bash, from=/dev/pts/0",
+      "original": {
+        "linux.pattern": "useradd_new_user",
+        "syslog.appname": "useradd"
+      }
+    }
+  },
+  {
+    "position": 9,
+    "status": "accepted",
+    "event": {
+      "event.id": "1af6670784b5c64fc82877cdc3dae9e8",
+      "@timestamp": "2026-03-12T02:13:15.000000Z",
+      "event.original_time": "Mar 12 03:13:15",
+      "event.time_quality": "inferred_year",
+      "event.ingested": "2026-03-12T12:00:00.000000Z",
+      "event.kind": "event",
+      "event.category": [
+        "iam"
+      ],
+      "event.type": [
+        "group",
+        "change"
+      ],
+      "event.action": "user-added-to-group",
+      "event.outcome": "success",
+      "event.provider": "usermod",
+      "user.target.name": "backdoor",
+      "group.name": "sudo",
+      "host.name": "srv-lnx01",
+      "host.os.type": "linux",
+      "process.pid": "2305",
+      "log.source_type": "syslog_3164",
+      "log.raw_record_id": "36951ca7602e9ac0510275034359c622",
+      "message": "add 'backdoor' to group 'sudo'",
+      "original": {
+        "linux.pattern": "usermod_add_group",
+        "syslog.appname": "usermod"
+      }
+    }
+  },
+  {
+    "position": 10,
+    "status": "accepted",
+    "event": {
+      "event.id": "a9c1c37a3d953bb0ecf0e1fe6098c06f",
+      "@timestamp": "2026-03-12T02:14:00.000000Z",
+      "event.original_time": "Mar 12 03:14:00",
+      "event.time_quality": "inferred_year",
+      "event.ingested": "2026-03-12T12:00:00.000000Z",
+      "event.kind": "event",
+      "event.category": [
+        "authentication"
+      ],
+      "event.type": [
+        "start"
+      ],
+      "event.action": "su-failed",
+      "event.outcome": "failure",
+      "event.provider": "su",
+      "user.name": "max.mustermann",
+      "user.target.name": "root",
+      "host.name": "srv-lnx01",
+      "host.os.type": "linux",
+      "process.pid": "2310",
+      "log.source_type": "syslog_3164",
+      "log.raw_record_id": "906b0c4f8a2a6db8cd1bcc42fa3d8afe",
+      "message": "FAILED SU (to root) max.mustermann on pts/1",
+      "original": {
+        "linux.pattern": "su_failed",
+        "syslog.appname": "su",
+        "syslog.facility": 4,
+        "syslog.severity": 6
+      }
+    }
+  },
+  {
+    "position": 11,
+    "status": "accepted",
+    "event": {
+      "event.id": "da8eb881eeb3e3fd62b6a0a52d1ba2b2",
+      "@timestamp": "2026-03-12T02:15:00.123456Z",
+      "event.original_time": "2026-03-12T03:15:00.123456+01:00",
+      "event.time_quality": "exact",
+      "event.ingested": "2026-03-12T12:00:00.000000Z",
+      "event.kind": "event",
+      "event.category": [
+        "network"
+      ],
+      "event.type": [
+        "end"
+      ],
+      "event.action": "connection-closed",
+      "event.outcome": "unknown",
+      "event.provider": "sshd",
+      "host.name": "srv-lnx01",
+      "host.os.type": "linux",
+      "source.ip": "203.0.113.77",
+      "source.port": 40300,
+      "process.pid": "2320",
+      "log.source_type": "syslog_3164",
+      "log.raw_record_id": "e5beac7d25226f4d9c647959a5055c69",
+      "message": "Connection closed by 203.0.113.77 port 40300 [preauth]",
+      "original": {
+        "linux.pattern": "sshd_connection_closed",
+        "syslog.appname": "sshd"
+      }
+    }
+  },
+  {
+    "position": 12,
+    "status": "accepted",
+    "event": {
+      "event.id": "16e9d3f1d690716c8cec9339ee743154",
+      "@timestamp": "2026-03-12T02:16:00.000000Z",
+      "event.original_time": "Mar 12 03:16:00",
+      "event.time_quality": "inferred_year",
+      "event.ingested": "2026-03-12T12:00:00.000000Z",
+      "event.kind": "event",
+      "event.category": [
+        "session"
+      ],
+      "event.type": [
+        "start"
+      ],
+      "event.action": "session-opened",
+      "event.outcome": "success",
+      "event.provider": "CRON",
+      "user.target.name": "root",
+      "host.name": "srv-lnx01",
+      "host.os.type": "linux",
+      "process.pid": "2330",
+      "log.source_type": "syslog_3164",
+      "log.raw_record_id": "9e572f0411e983ba1fbf80d6cfb39a7a",
+      "message": "pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)",
+      "original": {
+        "linux.pattern": "pam_session_opened",
+        "pam.service": "cron",
+        "syslog.appname": "CRON"
+      }
+    }
+  },
+  {
+    "position": 13,
+    "status": "accepted",
+    "event": {
+      "event.id": "d546ebb7e7db99499188ffb24cd633c5",
+      "@timestamp": "2026-03-12T02:17:00.000000Z",
+      "event.original_time": "Mar 12 03:17:00",
+      "event.time_quality": "inferred_year",
+      "event.ingested": "2026-03-12T12:00:00.000000Z",
+      "event.kind": "event",
+      "event.action": "syslog-message",
+      "event.outcome": "unknown",
+      "event.provider": "kernel",
+      "host.name": "srv-lnx01",
+      "host.os.type": "linux",
+      "log.source_type": "syslog_3164",
+      "log.raw_record_id": "1c4afefc2ebc5605e874bcea9b6214b2",
+      "message": "[12345.678] eth0: link up",
+      "original": {
+        "syslog.appname": "kernel"
+      }
+    }
+  },
+  {
+    "position": 14,
+    "status": "malformed",
+    "error": {
+      "code": "MISSING_TIMESTAMP",
+      "detail": "no RFC 3164 or RFC 3339 timestamp"
+    }
+  },
+  {
+    "position": 15,
+    "status": "malformed",
+    "error": {
+      "code": "TRUNCATED",
+      "detail": "line ends before message"
+    }
+  }
+]

@@ -1,0 +1,6 @@
+{"ts": 1773283000000, "seq": 1, "gateway": "vpn01", "product": "mf-vpn", "type": "auth", "result": "ok", "user": "erika.muster@musterfirma.example", "method": "certificate", "client": {"ip": "198.51.100.20", "port": 51000}}
+{"ts": 1773283000500, "seq": 2, "gateway": "vpn01", "product": "mf-vpn", "type": "auth_fail", "result": "fail", "reason": "bad_password", "user": "max.mustermann", "method": "password", "client": {"ip": "::ffff:203.0.113.99", "port": "51001"}}
+{"ts": 1773283000500, "seq": 2, "gateway": "vpn01", "product": "mf-vpn", "type": "auth_fail", "result": "fail", "reason": "bad_password", "user": "max.mustermann", "method": "password", "client": {"ip": "::ffff:203.0.113.99", "port": "51001"}}
+
+{"ts": 1773283001000, "seq": 3, "gateway": "vpn01", "type": "auth", "client": {"port": "x"}}
+{"ts": 1773283001000, "seq": 4, "gateway": "vpn01", "type": "auth"

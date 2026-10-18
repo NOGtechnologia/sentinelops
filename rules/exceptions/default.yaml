@@ -1,0 +1,12 @@
+# Rule exceptions (spec 6.5). Created by a detection engineer, approved by a
+# senior analyst (L2), always with a reason and an expiry date. Changes create
+# a new version; expired or unapproved entries have no effect.
+- id: EXC-0001
+  version: 1
+  rule_id: SO-AUTH-006
+  description: Monitoring account svc_monitor checks every server every 15 minutes from srv-app01 (expected network logons).
+  match:
+    user.name: svc_monitor
+  created_by: detection.engineer
+  approved_by: senior.analyst
+  expires: 2027-03-31

@@ -1,0 +1,121 @@
+[
+  {
+    "position": 1,
+    "status": "accepted",
+    "event": {
+      "event.id": "8dc1e8cb535cdf2e0799efe90268e746",
+      "@timestamp": "2026-03-12T03:10:01.000000Z",
+      "event.original_time": "1773285001000000",
+      "event.time_quality": "exact",
+      "event.ingested": "2026-03-12T12:00:00.000000Z",
+      "event.kind": "event",
+      "event.category": [
+        "authentication"
+      ],
+      "event.type": [
+        "start"
+      ],
+      "event.action": "logon",
+      "event.outcome": "success",
+      "event.provider": "sshd",
+      "user.name": "svc_deploy",
+      "host.name": "srv-lnx03",
+      "host.os.type": "linux",
+      "source.ip": "10.30.0.5",
+      "source.port": 41000,
+      "auth.method": "publickey",
+      "process.pid": "901",
+      "log.source_type": "journald_json",
+      "log.raw_record_id": "5e7f6eea8388767cb1176aecf328ef10",
+      "message": "Accepted publickey for svc_deploy from 10.30.0.5 port 41000 ssh2: ED25519 SHA256:exampleonly",
+      "original": {
+        "journald.unit": "ssh.service",
+        "linux.pattern": "sshd_accepted",
+        "syslog.appname": "sshd"
+      }
+    }
+  },
+  {
+    "position": 2,
+    "status": "accepted",
+    "event": {
+      "event.id": "0d2c3a2e1e19d11fcc22db581dc5f44c",
+      "@timestamp": "2026-03-12T03:10:02.000000Z",
+      "event.original_time": "1773285002000000",
+      "event.time_quality": "exact",
+      "event.ingested": "2026-03-12T12:00:00.000000Z",
+      "event.kind": "event",
+      "event.category": [
+        "process"
+      ],
+      "event.type": [
+        "start"
+      ],
+      "event.action": "sudo-exec",
+      "event.outcome": "success",
+      "event.provider": "sudo",
+      "user.name": "svc_deploy",
+      "user.target.name": "root",
+      "host.name": "srv-lnx03",
+      "host.os.type": "linux",
+      "process.name": "systemctl",
+      "process.command_line": "/usr/bin/systemctl restart app",
+      "log.source_type": "journald_json",
+      "log.raw_record_id": "4c54590067b0edbc803f62d09a2fc4b4",
+      "message": "svc_deploy : TTY=pts/1 ; PWD=/opt/app ; USER=root ; COMMAND=/usr/bin/systemctl restart app",
+      "original": {
+        "linux.pattern": "sudo_command",
+        "sudo.tty": "pts/1",
+        "syslog.appname": "sudo"
+      }
+    }
+  },
+  {
+    "position": 3,
+    "status": "accepted",
+    "event": {
+      "event.id": "0ccc42eb6fb76ec39f510854aecbfd6a",
+      "@timestamp": "2026-03-12T03:10:03.000000Z",
+      "event.original_time": "1773285003000000",
+      "event.time_quality": "exact",
+      "event.ingested": "2026-03-12T12:00:00.000000Z",
+      "event.kind": "event",
+      "event.category": [
+        "iam"
+      ],
+      "event.type": [
+        "user",
+        "change"
+      ],
+      "event.action": "password-changed",
+      "event.outcome": "success",
+      "event.provider": "passwd",
+      "user.target.name": "lena",
+      "host.name": "srv-lnx03",
+      "host.os.type": "linux",
+      "log.source_type": "journald_json",
+      "log.raw_record_id": "25ec217068acf1d592038ee4712c2962",
+      "message": "pam_unix(passwd:chauthtok): password changed for lena",
+      "original": {
+        "linux.pattern": "password_changed",
+        "syslog.appname": "passwd"
+      }
+    }
+  },
+  {
+    "position": 4,
+    "status": "malformed",
+    "error": {
+      "code": "MISSING_TIMESTAMP",
+      "detail": "__REALTIME_TIMESTAMP missing"
+    }
+  },
+  {
+    "position": 5,
+    "status": "malformed",
+    "error": {
+      "code": "INVALID_ENCODING",
+      "detail": "MESSAGE bytes not UTF-8 at 0"
+    }
+  }
+]

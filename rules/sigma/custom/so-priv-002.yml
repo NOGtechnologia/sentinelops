@@ -1,0 +1,36 @@
+title: Special privileges assigned to an unexpected account
+id: acc077f3-2a38-5b2c-a4b1-0b897f056840
+name: so_priv_002
+status: stable
+description: Windows event 4672 (special privileges assigned to new logon) for an account that is not on the list of expected privileged accounts (placeholder expected_privileged_accounts).
+author: SentinelOps
+date: 2026-10-18
+tags:
+  - attack.privilege-escalation
+  - attack.t1078.002
+logsource:
+  product: sentinelops
+  category: iam
+detection:
+  selection:
+    event.action: special-privileges-assigned
+  filter_expected:
+    user.name|expand: '%expected_privileged_accounts%'
+  filter_machine_account:
+    user.name|endswith: '$'
+  filter_builtin:
+    user.id:
+      - S-1-5-18
+      - S-1-5-19
+      - S-1-5-20
+  condition: selection and not 1 of filter_*
+falsepositives:
+  - New administrator not yet added to the expected account list
+level: high
+sentinelops:
+  rule_id: SO-PRIV-002
+  version: 1
+  title_de: Sonderrechte für unerwartetes Konto
+  description_de: Sonderrechte (Ereignis 4672) für ein Konto außerhalb der erwarteten Admin-Liste.
+  playbooks: [VERIFY_ACCOUNT_ACTIVITY, REVIEW_GROUP_MEMBERSHIP, DISABLE_ACCOUNT]
+  privilege_change: true

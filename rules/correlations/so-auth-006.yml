@@ -1,0 +1,31 @@
+title: Lateral movement - one account logs on to many hosts
+id: 0abb011a-4b45-56ea-b6d5-e48db444db46
+name: so_auth_006
+status: stable
+description: An account performs network logons to many different hosts within a short time window.
+author: SentinelOps
+date: 2026-10-18
+tags:
+  - attack.lateral-movement
+  - attack.t1021.002
+  - attack.t1078
+correlation:
+  type: value_count
+  rules:
+    - so_helper_network_logon
+  group-by:
+    - user.name
+  timespan: 30m
+  condition:
+    field: host.name
+    gte: 5
+falsepositives:
+  - Monitoring, inventory or backup service accounts (add an exception)
+  - Administrators deploying software
+level: high
+sentinelops:
+  rule_id: SO-AUTH-006
+  version: 1
+  title_de: Laterale Bewegung
+  description_de: Ein Konto meldet sich per Netzwerk-Logon in kurzer Zeit an vielen verschiedenen Hosts an.
+  playbooks: [ISOLATE_HOST, DISABLE_ACCOUNT, VERIFY_ACCOUNT_ACTIVITY, COLLECT_ADDITIONAL_LOGS]

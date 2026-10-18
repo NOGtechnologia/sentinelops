@@ -1,0 +1,29 @@
+title: Repeated sudo or su failures
+id: ff6096d9-7684-562e-a699-767c1bda9ad3
+name: so_priv_003
+status: stable
+description: Several failed sudo or su attempts of one account within a short time window (Linux privilege escalation attempt).
+author: SentinelOps
+date: 2026-10-18
+tags:
+  - attack.privilege-escalation
+  - attack.t1548.003
+correlation:
+  type: event_count
+  rules:
+    - so_helper_linux_privesc_failure
+  group-by:
+    - user.name
+  timespan: 10m
+  condition:
+    gte: 3
+falsepositives:
+  - Administrator mistyping the password several times
+level: high
+sentinelops:
+  rule_id: SO-PRIV-003
+  version: 1
+  title_de: Wiederholte sudo-/su-Fehlschläge
+  description_de: Mehrere fehlgeschlagene sudo- oder su-Versuche eines Kontos in kurzer Zeit.
+  playbooks: [VERIFY_ACCOUNT_ACTIVITY, DISABLE_ACCOUNT, ISOLATE_HOST]
+  privilege_change: true

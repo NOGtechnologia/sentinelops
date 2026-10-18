@@ -1,0 +1,142 @@
+[
+  {
+    "position": 1,
+    "status": "accepted",
+    "event": {
+      "event.id": "e33481e69d940955f5ed87e3cbb41e8b",
+      "@timestamp": "2026-03-12T02:10:01.000001Z",
+      "event.original_time": "2026-03-12T03:10:01.000001+01:00",
+      "event.time_quality": "exact",
+      "event.ingested": "2026-03-12T12:00:00.000000Z",
+      "event.kind": "event",
+      "event.category": [
+        "authentication"
+      ],
+      "event.type": [
+        "start"
+      ],
+      "event.action": "logon-failed",
+      "event.outcome": "failure",
+      "event.provider": "sshd",
+      "user.name": "admin",
+      "host.name": "srv-lnx02",
+      "host.os.type": "linux",
+      "source.ip": "198.51.100.23",
+      "source.port": 50022,
+      "auth.method": "password",
+      "process.pid": "4711",
+      "log.source_type": "syslog_5424",
+      "log.raw_record_id": "5f901cf5e059080d4310279a98b44929",
+      "message": "Failed password for admin from 198.51.100.23 port 50022 ssh2",
+      "original": {
+        "linux.pattern": "sshd_failed_password",
+        "syslog.appname": "sshd",
+        "syslog.facility": 4,
+        "syslog.severity": 6
+      }
+    }
+  },
+  {
+    "position": 2,
+    "status": "accepted",
+    "event": {
+      "event.id": "7dc0d292fd01dd28e0e89dd72cddba59",
+      "@timestamp": "2026-03-12T03:11:00.000000Z",
+      "event.original_time": "2026-03-12T03:11:00Z",
+      "event.time_quality": "exact",
+      "event.ingested": "2026-03-12T12:00:00.000000Z",
+      "event.kind": "event",
+      "event.category": [
+        "process"
+      ],
+      "event.type": [
+        "start"
+      ],
+      "event.action": "sudo-failed",
+      "event.outcome": "failure",
+      "event.provider": "sudo",
+      "user.name": "max.mustermann",
+      "user.target.name": "root",
+      "host.name": "srv-lnx02",
+      "host.os.type": "linux",
+      "process.name": "bash",
+      "process.command_line": "/bin/bash",
+      "log.source_type": "syslog_5424",
+      "log.raw_record_id": "d519db5d62590c393a16af09b3583929",
+      "message": "max.mustermann : 3 incorrect password attempts ; TTY=pts/0 ; PWD=/home/max.mustermann ; USER=root ; COMMAND=/bin/bash",
+      "original": {
+        "linux.pattern": "sudo_failed",
+        "sudo.tty": "pts/0",
+        "syslog.appname": "sudo",
+        "syslog.facility": 4,
+        "syslog.msgid": "AUTH",
+        "syslog.sd.meta.sequenceId": "17",
+        "syslog.sd.origin.ip": "10.30.0.12",
+        "syslog.sd.origin.software": "rsyslogd",
+        "syslog.severity": 6
+      }
+    }
+  },
+  {
+    "position": 3,
+    "status": "accepted",
+    "event": {
+      "event.id": "b3993e68766a05c24c6872cc1793964a",
+      "@timestamp": "2026-03-12T03:12:00.000000Z",
+      "event.original_time": "2026-03-12T03:12:00Z",
+      "event.time_quality": "exact",
+      "event.ingested": "2026-03-12T12:00:00.000000Z",
+      "event.kind": "event",
+      "event.category": [
+        "iam"
+      ],
+      "event.type": [
+        "group",
+        "change"
+      ],
+      "event.action": "user-added-to-group",
+      "event.outcome": "success",
+      "event.provider": "gpasswd",
+      "user.name": "root",
+      "user.target.name": "tmp.admin",
+      "group.name": "wheel",
+      "host.name": "srv-lnx02",
+      "host.os.type": "linux",
+      "process.pid": "4800",
+      "log.source_type": "syslog_5424",
+      "log.raw_record_id": "d9be03dd430f131556c33701ea081abf",
+      "message": "user tmp.admin added by root to group wheel",
+      "original": {
+        "linux.pattern": "gpasswd_add",
+        "syslog.appname": "gpasswd",
+        "syslog.facility": 10,
+        "syslog.sd.x@32473.note": "quote \" and ] bracket",
+        "syslog.severity": 6
+      }
+    }
+  },
+  {
+    "position": 4,
+    "status": "malformed",
+    "error": {
+      "code": "MISSING_TIMESTAMP",
+      "detail": "NILVALUE timestamp"
+    }
+  },
+  {
+    "position": 5,
+    "status": "malformed",
+    "error": {
+      "code": "PARSE_ERROR",
+      "detail": "unsupported version '2'"
+    }
+  },
+  {
+    "position": 6,
+    "status": "malformed",
+    "error": {
+      "code": "TRUNCATED",
+      "detail": "header incomplete"
+    }
+  }
+]

@@ -1,0 +1,15 @@
+Mar 12 03:10:01 srv-lnx01 sshd[2211]: Invalid user oracle from 203.0.113.77 port 40112
+Mar 12 03:10:01 srv-lnx01 sshd[2211]: Failed password for invalid user oracle from 203.0.113.77 port 40112 ssh2
+Mar 12 03:10:03 srv-lnx01 sshd[2213]: Failed password for root from 203.0.113.77 port 40114 ssh2
+Mar 12 03:10:03 srv-lnx01 sshd[2213]: pam_unix(sshd:auth): authentication failure; logname= uid=0 euid=0 tty=ssh ruser= rhost=203.0.113.77  user=root
+Mar 12 03:12:44 srv-lnx01 sshd[2290]: Accepted password for root from 203.0.113.77 port 40210 ssh2
+Mar 12 03:12:44 srv-lnx01 sshd[2290]: pam_unix(sshd:session): session opened for user root(uid=0) by (uid=0)
+Mar 12 03:13:10 srv-lnx01 sudo:     root : TTY=pts/0 ; PWD=/root ; USER=root ; COMMAND=/usr/sbin/useradd -o -u 0 backdoor
+Mar 12 03:13:10 srv-lnx01 useradd[2301]: new user: name=backdoor, UID=0, GID=0, home=/root, shell=/bin/bash, from=/dev/pts/0
+Mar 12 03:13:15 srv-lnx01 usermod[2305]: add 'backdoor' to group 'sudo'
+<38>Mar 12 03:14:00 srv-lnx01 su[2310]: FAILED SU (to root) max.mustermann on pts/1
+2026-03-12T03:15:00.123456+01:00 srv-lnx01 sshd[2320]: Connection closed by 203.0.113.77 port 40300 [preauth]
+Mar 12 03:16:00 srv-lnx01 CRON[2330]: pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+Mar 12 03:17:00 srv-lnx01 kernel: [12345.678] eth0: link up
+This line has no timestamp at all
+Mar 12 03:18:00 srv-lnx01

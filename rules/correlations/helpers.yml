@@ -1,0 +1,127 @@
+# Helper base rules referenced by the correlation rules. They carry no
+# `sentinelops.rule_id` and therefore never raise alerts on their own.
+title: Failed logon (helper)
+id: 2b235a44-0aae-51ad-a419-02c0cf332118
+name: so_helper_logon_failed
+status: stable
+description: Failed interactive, network or SSH logon of a named account (machine accounts excluded).
+author: SentinelOps
+date: 2026-10-18
+logsource:
+  product: sentinelops
+  category: authentication
+detection:
+  selection:
+    event.action: logon-failed
+  filter_machine_account:
+    user.name|endswith: '$'
+  condition: selection and not filter_machine_account
+level: informational
+---
+title: Successful logon (helper)
+id: ca4765aa-4268-5e0a-a01e-158741c32884
+name: so_helper_logon_success
+status: stable
+description: Successful logon of a named account.
+author: SentinelOps
+date: 2026-10-18
+logsource:
+  product: sentinelops
+  category: authentication
+detection:
+  selection:
+    event.action: logon
+    event.outcome: success
+  filter_machine_account:
+    user.name|endswith: '$'
+  condition: selection and not filter_machine_account
+level: informational
+---
+title: Network logon (helper)
+id: 77cdd511-b54c-5334-98f3-a7b5d9bd509c
+name: so_helper_network_logon
+status: stable
+description: Successful Windows network logon (logon type 3) of a named account.
+author: SentinelOps
+date: 2026-10-18
+logsource:
+  product: sentinelops
+  category: authentication
+detection:
+  selection:
+    event.action: logon
+    event.outcome: success
+    logon.type: 3
+  filter_machine_account:
+    user.name|endswith: '$'
+  filter_anonymous:
+    user.name: 'ANONYMOUS LOGON'
+  condition: selection and not 1 of filter_*
+level: informational
+---
+title: Account locked out (helper)
+id: 94f95abc-cb57-56d1-b9ee-1175c5299ba9
+name: so_helper_account_locked
+status: stable
+description: An account was locked out.
+author: SentinelOps
+date: 2026-10-18
+logsource:
+  product: sentinelops
+  category: iam
+detection:
+  selection:
+    event.action: account-locked
+  condition: selection
+level: informational
+---
+title: Linux privilege escalation failure (helper)
+id: 81105914-1d67-5505-80c6-45c772510423
+name: so_helper_linux_privesc_failure
+status: stable
+description: Failed sudo (wrong password, not in sudoers) or failed su.
+author: SentinelOps
+date: 2026-10-18
+logsource:
+  product: sentinelops
+  category: process
+detection:
+  selection:
+    event.action:
+      - sudo-failed
+      - sudo-denied
+      - su-failed
+  condition: selection
+level: informational
+---
+title: User account created (helper)
+id: 8f8c8ce5-f659-5418-983a-80b4661d900d
+name: so_helper_user_created
+status: stable
+description: A user account was created.
+author: SentinelOps
+date: 2026-10-18
+logsource:
+  product: sentinelops
+  category: iam
+detection:
+  selection:
+    event.action: user-created
+  condition: selection
+level: informational
+---
+title: User account deleted (helper)
+id: d3def1d9-7cb7-57a0-8535-ad7490a2bd6f
+name: so_helper_user_deleted
+status: stable
+description: A user account was deleted.
+author: SentinelOps
+date: 2026-10-18
+logsource:
+  product: sentinelops
+  category: iam
+detection:
+  selection:
+    event.action: user-deleted
+  condition: selection
+level: informational

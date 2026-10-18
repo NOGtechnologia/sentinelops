@@ -1,0 +1,56 @@
+# Profile for the VPN gateway logs produced by the test data generator
+# ("Musterfirma GmbH", spec section 11). Epoch milliseconds, results as text.
+name: musterfirma_vpn
+version: 1
+description: VPN gateway authentication log of the fictitious Musterfirma GmbH (generator output).
+timestamp:
+  field: ts
+  format: epoch_ms
+fields:
+  user.name: user
+  source.ip: client.ip
+  source.port: client.port
+  host.name: gateway
+  auth.method: method
+  event.provider: product
+constants:
+  host.os.type: appliance
+action:
+  field: type
+  map:
+    auth: logon
+    auth_fail: logon-failed
+    disconnect: logoff
+outcome:
+  field: result
+  map: {ok: success, fail: failure, denied: failure}
+  default: unknown
+fingerprint_keys: [gateway, seq]
+keep_original: [seq, reason]
+examples:
+  - input:
+      ts: 1773307800000
+      seq: 1001
+      gateway: vpn01
+      product: mf-vpn
+      type: auth_fail
+      result: fail
+      reason: bad_password
+      user: erika.muster@musterfirma.example
+      method: password
+      client: {ip: 198.51.100.20, port: 51000}
+    expect:
+      "@timestamp": "2026-03-12T09:30:00.000000Z"
+      event.action: logon-failed
+      event.outcome: failure
+      user.name: erika.muster
+      user.domain: musterfirma.example
+      source.ip: 198.51.100.20
+      host.name: vpn01
+      host.os.type: appliance
+  - input: {ts: "1773307800000", seq: 2, gateway: vpn01, type: auth, result: ok, user: max.mustermann}
+    expect:
+      event.action: logon
+      event.outcome: success
+  - input: {ts: "yesterday", seq: 3, gateway: vpn01}
+    expect_malformed: PARSE_ERROR

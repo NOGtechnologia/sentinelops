@@ -1,0 +1,226 @@
+[
+  {
+    "position": 1,
+    "status": "accepted",
+    "event": {
+      "event.id": "f58f85c81e4edc1273393411dd7d4698",
+      "@timestamp": "2013-10-23T16:22:39.973500Z",
+      "event.original_time": "2013-10-23T16:22:39.973500Z",
+      "event.time_quality": "clock_skew_suspected",
+      "event.ingested": "2026-03-12T12:00:00.000000Z",
+      "event.kind": "event",
+      "event.category": [
+        "iam"
+      ],
+      "event.type": [
+        "group",
+        "change"
+      ],
+      "event.action": "user-added-to-group",
+      "event.outcome": "success",
+      "event.code": "4728",
+      "event.provider": "Microsoft-Windows-Security-Auditing",
+      "user.name": "WIN-QALA5Q3KJ43$",
+      "user.domain": "WORKGROUP",
+      "user.id": "S-1-5-18",
+      "user.target.id": "S-1-5-21-3463664321-2923530833-3546627382-1000",
+      "group.name": "None",
+      "group.id": "S-1-5-21-3463664321-2923530833-3546627382-513",
+      "host.name": "IE8Win7",
+      "host.os.type": "windows",
+      "log.source_type": "windows_evtx",
+      "log.raw_record_id": "a1517805e79e02d97f486d0a9775b8aa",
+      "quality.flags": [
+        "ancient_timestamp"
+      ],
+      "original": {
+        "winlog.channel": "Security",
+        "winlog.event_data.MemberName": "-",
+        "winlog.event_data.MemberSid": "S-1-5-21-3463664321-2923530833-3546627382-1000",
+        "winlog.event_data.PrivilegeList": "-",
+        "winlog.event_data.SubjectDomainName": "WORKGROUP",
+        "winlog.event_data.SubjectLogonId": "0x3e7",
+        "winlog.event_data.SubjectUserName": "WIN-QALA5Q3KJ43$",
+        "winlog.event_data.SubjectUserSid": "S-1-5-18",
+        "winlog.event_data.TargetDomainName": "IE8Win7",
+        "winlog.event_data.TargetSid": "S-1-5-21-3463664321-2923530833-3546627382-513",
+        "winlog.event_data.TargetUserName": "None",
+        "winlog.event_id": 4728,
+        "winlog.provider_name": "Microsoft-Windows-Security-Auditing",
+        "winlog.record_id": "111"
+      }
+    }
+  },
+  {
+    "position": 2,
+    "status": "accepted",
+    "event": {
+      "event.id": "7c497d0b6aa960c357cf675b1685f1ab",
+      "@timestamp": "2013-10-23T16:22:39.973500Z",
+      "event.original_time": "2013-10-23T16:22:39.973500Z",
+      "event.time_quality": "clock_skew_suspected",
+      "event.ingested": "2026-03-12T12:00:00.000000Z",
+      "event.kind": "event",
+      "event.category": [
+        "iam"
+      ],
+      "event.type": [
+        "user",
+        "creation"
+      ],
+      "event.action": "user-created",
+      "event.outcome": "success",
+      "event.code": "4720",
+      "event.provider": "Microsoft-Windows-Security-Auditing",
+      "user.name": "WIN-QALA5Q3KJ43$",
+      "user.domain": "WORKGROUP",
+      "user.id": "S-1-5-18",
+      "user.target.name": "IEUser",
+      "user.target.domain": "IE8Win7",
+      "user.target.id": "S-1-5-21-3463664321-2923530833-3546627382-1000",
+      "host.name": "IE8Win7",
+      "host.os.type": "windows",
+      "log.source_type": "windows_evtx",
+      "log.raw_record_id": "b6403d7339a8a71e7099260ced93b4ee",
+      "quality.flags": [
+        "ancient_timestamp"
+      ],
+      "original": {
+        "winlog.channel": "Security",
+        "winlog.event_data.AccountExpires": "%%1794",
+        "winlog.event_data.AllowedToDelegateTo": "-",
+        "winlog.event_data.DisplayName": "%%1793",
+        "winlog.event_data.HomeDirectory": "%%1793",
+        "winlog.event_data.HomePath": "%%1793",
+        "winlog.event_data.LogonHours": "%%1797",
+        "winlog.event_data.NewUacValue": "0x15",
+        "winlog.event_data.OldUacValue": "0x0",
+        "winlog.event_data.PasswordLastSet": "%%1794",
+        "winlog.event_data.PrimaryGroupId": "513",
+        "winlog.event_data.PrivilegeList": "-",
+        "winlog.event_data.ProfilePath": "%%1793",
+        "winlog.event_data.SamAccountName": "IEUser",
+        "winlog.event_data.ScriptPath": "%%1793",
+        "winlog.event_data.SidHistory": "-",
+        "winlog.event_data.SubjectDomainName": "WORKGROUP",
+        "winlog.event_data.SubjectLogonId": "0x3e7",
+        "winlog.event_data.SubjectUserName": "WIN-QALA5Q3KJ43$",
+        "winlog.event_data.SubjectUserSid": "S-1-5-18",
+        "winlog.event_data.TargetDomainName": "IE8Win7",
+        "winlog.event_data.TargetSid": "S-1-5-21-3463664321-2923530833-3546627382-1000",
+        "winlog.event_data.TargetUserName": "IEUser",
+        "winlog.event_data.UserAccountControl": "\r\n\t\t%%2080\r\n\t\t%%2082\r\n\t\t%%2084",
+        "winlog.event_data.UserParameters": "%%1793",
+        "winlog.event_data.UserPrincipalName": "-",
+        "winlog.event_data.UserWorkstations": "%%1793",
+        "winlog.event_id": 4720,
+        "winlog.provider_name": "Microsoft-Windows-Security-Auditing",
+        "winlog.record_id": "112"
+      }
+    }
+  },
+  {
+    "position": 3,
+    "status": "accepted",
+    "event": {
+      "event.id": "70a50bb595772e28336d85e253f9aa42",
+      "@timestamp": "2013-10-23T16:22:39.973500Z",
+      "event.original_time": "2013-10-23T16:22:39.973500Z",
+      "event.time_quality": "clock_skew_suspected",
+      "event.ingested": "2026-03-12T12:00:00.000000Z",
+      "event.kind": "event",
+      "event.category": [
+        "iam"
+      ],
+      "event.type": [
+        "group",
+        "change"
+      ],
+      "event.action": "user-added-to-group",
+      "event.outcome": "success",
+      "event.code": "4732",
+      "event.provider": "Microsoft-Windows-Security-Auditing",
+      "user.name": "WIN-QALA5Q3KJ43$",
+      "user.domain": "WORKGROUP",
+      "user.id": "S-1-5-18",
+      "user.target.id": "S-1-5-21-3463664321-2923530833-3546627382-1000",
+      "group.name": "Users",
+      "group.id": "S-1-5-32-545",
+      "host.name": "IE8Win7",
+      "host.os.type": "windows",
+      "log.source_type": "windows_evtx",
+      "log.raw_record_id": "69387c187947ded40b29a39f27133521",
+      "quality.flags": [
+        "ancient_timestamp"
+      ],
+      "original": {
+        "winlog.channel": "Security",
+        "winlog.event_data.MemberName": "-",
+        "winlog.event_data.MemberSid": "S-1-5-21-3463664321-2923530833-3546627382-1000",
+        "winlog.event_data.PrivilegeList": "-",
+        "winlog.event_data.SubjectDomainName": "WORKGROUP",
+        "winlog.event_data.SubjectLogonId": "0x3e7",
+        "winlog.event_data.SubjectUserName": "WIN-QALA5Q3KJ43$",
+        "winlog.event_data.SubjectUserSid": "S-1-5-18",
+        "winlog.event_data.TargetDomainName": "Builtin",
+        "winlog.event_data.TargetSid": "S-1-5-32-545",
+        "winlog.event_data.TargetUserName": "Users",
+        "winlog.event_id": 4732,
+        "winlog.provider_name": "Microsoft-Windows-Security-Auditing",
+        "winlog.record_id": "113"
+      }
+    }
+  },
+  {
+    "position": 4,
+    "status": "accepted",
+    "event": {
+      "event.id": "98039a4e1795cd2319b88fb365def475",
+      "@timestamp": "2013-10-23T16:22:40.004750Z",
+      "event.original_time": "2013-10-23T16:22:40.004750Z",
+      "event.time_quality": "clock_skew_suspected",
+      "event.ingested": "2026-03-12T12:00:00.000000Z",
+      "event.kind": "event",
+      "event.category": [
+        "iam"
+      ],
+      "event.type": [
+        "group",
+        "change"
+      ],
+      "event.action": "user-added-to-group",
+      "event.outcome": "success",
+      "event.code": "4732",
+      "event.provider": "Microsoft-Windows-Security-Auditing",
+      "user.name": "WIN-QALA5Q3KJ43$",
+      "user.domain": "WORKGROUP",
+      "user.id": "S-1-5-18",
+      "user.target.id": "S-1-5-21-3463664321-2923530833-3546627382-1000",
+      "group.name": "Administrators",
+      "group.id": "S-1-5-32-544",
+      "host.name": "IE8Win7",
+      "host.os.type": "windows",
+      "log.source_type": "windows_evtx",
+      "log.raw_record_id": "856f389459c4846e30eeda4cbc0f7e84",
+      "quality.flags": [
+        "ancient_timestamp"
+      ],
+      "original": {
+        "winlog.channel": "Security",
+        "winlog.event_data.MemberName": "-",
+        "winlog.event_data.MemberSid": "S-1-5-21-3463664321-2923530833-3546627382-1000",
+        "winlog.event_data.PrivilegeList": "-",
+        "winlog.event_data.SubjectDomainName": "WORKGROUP",
+        "winlog.event_data.SubjectLogonId": "0x3e7",
+        "winlog.event_data.SubjectUserName": "WIN-QALA5Q3KJ43$",
+        "winlog.event_data.SubjectUserSid": "S-1-5-18",
+        "winlog.event_data.TargetDomainName": "Builtin",
+        "winlog.event_data.TargetSid": "S-1-5-32-544",
+        "winlog.event_data.TargetUserName": "Administrators",
+        "winlog.event_id": 4732,
+        "winlog.provider_name": "Microsoft-Windows-Security-Auditing",
+        "winlog.record_id": "116"
+      }
+    }
+  }
+]

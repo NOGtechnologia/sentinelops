@@ -1,0 +1,42 @@
+# SentinelOps correlation extension (spec 6.2): Sigma temporal_ordered
+# correlations require *all* referenced rules in order and cannot express
+# "SO-AUTH-001 or SO-AUTH-002, then a successful logon". This rule therefore
+# uses the documented extension type `sequence` (docs/detection-catalog.md,
+# ADR-0003) in the same YAML style. It is loaded by the SentinelOps loader,
+# validated against the referenced Sigma rules and tested like every rule.
+sentinelops_extension: sequence
+title: Successful logon after brute force or password spraying
+id: 6f1a9a7e-2a5f-5d0e-8a3c-1f1e2b3c4d5e
+name: so_auth_003
+status: stable
+description: A successful logon of an account that was the target of a brute force or password spraying attack shortly before.
+author: SentinelOps
+date: 2026-10-18
+tags:
+  - attack.credential-access
+  - attack.initial-access
+  - attack.t1110
+  - attack.t1078
+sequence:
+  first_any:
+    - so_auth_001
+    - so_auth_002
+  then: so_helper_logon_success
+  group-by:
+    - user.name
+  # The successful logon must come from a source address that was part of the
+  # attack ("gleicher Benutzer/IP"), otherwise the legitimate user logging on
+  # from their own workstation after an attack would raise an alert.
+  same:
+    - source.ip
+  timespan: 30m
+falsepositives:
+  - The legitimate user logs on after a brute force attempt against their account
+level: high
+sentinelops:
+  rule_id: SO-AUTH-003
+  version: 1
+  title_de: Erfolgreiche Anmeldung nach Brute Force
+  description_de: Erfolgreiche Anmeldung eines Kontos kurz nach Brute Force oder Password Spraying gegen dieses Konto.
+  playbooks: [DISABLE_ACCOUNT, RESET_PASSWORD, VERIFY_ACCOUNT_ACTIVITY, ISOLATE_HOST, BLOCK_SOURCE_IP]
+  success_after_failures: true

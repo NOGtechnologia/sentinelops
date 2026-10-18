@@ -1,0 +1,26 @@
+title: Security event log cleared
+id: 5b835095-894f-5a7a-9aab-83abc9938b38
+name: so_def_001
+status: stable
+description: The Windows Security event log was cleared (event 1102), a typical step to remove traces.
+author: SentinelOps
+date: 2026-10-18
+tags:
+  - attack.defense-impairment
+  - attack.t1685.005
+logsource:
+  product: sentinelops
+  category: configuration
+detection:
+  selection:
+    event.action: audit-log-cleared
+  condition: selection
+falsepositives:
+  - Rollout of log collection agents or system provisioning
+level: high
+sentinelops:
+  rule_id: SO-DEF-001
+  version: 1
+  title_de: Sicherheitsprotokoll gelöscht
+  description_de: Das Windows-Sicherheitsprotokoll wurde gelöscht (Ereignis 1102).
+  playbooks: [ISOLATE_HOST, COLLECT_ADDITIONAL_LOGS, VERIFY_ACCOUNT_ACTIVITY]

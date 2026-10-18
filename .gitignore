@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.hypothesis/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+*.egg-info/
+dist/
+build/
+mutants/
+
+# Node
+node_modules/
+frontend/dist/
+frontend/coverage/
+e2e/test-results/
+e2e/playwright-report/
+e2e/.auth/
+*.tsbuildinfo
+
+# Generated data and local state
+data/
+/out/
+.env
+*.log
+!backend/tests/fixtures/**/*.log
+!rules/**/*.log
+site/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

@@ -1,0 +1,52 @@
+title: Password spraying from one source address
+id: dcabcf04-b74a-5d36-8a3c-628b4662b930
+name: so_auth_002
+status: stable
+description: One source IP fails to log on with many different accounts within a short time window.
+author: SentinelOps
+date: 2026-10-18
+tags:
+  - attack.credential-access
+  - attack.t1110.003
+correlation:
+  type: value_count
+  rules:
+    - so_helper_logon_failed_with_ip
+  group-by:
+    - source.ip
+  timespan: 10m
+  condition:
+    field: user.name
+    gte: 10
+falsepositives:
+  - Shared NAT address of many users with an authentication problem (e.g. expired certificate)
+level: high
+sentinelops:
+  rule_id: SO-AUTH-002
+  version: 1
+  title_de: Password Spraying
+  description_de: Eine Quell-IP mit Fehlanmeldungen für viele verschiedene Benutzer in kurzer Zeit.
+  playbooks: [BLOCK_SOURCE_IP, VERIFY_ACCOUNT_ACTIVITY, COLLECT_ADDITIONAL_LOGS]
+---
+title: Failed logon with a remote source address (helper)
+id: 3a0e0b6e-6e38-5c86-9d1d-2d3f6a7c9b11
+name: so_helper_logon_failed_with_ip
+status: stable
+description: Failed logon that carries a real (non-loopback) source address.
+author: SentinelOps
+date: 2026-10-18
+logsource:
+  product: sentinelops
+  category: authentication
+detection:
+  selection:
+    event.action: logon-failed
+    source.ip|exists: true
+  filter_loopback:
+    source.ip|cidr:
+      - 127.0.0.0/8
+      - ::1/128
+  filter_machine_account:
+    user.name|endswith: '$'
+  condition: selection and not 1 of filter_*
+level: informational

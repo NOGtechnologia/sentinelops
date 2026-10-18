@@ -1,0 +1,60 @@
+# Deterministic catalogue of investigation and response steps (spec 7.5).
+# `action: true` marks steps with an effect: they are only ever *proposed*
+# and need an approval by a senior analyst before the (simulated) execution.
+# `priority` orders the recommended steps of a case (lower = earlier).
+- id: VERIFY_ACCOUNT_ACTIVITY
+  priority: 10
+  action: false
+  title_de: Kontoaktivität prüfen
+  title_en: Verify account activity
+  description_de: Kontoinhaber kontaktieren (auf einem zweiten Kanal), letzte Anmeldungen, Quellen und Geräte prüfen.
+  description_en: Contact the account owner (out of band) and review recent logons, sources and devices.
+  parameters: [user]
+- id: DISABLE_ACCOUNT
+  priority: 20
+  action: true
+  title_de: Konto sperren
+  title_en: Disable account
+  description_de: Konto im Verzeichnisdienst deaktivieren, um weiteren Missbrauch zu verhindern.
+  description_en: Disable the account in the directory to stop further misuse.
+  parameters: [user]
+- id: ISOLATE_HOST
+  priority: 30
+  action: true
+  title_de: Rechner isolieren
+  title_en: Isolate host
+  description_de: Rechner vom Netzwerk trennen (EDR-Isolation), Beweise sichern.
+  description_en: Disconnect the host from the network (EDR isolation) and preserve evidence.
+  parameters: [host]
+- id: BLOCK_SOURCE_IP
+  priority: 40
+  action: true
+  title_de: Quell-IP sperren
+  title_en: Block source IP
+  description_de: Quell-IP an Firewall bzw. VPN-/RDP-Gateway sperren.
+  description_en: Block the source IP at the firewall or VPN/RDP gateway.
+  parameters: [ip]
+- id: RESET_PASSWORD
+  priority: 50
+  action: true
+  title_de: Passwort zurücksetzen
+  title_en: Reset password
+  description_de: Passwort zurücksetzen und alle aktiven Sitzungen/Tokens beenden.
+  description_en: Reset the password and revoke all active sessions/tokens.
+  parameters: [user]
+- id: REVIEW_GROUP_MEMBERSHIP
+  priority: 60
+  action: false
+  title_de: Gruppenmitgliedschaft prüfen
+  title_en: Review group membership
+  description_de: Gruppenänderung gegen Änderungsticket prüfen und ggf. rückgängig machen.
+  description_en: Check the group change against a change ticket and revert it if unauthorised.
+  parameters: [user, group]
+- id: COLLECT_ADDITIONAL_LOGS
+  priority: 70
+  action: false
+  title_de: Zusätzliche Logs beschaffen
+  title_en: Collect additional logs
+  description_de: Fehlende Quellen nachliefern (z. B. VPN-, Firewall-, EDR-Logs) und erneut auswerten.
+  description_en: Collect missing sources (e.g. VPN, firewall, EDR logs) and re-run the analysis.
+  parameters: []

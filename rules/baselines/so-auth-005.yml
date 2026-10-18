@@ -1,0 +1,30 @@
+# Baseline detector (spec 6.4) - deterministic and explainable, no black box.
+# A successful interactive/remote logon raises an alert when at least
+# `min_criteria` of the following criteria hold (parameters in the detection
+# config, section "baseline"):
+#   new_network  - source /24 (IPv6: /64) never seen for this user in the learning window
+#   new_host     - target host never seen for this user in the learning window
+#   unusual_hour - local hour outside the user's robust quantile profile (+/- margin)
+#   off_day      - weekend or configured public holiday
+# Without enough history (min_active_days, min_logons) no alert is raised; the
+# event is annotated "baseline under construction" instead.
+sentinelops_extension: baseline
+title: Unusual logon (first-time network, host or time)
+id: 9d7e0c64-2e6b-5c1f-9b0a-7a1f3e5d2c41
+name: so_auth_005
+status: test
+description: Successful interactive or remote logon that deviates from the user's learned profile (new network, new target host, unusual time, weekend/holiday).
+author: SentinelOps
+date: 2026-10-18
+tags:
+  - attack.initial-access
+  - attack.t1078
+falsepositives:
+  - Business travel, new workstation, overtime
+level: medium
+sentinelops:
+  rule_id: SO-AUTH-005
+  version: 1
+  title_de: Ungewöhnliche Anmeldung
+  description_de: Erfolgreiche Anmeldung, die vom gelernten Profil des Benutzers abweicht (neues Netz, neues Zielgerät, ungewöhnliche Uhrzeit, Wochenende/Feiertag).
+  playbooks: [VERIFY_ACCOUNT_ACTIVITY, COLLECT_ADDITIONAL_LOGS, RESET_PASSWORD]

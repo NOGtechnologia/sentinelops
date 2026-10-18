@@ -1,0 +1,8 @@
+# uv workspace: one lock file and one virtual environment for the backend and
+# the test data generator.
+[tool.uv.workspace]
+members = ["backend", "generator"]
+
+[tool.uv.sources]
+musterfirma-generator = { workspace = true }
+sentinelops = { workspace = true }

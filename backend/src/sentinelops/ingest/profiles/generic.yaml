@@ -1,0 +1,62 @@
+# Generic mapping profile: JSON events that already use (a subset of) the
+# canonical ECS-style field names, either nested ({"user": {"name": ...}}) or
+# flat ({"user.name": ...}).
+name: generic
+version: 1
+description: Events that already use canonical ECS-style field names.
+timestamp:
+  field: "@timestamp"
+  format: iso8601
+  timezone: UTC
+fields:
+  event.action: event.action
+  event.code: event.code
+  event.provider: event.provider
+  user.name: user.name
+  user.domain: user.domain
+  user.id: user.id
+  user.target.name: user.target.name
+  group.name: group.name
+  host.name: host.name
+  host.os.type: host.os.type
+  source.ip: source.ip
+  source.port: source.port
+  source.host: source.host
+  logon.type: logon.type
+  auth.method: auth.method
+  process.name: process.name
+  process.command_line: process.command_line
+  message: message
+outcome:
+  field: event.outcome
+  map: {success: success, failure: failure, unknown: unknown}
+  default: unknown
+fingerprint_keys: []
+examples:
+  - input:
+      "@timestamp": "2026-03-12T09:30:00Z"
+      event: {action: logon-failed, outcome: failure}
+      user: {name: "MUSTERFIRMA\\erika.muster"}
+      source: {ip: "203.0.113.10", port: "4444"}
+      host: {name: srv-app01}
+    expect:
+      "@timestamp": "2026-03-12T09:30:00.000000Z"
+      event.action: logon-failed
+      event.outcome: failure
+      event.category: [authentication]
+      user.name: erika.muster
+      user.domain: MUSTERFIRMA
+      source.ip: 203.0.113.10
+      source.port: 4444
+  - input:
+      "@timestamp": "2026-03-12T10:30:00"
+      "event.action": "logon"
+      "user.name": "max.mustermann"
+    expect:
+      "@timestamp": "2026-03-12T10:30:00.000000Z"
+      event.outcome: unknown
+      event.time_quality: assumed_timezone
+  - input: {"user": {"name": "x"}}
+    expect_malformed: MISSING_TIMESTAMP
+  - input: {"@timestamp": "2026-03-12T09:30:00Z", "source": {"ip": "not-an-ip"}}
+    expect_malformed: SCHEMA_VIOLATION

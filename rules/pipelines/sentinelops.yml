@@ -1,0 +1,35 @@
+# SentinelOps processing pipeline: Sigma taxonomy -> canonical schema.
+# Versioned: bump the number in `name` on every change (the pipeline hash is
+# part of the rule set hash and therefore of every report).
+#
+# * Rules with `logsource.product: sentinelops` already use canonical field
+#   names and are not touched (except for placeholder expansion).
+# * Windows rules written against Windows event field names (SigmaHQ) keep
+#   their EventData names under `winlog.event_data.*`; System fields are
+#   mapped to the canonical fields.
+# * Placeholders (`|expand '%name%'`) are filled from the detection config
+#   (privileged groups, expected admins, ...) at load time.
+name: sentinelops-canonical-v1
+priority: 20
+transformations:
+  - id: placeholders
+    type: value_placeholders
+  - id: windows_event_data_prefix
+    type: field_name_prefix
+    prefix: winlog.event_data.
+    field_name_conditions:
+      - type: exclude_fields
+        fields: [EventID, Provider_Name, Channel, Computer]
+    rule_conditions:
+      - type: logsource
+        product: windows
+  - id: windows_system_fields
+    type: field_name_mapping
+    mapping:
+      EventID: event.code
+      Provider_Name: event.provider
+      Channel: winlog.channel
+      Computer: host.name
+    rule_conditions:
+      - type: logsource
+        product: windows

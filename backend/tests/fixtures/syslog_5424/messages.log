@@ -1,0 +1,6 @@
+<38>1 2026-03-12T03:10:01.000001+01:00 srv-lnx02 sshd 4711 - - Failed password for admin from 198.51.100.23 port 50022 ssh2
+<38>1 2026-03-12T03:11:00Z srv-lnx02 sudo - AUTH [meta sequenceId="17"][origin ip="10.30.0.12" software="rsyslogd"] max.mustermann : 3 incorrect password attempts ; TTY=pts/0 ; PWD=/home/max.mustermann ; USER=root ; COMMAND=/bin/bash
+<86>1 2026-03-12T03:12:00Z srv-lnx02 gpasswd 4800 - [x@32473 note="quote \" and \] bracket"] user tmp.admin added by root to group wheel
+<13>1 - srv-lnx02 app - - - message without timestamp
+<13>2 2026-03-12T03:12:00Z srv-lnx02 app - - - wrong version
+<13>1 2026-03-12T03:12:00Z srv-lnx02

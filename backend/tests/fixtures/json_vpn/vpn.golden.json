@@ -1,0 +1,89 @@
+[
+  {
+    "position": 1,
+    "status": "accepted",
+    "event": {
+      "event.id": "939e1f2f03e4d3609b2b09472c3974a5",
+      "@timestamp": "2026-03-12T02:36:40.000000Z",
+      "event.original_time": "1773283000000",
+      "event.time_quality": "exact",
+      "event.ingested": "2026-03-12T12:00:00.000000Z",
+      "event.kind": "event",
+      "event.category": [
+        "authentication"
+      ],
+      "event.type": [
+        "start"
+      ],
+      "event.action": "logon",
+      "event.outcome": "success",
+      "event.provider": "mf-vpn",
+      "user.name": "erika.muster",
+      "user.domain": "musterfirma.example",
+      "host.name": "vpn01",
+      "host.os.type": "appliance",
+      "source.ip": "198.51.100.20",
+      "source.port": 51000,
+      "auth.method": "certificate",
+      "log.source_type": "json:musterfirma_vpn",
+      "log.raw_record_id": "577f29839e31d8520608e3e53e266abc",
+      "original": {
+        "json.seq": 1
+      }
+    }
+  },
+  {
+    "position": 2,
+    "status": "accepted",
+    "event": {
+      "event.id": "0f621ef4b4d8a957cfaf52a04d1d0bca",
+      "@timestamp": "2026-03-12T02:36:40.500000Z",
+      "event.original_time": "1773283000500",
+      "event.time_quality": "exact",
+      "event.ingested": "2026-03-12T12:00:00.000000Z",
+      "event.kind": "event",
+      "event.category": [
+        "authentication"
+      ],
+      "event.type": [
+        "start"
+      ],
+      "event.action": "logon-failed",
+      "event.outcome": "failure",
+      "event.provider": "mf-vpn",
+      "user.name": "max.mustermann",
+      "host.name": "vpn01",
+      "host.os.type": "appliance",
+      "source.ip": "203.0.113.99",
+      "source.port": 51001,
+      "auth.method": "password",
+      "log.source_type": "json:musterfirma_vpn",
+      "log.raw_record_id": "53da2939f38ca47f7ddb603f3b86753a",
+      "original": {
+        "json.reason": "bad_password",
+        "json.seq": 2
+      }
+    }
+  },
+  {
+    "position": 3,
+    "status": "duplicate",
+    "duplicate_of": "53da2939f38ca47f7ddb603f3b86753a"
+  },
+  {
+    "position": 5,
+    "status": "malformed",
+    "error": {
+      "code": "SCHEMA_VIOLATION",
+      "detail": "source.port must be an integer"
+    }
+  },
+  {
+    "position": 6,
+    "status": "malformed",
+    "error": {
+      "code": "TRUNCATED",
+      "detail": "Expecting ',' delimiter"
+    }
+  }
+]

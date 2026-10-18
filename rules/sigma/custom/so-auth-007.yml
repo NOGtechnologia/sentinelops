@@ -1,0 +1,26 @@
+title: Account locked out
+id: 48f30b0b-b760-5028-9bc1-3a99e3ba49e3
+name: so_auth_007
+status: stable
+description: A single account was locked out after too many failed logons. Usually a user mistyping the password; low severity on its own.
+author: SentinelOps
+date: 2026-10-18
+tags:
+  - attack.credential-access
+  - attack.t1110
+logsource:
+  product: sentinelops
+  category: iam
+detection:
+  selection:
+    event.action: account-locked
+  condition: selection
+falsepositives:
+  - Users mistyping their password, typically after a password change
+level: low
+sentinelops:
+  rule_id: SO-AUTH-007
+  version: 1
+  title_de: Konto gesperrt
+  description_de: Ein Konto wurde nach zu vielen Fehlanmeldungen gesperrt. Meist Tippfehler des Benutzers.
+  playbooks: [VERIFY_ACCOUNT_ACTIVITY]

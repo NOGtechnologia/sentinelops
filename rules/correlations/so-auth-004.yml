@@ -1,0 +1,28 @@
+title: Many account lockouts
+id: bc627b3e-74b3-52b9-b581-e2318de8aa23
+name: so_auth_004
+status: stable
+description: Several account lockouts within a short time window (possible password spraying or a broken service).
+author: SentinelOps
+date: 2026-10-18
+tags:
+  - attack.credential-access
+  - attack.impact
+  - attack.t1110
+  - attack.t1531
+correlation:
+  type: event_count
+  rules:
+    - so_helper_account_locked
+  timespan: 30m
+  condition:
+    gte: 3
+falsepositives:
+  - Domain-wide password policy change
+level: medium
+sentinelops:
+  rule_id: SO-AUTH-004
+  version: 1
+  title_de: Gehäufte Kontosperrungen
+  description_de: Mehrere Kontosperrungen in kurzer Zeit.
+  playbooks: [COLLECT_ADDITIONAL_LOGS, VERIFY_ACCOUNT_ACTIVITY, BLOCK_SOURCE_IP]

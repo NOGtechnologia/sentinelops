@@ -1,0 +1,359 @@
+[
+  {
+    "position": 1,
+    "status": "accepted",
+    "event": {
+      "event.id": "e19f68a19d4ac10e65ac381caa6a6cbc",
+      "@timestamp": "2026-03-12T02:11:58.153283Z",
+      "event.original_time": "2026-03-12T02:11:58.1532834Z",
+      "event.time_quality": "exact",
+      "event.ingested": "2026-03-12T12:00:00.000000Z",
+      "event.kind": "event",
+      "event.category": [
+        "authentication"
+      ],
+      "event.type": [
+        "start"
+      ],
+      "event.action": "logon-failed",
+      "event.outcome": "failure",
+      "event.code": "4625",
+      "event.provider": "Microsoft-Windows-Security-Auditing",
+      "user.name": "jonas.becker",
+      "user.domain": "MUSTERFIRMA",
+      "user.id": "S-1-0-0",
+      "host.name": "SRV-GW01.musterfirma.example",
+      "host.os.type": "windows",
+      "source.ip": "203.0.113.45",
+      "source.port": 51337,
+      "source.host": "ATTACKER-PC",
+      "logon.type": 10,
+      "auth.method": "negotiate",
+      "process.pid": "0x0",
+      "log.source_type": "windows_xml",
+      "log.raw_record_id": "3f73769965f346ebea017b3dd0bbf34a",
+      "original": {
+        "winlog.channel": "Security",
+        "winlog.event_data.AuthenticationPackageName": "Negotiate",
+        "winlog.event_data.FailureReason": "%%2313",
+        "winlog.event_data.IpAddress": "203.0.113.45",
+        "winlog.event_data.IpPort": "51337",
+        "winlog.event_data.KeyLength": "0",
+        "winlog.event_data.LmPackageName": "-",
+        "winlog.event_data.LogonProcessName": "User32 ",
+        "winlog.event_data.LogonType": "10",
+        "winlog.event_data.ProcessId": "0x0",
+        "winlog.event_data.ProcessName": "-",
+        "winlog.event_data.Status": "0xc000006d",
+        "winlog.event_data.SubStatus": "0xc000006a",
+        "winlog.event_data.SubjectDomainName": "-",
+        "winlog.event_data.SubjectLogonId": "0x0",
+        "winlog.event_data.SubjectUserName": "-",
+        "winlog.event_data.SubjectUserSid": "S-1-0-0",
+        "winlog.event_data.TargetDomainName": "MUSTERFIRMA",
+        "winlog.event_data.TargetUserName": "jonas.becker",
+        "winlog.event_data.TargetUserSid": "S-1-0-0",
+        "winlog.event_data.TransmittedServices": "-",
+        "winlog.event_data.WorkstationName": "ATTACKER-PC",
+        "winlog.event_id": 4625,
+        "winlog.provider_name": "Microsoft-Windows-Security-Auditing",
+        "winlog.record_id": "290112"
+      }
+    }
+  },
+  {
+    "position": 2,
+    "status": "accepted",
+    "event": {
+      "event.id": "a27e9afb6ec74bdc6e3e171c63b6374d",
+      "@timestamp": "2026-03-12T02:12:41.000000Z",
+      "event.original_time": "2026-03-12T02:12:41.0000000Z",
+      "event.time_quality": "exact",
+      "event.ingested": "2026-03-12T12:00:00.000000Z",
+      "event.kind": "event",
+      "event.category": [
+        "authentication"
+      ],
+      "event.type": [
+        "start"
+      ],
+      "event.action": "logon",
+      "event.outcome": "success",
+      "event.code": "4624",
+      "event.provider": "Microsoft-Windows-Security-Auditing",
+      "user.name": "jonas.becker",
+      "user.domain": "MUSTERFIRMA",
+      "user.id": "S-1-5-21-1004336348-1177238915-682003330-1107",
+      "host.name": "SRV-GW01.musterfirma.example",
+      "host.os.type": "windows",
+      "source.ip": "203.0.113.45",
+      "source.port": 51340,
+      "source.host": "SRV-GW01",
+      "logon.type": 10,
+      "auth.method": "negotiate",
+      "process.name": "C:\\Windows\\System32\\svchost.exe",
+      "process.pid": "0x44c",
+      "log.source_type": "windows_xml",
+      "log.raw_record_id": "bef475dd1b4da20c67d15cd189924d3a",
+      "original": {
+        "winlog.channel": "Security",
+        "winlog.event_data.AuthenticationPackageName": "Negotiate",
+        "winlog.event_data.ElevatedToken": "%%1843",
+        "winlog.event_data.ImpersonationLevel": "%%1833",
+        "winlog.event_data.IpAddress": "::ffff:203.0.113.45",
+        "winlog.event_data.IpPort": "51340",
+        "winlog.event_data.KeyLength": "0",
+        "winlog.event_data.LmPackageName": "-",
+        "winlog.event_data.LogonGuid": "{00000000-0000-0000-0000-000000000000}",
+        "winlog.event_data.LogonProcessName": "User32 ",
+        "winlog.event_data.LogonType": "10",
+        "winlog.event_data.ProcessId": "0x44c",
+        "winlog.event_data.ProcessName": "C:\\Windows\\System32\\svchost.exe",
+        "winlog.event_data.RestrictedAdminMode": "-",
+        "winlog.event_data.SubjectDomainName": "MUSTERFIRMA",
+        "winlog.event_data.SubjectLogonId": "0x3e7",
+        "winlog.event_data.SubjectUserName": "SRV-GW01$",
+        "winlog.event_data.SubjectUserSid": "S-1-5-18",
+        "winlog.event_data.TargetDomainName": "MUSTERFIRMA",
+        "winlog.event_data.TargetLinkedLogonId": "0x0",
+        "winlog.event_data.TargetLogonId": "0x8dcdc",
+        "winlog.event_data.TargetOutboundDomainName": "-",
+        "winlog.event_data.TargetOutboundUserName": "-",
+        "winlog.event_data.TargetUserName": "jonas.becker",
+        "winlog.event_data.TargetUserSid": "S-1-5-21-1004336348-1177238915-682003330-1107",
+        "winlog.event_data.TransmittedServices": "-",
+        "winlog.event_data.VirtualAccount": "%%1843",
+        "winlog.event_data.WorkstationName": "SRV-GW01",
+        "winlog.event_id": 4624,
+        "winlog.provider_name": "Microsoft-Windows-Security-Auditing",
+        "winlog.record_id": "290113"
+      }
+    }
+  },
+  {
+    "position": 3,
+    "status": "accepted",
+    "event": {
+      "event.id": "bb06ece8664a8c0f39df7389bacfa932",
+      "@timestamp": "2026-03-12T02:19:07.500000Z",
+      "event.original_time": "2026-03-12T02:19:07.5000000Z",
+      "event.time_quality": "exact",
+      "event.ingested": "2026-03-12T12:00:00.000000Z",
+      "event.kind": "event",
+      "event.category": [
+        "iam"
+      ],
+      "event.type": [
+        "group",
+        "change"
+      ],
+      "event.action": "user-added-to-group",
+      "event.outcome": "success",
+      "event.code": "4728",
+      "event.provider": "Microsoft-Windows-Security-Auditing",
+      "user.name": "jonas.becker",
+      "user.domain": "MUSTERFIRMA",
+      "user.id": "S-1-5-21-1004336348-1177238915-682003330-1107",
+      "user.target.name": "jonas.becker",
+      "user.target.id": "S-1-5-21-1004336348-1177238915-682003330-1107",
+      "group.name": "Domain Admins",
+      "group.id": "S-1-5-21-1004336348-1177238915-682003330-512",
+      "host.name": "DC01.musterfirma.example",
+      "host.os.type": "windows",
+      "log.source_type": "windows_xml",
+      "log.raw_record_id": "8289195f1211fbd1f1acb034fcdb81f1",
+      "original": {
+        "winlog.channel": "Security",
+        "winlog.event_data.MemberName": "CN=Jonas Becker,OU=Vertrieb,DC=musterfirma,DC=example",
+        "winlog.event_data.MemberSid": "S-1-5-21-1004336348-1177238915-682003330-1107",
+        "winlog.event_data.PrivilegeList": "-",
+        "winlog.event_data.SubjectDomainName": "MUSTERFIRMA",
+        "winlog.event_data.SubjectLogonId": "0x8dcdc",
+        "winlog.event_data.SubjectUserName": "jonas.becker",
+        "winlog.event_data.SubjectUserSid": "S-1-5-21-1004336348-1177238915-682003330-1107",
+        "winlog.event_data.TargetDomainName": "MUSTERFIRMA",
+        "winlog.event_data.TargetSid": "S-1-5-21-1004336348-1177238915-682003330-512",
+        "winlog.event_data.TargetUserName": "Domain Admins",
+        "winlog.event_id": 4728,
+        "winlog.provider_name": "Microsoft-Windows-Security-Auditing",
+        "winlog.record_id": "881201"
+      }
+    }
+  },
+  {
+    "position": 4,
+    "status": "accepted",
+    "event": {
+      "event.id": "bee3fb8133d78171da8f814124f124ad",
+      "@timestamp": "2026-03-12T08:02:10.000000Z",
+      "event.original_time": "2026-03-12T08:02:10.0000000Z",
+      "event.time_quality": "exact",
+      "event.ingested": "2026-03-12T12:00:00.000000Z",
+      "event.kind": "event",
+      "event.category": [
+        "iam"
+      ],
+      "event.type": [
+        "user",
+        "change"
+      ],
+      "event.action": "account-locked",
+      "event.outcome": "success",
+      "event.code": "4740",
+      "event.provider": "Microsoft-Windows-Security-Auditing",
+      "user.name": "DC01$",
+      "user.domain": "MUSTERFIRMA",
+      "user.id": "S-1-5-18",
+      "user.target.name": "lena.hoffmann",
+      "user.target.id": "S-1-5-21-1004336348-1177238915-682003330-1188",
+      "host.name": "DC01.musterfirma.example",
+      "host.os.type": "windows",
+      "source.host": "WS-0042",
+      "log.source_type": "windows_xml",
+      "log.raw_record_id": "c1820753264fb87eda60e7a5c401a8cf",
+      "original": {
+        "winlog.channel": "Security",
+        "winlog.event_data.SubjectDomainName": "MUSTERFIRMA",
+        "winlog.event_data.SubjectLogonId": "0x3e7",
+        "winlog.event_data.SubjectUserName": "DC01$",
+        "winlog.event_data.SubjectUserSid": "S-1-5-18",
+        "winlog.event_data.TargetDomainName": "WS-0042",
+        "winlog.event_data.TargetSid": "S-1-5-21-1004336348-1177238915-682003330-1188",
+        "winlog.event_data.TargetUserName": "lena.hoffmann",
+        "winlog.event_id": 4740,
+        "winlog.provider_name": "Microsoft-Windows-Security-Auditing",
+        "winlog.record_id": "881300"
+      }
+    }
+  },
+  {
+    "position": 5,
+    "status": "accepted",
+    "event": {
+      "event.id": "4c4b4855b7dc298bc278c2f6c67989ee",
+      "@timestamp": "2026-03-12T02:30:00.000000Z",
+      "event.original_time": "2026-03-12T02:30:00.0000000Z",
+      "event.time_quality": "exact",
+      "event.ingested": "2026-03-12T12:00:00.000000Z",
+      "event.kind": "event",
+      "event.category": [
+        "configuration"
+      ],
+      "event.type": [
+        "deletion"
+      ],
+      "event.action": "audit-log-cleared",
+      "event.outcome": "success",
+      "event.code": "1102",
+      "event.provider": "Microsoft-Windows-Eventlog",
+      "user.name": "jonas.becker",
+      "user.domain": "MUSTERFIRMA",
+      "user.id": "S-1-5-21-1004336348-1177238915-682003330-1107",
+      "host.name": "DC01.musterfirma.example",
+      "host.os.type": "windows",
+      "log.source_type": "windows_xml",
+      "log.raw_record_id": "550e77589a3284655f141c05692139b2",
+      "original": {
+        "winlog.channel": "Security",
+        "winlog.event_data.SubjectDomainName": "MUSTERFIRMA",
+        "winlog.event_data.SubjectLogonId": "0x8dcdc",
+        "winlog.event_data.SubjectUserName": "jonas.becker",
+        "winlog.event_data.SubjectUserSid": "S-1-5-21-1004336348-1177238915-682003330-1107",
+        "winlog.event_id": 1102,
+        "winlog.provider_name": "Microsoft-Windows-Eventlog",
+        "winlog.record_id": "881400"
+      }
+    }
+  },
+  {
+    "position": 6,
+    "status": "accepted",
+    "event": {
+      "event.id": "290111dc0c332082a1638c994b86b99e",
+      "@timestamp": "2026-03-12T08:01:00.000000Z",
+      "event.original_time": "2026-03-12T08:01:00.0000000Z",
+      "event.time_quality": "exact",
+      "event.ingested": "2026-03-12T12:00:00.000000Z",
+      "event.kind": "event",
+      "event.category": [
+        "authentication"
+      ],
+      "event.type": [
+        "start"
+      ],
+      "event.action": "ntlm-validation",
+      "event.outcome": "failure",
+      "event.code": "4776",
+      "event.provider": "Microsoft-Windows-Security-Auditing",
+      "user.name": "lena.hoffmann",
+      "host.name": "DC01.musterfirma.example",
+      "host.os.type": "windows",
+      "source.host": "WS-0042",
+      "auth.method": "ntlm",
+      "log.source_type": "windows_xml",
+      "log.raw_record_id": "5ea2bccae5134047e4b9e094ffc4f5a8",
+      "original": {
+        "winlog.channel": "Security",
+        "winlog.event_data.PackageName": "MICROSOFT_AUTHENTICATION_PACKAGE_V1_0",
+        "winlog.event_data.Status": "0xc000006a",
+        "winlog.event_data.TargetUserName": "lena.hoffmann",
+        "winlog.event_data.Workstation": "WS-0042",
+        "winlog.event_id": 4776,
+        "winlog.provider_name": "Microsoft-Windows-Security-Auditing",
+        "winlog.record_id": "881290"
+      }
+    }
+  },
+  {
+    "position": 7,
+    "status": "accepted",
+    "event": {
+      "event.id": "a0cb76c898e6c2dffb7cde65cb1da752",
+      "@timestamp": "2026-03-12T07:45:12.000000Z",
+      "event.original_time": "2026-03-12T07:45:12.0000000Z",
+      "event.time_quality": "exact",
+      "event.ingested": "2026-03-12T12:00:00.000000Z",
+      "event.kind": "event",
+      "event.category": [
+        "authentication"
+      ],
+      "event.type": [
+        "start"
+      ],
+      "event.action": "kerberos-tgt-request",
+      "event.outcome": "success",
+      "event.code": "4768",
+      "event.provider": "Microsoft-Windows-Security-Auditing",
+      "user.name": "erika.muster",
+      "user.domain": "MUSTERFIRMA",
+      "user.id": "S-1-5-21-1004336348-1177238915-682003330-1101",
+      "host.name": "DC01.musterfirma.example",
+      "host.os.type": "windows",
+      "source.ip": "10.20.1.42",
+      "source.port": 49832,
+      "auth.method": "kerberos",
+      "log.source_type": "windows_xml",
+      "log.raw_record_id": "53ffdfaad7188e79d4c296fa63fd6964",
+      "original": {
+        "winlog.channel": "Security",
+        "winlog.event_data.CertIssuerName": "",
+        "winlog.event_data.CertSerialNumber": "",
+        "winlog.event_data.CertThumbprint": "",
+        "winlog.event_data.IpAddress": "::ffff:10.20.1.42",
+        "winlog.event_data.IpPort": "49832",
+        "winlog.event_data.PreAuthType": "2",
+        "winlog.event_data.ServiceName": "krbtgt",
+        "winlog.event_data.ServiceSid": "S-1-5-21-1004336348-1177238915-682003330-502",
+        "winlog.event_data.Status": "0x0",
+        "winlog.event_data.TargetDomainName": "MUSTERFIRMA",
+        "winlog.event_data.TargetSid": "S-1-5-21-1004336348-1177238915-682003330-1101",
+        "winlog.event_data.TargetUserName": "erika.muster",
+        "winlog.event_data.TicketEncryptionType": "0x12",
+        "winlog.event_data.TicketOptions": "0x40810010",
+        "winlog.event_id": 4768,
+        "winlog.provider_name": "Microsoft-Windows-Security-Auditing",
+        "winlog.record_id": "881100"
+      }
+    }
+  }
+]

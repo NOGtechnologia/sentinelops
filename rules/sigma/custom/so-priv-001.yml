@@ -1,0 +1,29 @@
+title: Member added to a privileged group
+id: 98ac5246-9def-531a-b63a-283a4fb21a57
+name: so_priv_001
+status: stable
+description: An account was added to a privileged group (Domain Admins, Administrators, sudo, wheel, ...). The group list is configurable (placeholder privileged_groups).
+author: SentinelOps
+date: 2026-10-18
+tags:
+  - attack.persistence
+  - attack.privilege-escalation
+  - attack.t1098
+logsource:
+  product: sentinelops
+  category: iam
+detection:
+  selection:
+    event.action: user-added-to-group
+    group.name|expand: '%privileged_groups%'
+  condition: selection
+falsepositives:
+  - Planned onboarding of a new administrator (verify the change ticket)
+level: critical
+sentinelops:
+  rule_id: SO-PRIV-001
+  version: 1
+  title_de: Aufnahme in privilegierte Gruppe
+  description_de: Ein Konto wurde einer privilegierten Gruppe hinzugefügt (z. B. Domänen-Admins, Administratoren, sudo, wheel).
+  playbooks: [REVIEW_GROUP_MEMBERSHIP, DISABLE_ACCOUNT, VERIFY_ACCOUNT_ACTIVITY, RESET_PASSWORD]
+  privilege_change: true
