@@ -9,7 +9,7 @@ from typing import Any
 
 from sentinelops.normalize.dedupe import stable_hash
 from sentinelops.normalize.identities import canonical_ip, host_key, is_internal_ip, user_key
-from sentinelops.normalize.schema import CanonicalEvent, format_timestamp
+from sentinelops.normalize.schema import CanonicalEvent, format_timestamp, parse_timestamp
 
 #: Accounts that never identify a person and never link cases.
 NON_LINKING_USERS = frozenset({"system", "local service", "network service", "anonymous logon", "-"})
@@ -113,7 +113,36 @@ class Alert:
             "thresholds": self.thresholds,
             "related_alert_ids": list(self.related_alert_ids),
             "suppressed_by": self.suppressed_by,
+            "privilege_change": self.privilege_change,
+            "success_after_failures": self.success_after_failures,
         }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> Alert:
+        return cls(
+            alert_id=data["alert_id"],
+            rule_id=data["rule_id"],
+            rule_version=int(data["rule_version"]),
+            rule_hash=data["rule_hash"],
+            kind=data["kind"],
+            title=data["title"],
+            title_de=data["title_de"],
+            level=data["level"],
+            maturity=data["maturity"],
+            tactics=tuple(data["tactics"]),
+            techniques=tuple(data["techniques"]),
+            event_ids=tuple(data["event_ids"]),
+            window_start=parse_timestamp(data["window_start"]),
+            window_end=parse_timestamp(data["window_end"]),
+            group_key=tuple((k, v) for k, v in data["group_key"].items()),
+            entities=tuple(Entity(e["type"], e["key"], e["display"]) for e in data["entities"]),
+            explanation=data["explanation"],
+            thresholds=data.get("thresholds", {}),
+            related_alert_ids=tuple(data.get("related_alert_ids", ())),
+            suppressed_by=data.get("suppressed_by"),
+            privilege_change=bool(data.get("privilege_change", False)),
+            success_after_failures=bool(data.get("success_after_failures", False)),
+        )
 
 
 def alert_id(rule_id: str, version: int, anchor: Sequence[Any], window_start: datetime) -> str:

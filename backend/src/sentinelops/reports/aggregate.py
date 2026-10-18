@@ -25,7 +25,7 @@ class CaseFacts:
 
 
 def build_aggregate(cases: Sequence[CaseFacts], start: datetime, end: datetime, created_at: datetime) -> dict[str, Any]:
-    in_period = sorted((c for c in cases if start <= c.created_at < end), key=lambda c: (c.created_at, c.case_id))
+    in_period = sorted((c for c in cases if start <= c.created_at <= end), key=lambda c: (c.created_at, c.case_id))
     by_priority = Counter(c.priority for c in in_period)
     by_status = Counter(c.status for c in in_period)
     rules = Counter(r for c in in_period for r in set(c.rule_ids))

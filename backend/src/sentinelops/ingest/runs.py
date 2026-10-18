@@ -140,6 +140,10 @@ class _Writer:
         return out
 
     async def _driver(self) -> Any:
+        # Make sure SQLAlchemy has opened the transaction before the raw
+        # connection is used - otherwise statements run in autocommit mode and
+        # the ON COMMIT DROP temp tables vanish immediately.
+        await self.conn.execute(text("SELECT 1"))
         raw = await self.conn.get_raw_connection()
         driver = raw.driver_connection
         if driver is None:  # pragma: no cover - asyncpg always provides one
