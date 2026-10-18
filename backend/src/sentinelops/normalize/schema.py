@@ -8,7 +8,7 @@ names. Events are immutable value objects; normalisation never mutates raw data
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
 
@@ -135,6 +135,21 @@ class CanonicalEvent:
         value = self.fields.get("event.outcome")
         return value if isinstance(value, str) else Outcome.UNKNOWN.value
 
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> CanonicalEvent:
+        """Inverse of :meth:`to_dict` (timestamps come back as aware datetimes)."""
+        fields: dict[str, Any] = {}
+        for name, value in data.items():
+            if name in ("event.id", "@timestamp", "original"):
+                continue
+            fields[name] = parse_timestamp(value) if name == "event.ingested" and isinstance(value, str) else value
+        return cls(
+            event_id=str(data["event.id"]),
+            timestamp=parse_timestamp(str(data["@timestamp"])),
+            fields=fields,
+            original=dict(data.get("original") or {}),
+        )
+
     def to_dict(self) -> dict[str, Any]:
         """Serialise to a JSON compatible dict with a stable key order."""
         out: dict[str, Any] = {}
@@ -155,4 +170,11 @@ class CanonicalEvent:
 
 def format_timestamp(value: datetime) -> str:
     """ISO 8601 in UTC with microsecond precision and a trailing ``Z``."""
+    if value.tzinfo is not None:
+        value = value.astimezone(UTC)
     return value.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+
+def parse_timestamp(text: str) -> datetime:
+    """Inverse of :func:`format_timestamp`."""
+    return datetime.fromisoformat(text.replace("Z", "+00:00")).astimezone(UTC)

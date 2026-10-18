@@ -15,10 +15,13 @@ dependencies = [
     "httpx>=0.28.1",
     "jinja2>=3.1.6",
     "pydantic>=2.14.1",
+    "pyjwt[crypto]>=2.15.1",
     "pysigma>=2.0.1",
+    "python-multipart>=0.0.32",
     "pyyaml>=6.0.3",
-    "sqlalchemy>=2.1.5",
+    "sqlalchemy[asyncio]>=2.1.5",
     "tzdata>=2026.5",
+    "uvicorn>=0.54.0",
 ]
 
 [project.scripts]
@@ -50,6 +53,10 @@ ignore = [
 "tests/**" = ["S101", "S105", "S106", "S311", "PLR2004", "PLC0415", "DTZ001"]
 # Verbatim example log lines must not be wrapped (they are test vectors).
 "src/sentinelops/parsers/linux_auth.py" = ["E501"]
+# The CLI imports subcommand dependencies lazily to keep start-up fast.
+"src/sentinelops/cli.py" = ["PLC0415"]
+# German typography (en dash) in generated documentation text.
+"src/sentinelops/detection/catalog_doc.py" = ["RUF001"]
 "../generator/src/musterfirma/quality.py" = ["E501"]
 "../generator/src/musterfirma/writers.py" = ["E501"]
 "../generator/src/musterfirma/events.py" = ["E501"]
