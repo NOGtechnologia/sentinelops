@@ -89,7 +89,7 @@ def sigma_string_regex(value: st.SigmaString, cased: bool, anchored: bool = True
             parts.append(".*")
         elif part == st.SpecialChars.WILDCARD_SINGLE:
             parts.append(".")
-        else:
+        else:  # pragma: no cover - placeholders are rejected in StringMatcher before
             raise UnsupportedSigmaFeatureError(f"unresolved placeholder in value {value}")
     pattern = "".join(parts)
     if anchored:
@@ -109,6 +109,8 @@ class StringMatcher:
 
     def __post_init__(self) -> None:
         self.description = str(self.value)
+        if self.value.contains_placeholder():
+            raise UnsupportedSigmaFeatureError(f"unresolved placeholder in value {self.value}")
         if self.value.contains_special() or self.keyword:
             self._regex = sigma_string_regex(self.value, self.cased, anchored=not self.keyword)
         else:
@@ -348,7 +350,8 @@ class ItemMatcher:
             used = tuple(m for m in self.matchers if m(actual, get))[:1]
             ok = bool(used)
         if self.negated:
-            ok = not ok
+            # ``neq``: the field must exist and differ from all values.
+            ok = actual is not None and not ok
         if not ok:
             return None
         expected = ("not " if self.negated else "") + " & ".join(m.description for m in used or self.matchers)
@@ -480,7 +483,7 @@ def _names(node: CondNode) -> tuple[str, ...]:
         return tuple(n for a in node.args for n in _names(a))
     if isinstance(node, Not):
         return node.names
-    return ()
+    return ()  # pragma: no cover - Ref/And/Or/Not are the only node types
 
 
 def compile_condition(tree: Any, detections: dict[str, DetectionMatcher]) -> CondNode:
@@ -502,7 +505,8 @@ def compile_condition(tree: Any, detections: dict[str, DetectionMatcher]) -> Con
             return And(refs)
         if quantifier in ("1", "any"):
             return Or(refs)
-        raise UnsupportedSigmaFeatureError(f"unsupported quantifier {quantifier!r}")
+        # pySigma rejects other quantifiers when parsing; kept as a safety net.
+        raise UnsupportedSigmaFeatureError(f"unsupported quantifier {quantifier!r}")  # pragma: no cover
     if isinstance(tree, sc.ConditionAND):
         return And(tuple(compile_condition(a, detections) for a in tree.args))
     if isinstance(tree, sc.ConditionOR):

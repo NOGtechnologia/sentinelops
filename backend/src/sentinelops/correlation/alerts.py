@@ -121,10 +121,6 @@ def alert_id(rule_id: str, version: int, anchor: Sequence[Any], window_start: da
     return stable_hash("alert", rule_id, version, list(anchor), format_timestamp(window_start))
 
 
-def sort_events(events: Iterable[CanonicalEvent]) -> list[CanonicalEvent]:
-    return sorted(events, key=lambda e: (e.timestamp, e.event_id))
-
-
 def is_external_ip(value: str | None) -> bool:
     if not value:
         return False
