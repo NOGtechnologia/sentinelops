@@ -1,0 +1,40 @@
+rule_id: SO-PRIV-003
+cases:
+  - name: three failed sudo attempts and a failed su within 3 minutes
+    expect: alert
+    start: "2026-03-11T00:17:00Z"
+    events:
+      - repeat: 3
+        every: 40s
+        fields: {event.action: sudo-failed, event.outcome: failure, user.name: backup, host.name: srv-lnx01, process.command_line: /bin/bash}
+      - offset: 3m
+        fields: {event.action: su-failed, event.outcome: failure, user.name: backup, user.target.name: root, host.name: srv-lnx01}
+  - name: sudo denied (not in sudoers) three times
+    expect: alert
+    start: "2026-03-11T00:17:00Z"
+    events:
+      - repeat: 3
+        every: 10s
+        fields: {event.action: sudo-denied, event.outcome: failure, user.name: praktikant01, host.name: srv-lnx02}
+  - name: two failures only
+    expect: no_alert
+    start: "2026-03-11T00:17:00Z"
+    events:
+      - repeat: 2
+        every: 30s
+        fields: {event.action: sudo-failed, event.outcome: failure, user.name: adm-weber}
+  - name: three failures of three different users
+    expect: no_alert
+    start: "2026-03-11T00:17:00Z"
+    events:
+      - repeat: 3
+        every: 30s
+        vary: {user.name: [a, b, c]}
+        fields: {event.action: sudo-failed, event.outcome: failure}
+  - name: successful sudo commands
+    expect: no_alert
+    start: "2026-03-11T09:00:00Z"
+    events:
+      - repeat: 5
+        every: 10s
+        fields: {event.action: sudo-exec, event.outcome: success, user.name: adm-weber}

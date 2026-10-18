@@ -6,6 +6,7 @@ The database backed ingestion (``ingest/runs.py``) uses the same
 
 from __future__ import annotations
 
+import hashlib
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -42,8 +43,6 @@ class LocalIngestResult:
 
 
 def file_sha256(path: Path) -> str:
-    import hashlib
-
     digest = hashlib.sha256()
     with path.open("rb") as fh:
         for chunk in iter(lambda: fh.read(1 << 20), b""):

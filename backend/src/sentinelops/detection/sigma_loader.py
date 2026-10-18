@@ -25,7 +25,7 @@ from typing import Any
 
 import yaml
 from sigma.collection import SigmaCollection
-from sigma.correlations import SigmaCorrelationRule, SigmaCorrelationType
+from sigma.correlations import SigmaCorrelationCondition, SigmaCorrelationRule, SigmaCorrelationType
 from sigma.exceptions import SigmaError
 from sigma.processing.pipeline import ProcessingPipeline
 from sigma.rule import SigmaRule
@@ -33,23 +33,34 @@ from sigma.validation import SigmaValidator
 from sigma.validators.core import validators as core_validators
 
 from sentinelops.detection.config import DetectionConfig
-from sentinelops.detection.matcher import CompiledDetection, UnsupportedSigmaFeature, compile_rule_detection
+from sentinelops.detection.matcher import CompiledDetection, UnsupportedSigmaFeatureError, compile_rule_detection
 
 LEVELS = ("informational", "low", "medium", "high", "critical")
 MATURITIES = ("stable", "test", "experimental")
 RULE_ID_RE = re.compile(r"^(SO-[A-Z]+-\d{3}|SIGMAHQ-[0-9A-F]{8})$")
 TACTICS = {
-    "reconnaissance": "TA0043", "resource-development": "TA0042", "initial-access": "TA0001",
-    "execution": "TA0002", "persistence": "TA0003", "privilege-escalation": "TA0004", "stealth": "TA0005",
-    "defense-impairment": "TA0112", "credential-access": "TA0006", "discovery": "TA0007",
-    "lateral-movement": "TA0008", "collection": "TA0009", "command-and-control": "TA0011",
-    "exfiltration": "TA0010", "impact": "TA0040",
+    "reconnaissance": "TA0043",
+    "resource-development": "TA0042",
+    "initial-access": "TA0001",
+    "execution": "TA0002",
+    "persistence": "TA0003",
+    "privilege-escalation": "TA0004",
+    "stealth": "TA0005",
+    "defense-impairment": "TA0112",
+    "credential-access": "TA0006",
+    "discovery": "TA0007",
+    "lateral-movement": "TA0008",
+    "collection": "TA0009",
+    "command-and-control": "TA0011",
+    "exfiltration": "TA0010",
+    "impact": "TA0040",
 }
 TECHNIQUE_RE = re.compile(r"^t\d{4}(\.\d{3})?$")
 #: pySigma validators that conflict with documented SentinelOps conventions.
 VALIDATOR_EXCLUSIONS = {
     # Helper rules have no tags by design (they never raise alerts).
-    "attacktag", "notags",
+    "attacktag",
+    "notags",
     # Custom rules have a `sentinelops` block; pySigma flags unknown attributes.
     "custom_attributes",
 }
@@ -200,8 +211,16 @@ def _tags(doc: dict[str, Any]) -> tuple[tuple[str, ...], tuple[str, ...]]:
     return tuple(tactics), tuple(techniques)
 
 
-def _meta(doc: dict[str, Any], extra: dict[str, Any], *, source: str, kind: str, file: str, yaml_text: str,
-          playbook_ids: frozenset[str]) -> RuleMeta:
+def _meta(
+    doc: dict[str, Any],
+    extra: dict[str, Any],
+    *,
+    source: str,
+    kind: str,
+    file: str,
+    yaml_text: str,
+    playbook_ids: frozenset[str],
+) -> RuleMeta:
     tactics, techniques = _tags(doc)
     rule_id = str(extra.get("rule_id", ""))
     problems: list[str] = []
@@ -226,14 +245,12 @@ def _meta(doc: dict[str, Any], extra: dict[str, Any], *, source: str, kind: str,
     unknown = sorted(set(playbooks) - playbook_ids)
     if unknown:
         problems.append(f"unknown playbook steps: {', '.join(unknown)}")
-    for key in ("title_de", "description_de"):
-        if not extra.get(key):
-            problems.append(f"sentinelops.{key} is required")
-    if problems:
+    problems.extend(f"sentinelops.{key} is required" for key in ("title_de", "description_de") if not extra.get(key))
+    if problems or not isinstance(version, int):
         raise RuleLoadError(f"{file}: {rule_id or doc.get('title')}: " + "; ".join(problems))
     return RuleMeta(
         rule_id=rule_id,
-        version=int(version),  # type: ignore[arg-type]  # validated above
+        version=version,
         name=doc.get("name"),
         uuid=str(doc.get("id")),
         title=str(doc.get("title")),
@@ -262,16 +279,17 @@ def load_pipeline(rules_dir: Path, config: DetectionConfig) -> tuple[ProcessingP
     paths = sorted((rules_dir / "pipelines").glob("*.yml"))
     if not paths:
         raise RuleLoadError("no processing pipeline found in rules/pipelines")
-    pipeline: ProcessingPipeline | None = None
     digest = hashlib.sha256()
+    parts: list[ProcessingPipeline] = []
     for path in paths:
         text = path.read_text(encoding="utf-8")
         digest.update(text.encode("utf-8"))
         data = yaml.safe_load(text)
         data["vars"] = config.placeholder_vars()
-        part = ProcessingPipeline.from_dict(data)
-        pipeline = part if pipeline is None else pipeline + part
-    assert pipeline is not None
+        parts.append(ProcessingPipeline.from_dict(data))
+    pipeline = parts[0]
+    for part in parts[1:]:
+        pipeline = pipeline + part
     return pipeline, digest.hexdigest()
 
 
@@ -279,8 +297,14 @@ def validate_sigma(collection: SigmaCollection) -> list[str]:
     """pySigma validation (equivalent of ``sigma check``); returns issue texts."""
     validators = [v for name, v in sorted(core_validators.items()) if name not in VALIDATOR_EXCLUSIONS]
     validator = SigmaValidator(validators)
-    issues = validator.validate_rules(collection.rules)
-    return sorted({f"{type(i).__name__}: {', '.join(getattr(r, 'title', '?') for r in i.rules)} - {i.description}" for i in issues})
+    detection_rules = [r for r in collection.rules if isinstance(r, SigmaRule)]
+    issues = validator.validate_rules(iter(detection_rules))
+    return sorted(
+        {
+            f"{type(i).__name__}: {', '.join(getattr(r, 'title', '?') for r in i.rules)} - {i.description}"
+            for i in issues
+        }
+    )
 
 
 def _iter_rule_files(rules_dir: Path) -> Iterable[tuple[Path, str]]:
@@ -289,11 +313,14 @@ def _iter_rule_files(rules_dir: Path) -> Iterable[tuple[Path, str]]:
             yield path, source
 
 
-def load_ruleset(rules_dir: Path, config: DetectionConfig, playbook_ids: frozenset[str], *,
-                 strict_validation: bool = True) -> RuleSet:
+def load_ruleset(
+    rules_dir: Path, config: DetectionConfig, playbook_ids: frozenset[str], *, strict_validation: bool = True
+) -> RuleSet:
     pipeline, pipeline_hash = load_pipeline(rules_dir, config)
     curation_path = rules_dir / "sigma" / "sigmahq" / "curation.yaml"
-    curation: dict[str, dict[str, Any]] = yaml.safe_load(curation_path.read_text(encoding="utf-8")) if curation_path.exists() else {}
+    curation: dict[str, dict[str, Any]] = (
+        yaml.safe_load(curation_path.read_text(encoding="utf-8")) if curation_path.exists() else {}
+    )
 
     sigma_docs: list[tuple[dict[str, Any], str, Path, str]] = []
     extension_docs: list[tuple[dict[str, Any], str, Path]] = []
@@ -345,27 +372,32 @@ def load_ruleset(rules_dir: Path, config: DetectionConfig, playbook_ids: frozens
         if isinstance(rule, SigmaCorrelationRule):
             if extra is None:
                 raise RuleLoadError(f"{rel}: correlation rule without sentinelops metadata")
-            meta = _meta(doc, extra, source=source, kind="correlation", file=rel, yaml_text=text, playbook_ids=playbook_ids)
+            meta = _meta(
+                doc, extra, source=source, kind="correlation", file=rel, yaml_text=text, playbook_ids=playbook_ids
+            )
             correlations.append(_correlation(rule, meta, config))
             metas[meta.rule_id] = meta
             continue
-        assert isinstance(rule, SigmaRule)
+        if not isinstance(rule, SigmaRule):  # pragma: no cover - pySigma only has these two rule types
+            raise RuleLoadError(f"{rel}: unsupported rule type {type(rule).__name__}")
         if getattr(rule, "filters", None):
             raise RuleLoadError(f"{rel}: Sigma meta filters are not supported")
         try:
             pipeline.apply(rule)
             conditions = [c.parse(postprocess=False) for c in rule.detection.parsed_condition]
             compiled = compile_rule_detection(rule.detection.detections, conditions)
-        except (UnsupportedSigmaFeature, SigmaError) as exc:
+        except (UnsupportedSigmaFeatureError, SigmaError) as exc:
             raise RuleLoadError(f"{rel}: {rule.title}: {exc}") from exc
-        meta = None
+        single: RuleMeta | None = None
         if extra is not None:
-            meta = _meta(doc, extra, source=source, kind="single", file=rel, yaml_text=text, playbook_ids=playbook_ids)
-            metas[meta.rule_id] = meta
+            single = _meta(
+                doc, extra, source=source, kind="single", file=rel, yaml_text=text, playbook_ids=playbook_ids
+            )
+            metas[single.rule_id] = single
         key = str(rule.name or rule.id)
         if key in base_rules:
             raise RuleLoadError(f"{rel}: duplicate rule name {key}")
-        base_rules[key] = BaseRule(key, str(rule.id), compiled, meta)
+        base_rules[key] = BaseRule(key, str(rule.id), compiled, single)
 
     sequences: list[SequenceRule] = []
     baselines: list[BaselineRule] = []
@@ -374,10 +406,14 @@ def load_ruleset(rules_dir: Path, config: DetectionConfig, playbook_ids: frozens
         kind = doc["sentinelops_extension"]
         extra = doc.get("sentinelops") or {}
         if kind == "sequence":
-            meta = _meta(doc, extra, source="custom", kind="sequence", file=rel, yaml_text=text, playbook_ids=playbook_ids)
+            meta = _meta(
+                doc, extra, source="custom", kind="sequence", file=rel, yaml_text=text, playbook_ids=playbook_ids
+            )
             sequences.append(_sequence(doc, meta, rel, config))
         elif kind == "baseline":
-            meta = _meta(doc, extra, source="custom", kind="baseline", file=rel, yaml_text=text, playbook_ids=playbook_ids)
+            meta = _meta(
+                doc, extra, source="custom", kind="baseline", file=rel, yaml_text=text, playbook_ids=playbook_ids
+            )
             baselines.append(BaselineRule(meta))
         else:
             raise RuleLoadError(f"{rel}: unknown extension type {kind!r}")
@@ -409,27 +445,39 @@ def _correlation(rule: SigmaCorrelationRule, meta: RuleMeta, config: DetectionCo
         raise RuleLoadError(f"{meta.file}: correlation type {rule.type} is not supported")
     if rule.aliases and rule.aliases.aliases:
         raise RuleLoadError(f"{meta.file}: correlation aliases are not supported")
+    condition = rule.condition
+    if condition is not None and not isinstance(condition, SigmaCorrelationCondition):
+        raise RuleLoadError(f"{meta.file}: extended correlation conditions are not supported")
     override = config.thresholds.get(meta.rule_id)
-    count = rule.condition.count if rule.condition else None
-    op = rule.condition.op.name.lower() if rule.condition else None
+    count: int | None = None
+    op: str | None = None
+    value_field: str | None = None
+    if condition is not None:
+        if not float(condition.count).is_integer():
+            raise RuleLoadError(f"{meta.file}: correlation count must be an integer")
+        count, op = int(condition.count), condition.op.name.lower()
+        if op not in ("gte", "gt", "eq") and ctype in ("event_count", "value_count"):
+            raise RuleLoadError(f"{meta.file}: correlation condition {op} is not supported")
+        if condition.fieldref is not None and not isinstance(condition.fieldref, str):
+            raise RuleLoadError(f"{meta.file}: value_count over several fields is not supported")
+        value_field = condition.fieldref
     timespan = rule.timespan.seconds
     if override is not None:
         count = override.count or count
         timespan = override.timespan_seconds or timespan
-    refs = tuple(str(r.reference) if hasattr(r, "reference") else str(r) for r in rule.rules)
-    names = []
-    for ref in rule.rules:
-        target = getattr(ref, "rule", None)
-        names.append(str(getattr(target, "name", None) or getattr(ref, "reference", ref)))
+    names = tuple(
+        str(getattr(getattr(ref, "rule", None), "name", None) or getattr(ref, "reference", ref))
+        for ref in rule.rules or ()
+    )
     return CorrelationRule(
         meta=meta,
         type=ctype,
-        rules=tuple(names) or refs,
+        rules=names,
         group_by=tuple(rule.group_by or ()),
         timespan_seconds=timespan,
         op=op,
         count=count,
-        value_field=rule.condition.fieldref if rule.condition else None,
+        value_field=value_field,
     )
 
 

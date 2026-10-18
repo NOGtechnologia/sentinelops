@@ -42,9 +42,8 @@ def _data(value: Any) -> dict[str, str]:
     if not isinstance(value, Mapping):
         return {}
     out: dict[str, str] = {}
-    for key, item in value.items():
-        if isinstance(item, Mapping) and "#text" in item:
-            item = item["#text"]
+    for key, raw in value.items():
+        item = raw["#text"] if isinstance(raw, Mapping) and "#text" in raw else raw
         text = _str(item)
         if text is not None:
             out[str(key)] = text
@@ -91,7 +90,11 @@ def to_winevent(doc: Any) -> WinEvent | Malformed:
         w = doc["winlog"]
         event_id = _event_id(w.get("event_id"))
         provider, channel, computer = _str(w.get("provider_name")), _str(w.get("channel")), _str(w.get("computer_name"))
-        record_id, time_created, data = _str(w.get("record_id")), _str(doc.get("@timestamp")), _data(w.get("event_data"))
+        record_id, time_created, data = (
+            _str(w.get("record_id")),
+            _str(doc.get("@timestamp")),
+            _data(w.get("event_data")),
+        )
         if isinstance(w.get("user_data"), Mapping):
             data.update(_data(w["user_data"]))
     elif isinstance(doc.get("Event"), Mapping):
@@ -109,8 +112,16 @@ def to_winevent(doc: Any) -> WinEvent | Malformed:
                 data.update(_data(wrapper))
     elif "Id" in doc and ("ProviderName" in doc or "LogName" in doc):
         event_id = _event_id(doc.get("Id"))
-        provider, channel, computer = _str(doc.get("ProviderName")), _str(doc.get("LogName")), _str(doc.get("MachineName"))
-        record_id, time_created, data = _str(doc.get("RecordId")), _ps_time(doc.get("TimeCreated")), _data(doc.get("EventData"))
+        provider, channel, computer = (
+            _str(doc.get("ProviderName")),
+            _str(doc.get("LogName")),
+            _str(doc.get("MachineName")),
+        )
+        record_id, time_created, data = (
+            _str(doc.get("RecordId")),
+            _ps_time(doc.get("TimeCreated")),
+            _data(doc.get("EventData")),
+        )
     else:
         return Malformed(MalformedCode.SCHEMA_VIOLATION, "unknown Windows JSON shape")
     if event_id is None:

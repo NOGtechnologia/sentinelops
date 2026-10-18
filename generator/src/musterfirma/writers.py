@@ -23,8 +23,23 @@ PROVIDER_GUIDS = {
     "Microsoft-Windows-Security-Auditing": "{54849625-5478-4994-A5BA-3E3B0328C30D}",
     "Microsoft-Windows-Eventlog": "{FC65DDD8-D6EF-4962-83D5-6E5CFE9CE148}",
 }
-TASKS = {4624: 12544, 4625: 12544, 4634: 12545, 4672: 12548, 4720: 13824, 4722: 13824, 4724: 13824,
-         4726: 13824, 4728: 13826, 4732: 13826, 4756: 13826, 4740: 13824, 4768: 14339, 4776: 14336, 1102: 104}
+TASKS = {
+    4624: 12544,
+    4625: 12544,
+    4634: 12545,
+    4672: 12548,
+    4720: 13824,
+    4722: 13824,
+    4724: 13824,
+    4726: 13824,
+    4728: 13826,
+    4732: 13826,
+    4756: 13826,
+    4740: 13824,
+    4768: 14339,
+    4776: 14336,
+    1102: 104,
+}
 MONTHS = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 
 
@@ -44,15 +59,19 @@ def render_xml_event(org: Organisation, rec: WinRecord) -> str:
         f"<System><Provider Name={quoteattr(provider)} Guid={quoteattr(PROVIDER_GUIDS.get(provider, '{00000000-0000-0000-0000-000000000000}'))}/>"
         f"<EventID>{rec.event_id}</EventID><Version>0</Version><Level>0</Level><Task>{TASKS.get(rec.event_id, 0)}</Task>"
         f"<Opcode>0</Opcode><Keywords>{keywords}</Keywords><TimeCreated SystemTime={quoteattr(win_time(rec.time))}/>"
-        f"<EventRecordID>{rec.record_id}</EventRecordID><Correlation/><Execution ProcessID=\"636\" ThreadID=\"1856\"/>"
+        f'<EventRecordID>{rec.record_id}</EventRecordID><Correlation/><Execution ProcessID="636" ThreadID="1856"/>'
         f"<Channel>{escape(rec.channel)}</Channel><Computer>{escape(_computer(org, rec.host))}</Computer><Security/></System>"
     )
     if rec.user_data:
         inner = "".join(f"<{k}>{escape(v)}</{k}>" for k, v in rec.data.items())
-        body = f"<UserData><LogFileCleared xmlns=\"http://manifests.microsoft.com/win/2004/08/windows/eventlog\">{inner}</LogFileCleared></UserData>"
+        body = f'<UserData><LogFileCleared xmlns="http://manifests.microsoft.com/win/2004/08/windows/eventlog">{inner}</LogFileCleared></UserData>'
     else:
-        body = "<EventData>" + "".join(f"<Data Name={quoteattr(k)}>{escape(v)}</Data>" for k, v in rec.data.items()) + "</EventData>"
-    return f"<Event xmlns=\"http://schemas.microsoft.com/win/2004/08/events/event\">{system}{body}</Event>"
+        body = (
+            "<EventData>"
+            + "".join(f"<Data Name={quoteattr(k)}>{escape(v)}</Data>" for k, v in rec.data.items())
+            + "</EventData>"
+        )
+    return f'<Event xmlns="http://schemas.microsoft.com/win/2004/08/events/event">{system}{body}</Event>'
 
 
 def winlogbeat_doc(org: Organisation, rec: WinRecord) -> dict[str, Any]:

@@ -36,14 +36,20 @@ src = ["src", "tests"]
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "S", "SIM", "RUF", "ASYNC", "DTZ", "PL", "PT", "N", "C4", "PERF"]
 ignore = [
-    # Mapping tables and parsers have many branches/arguments by nature;
-    # their behaviour is pinned by 100 % branch coverage instead.
-    "PLR0911", "PLR0912", "PLR0913", "PLR0915", "PLR2004",
+    # Mapping tables, parsers and the pure analysis functions have many
+    # branches/arguments by nature; their behaviour is pinned by tests and
+    # 100 % branch coverage on the core modules instead.
+    "PLR0911", "PLR0912", "PLR0913", "PLR0915", "PLR0917", "PLR2004",
 ]
 
 [tool.ruff.lint.per-file-ignores]
 # Tests use assert and fixed example values by design.
 "tests/**" = ["S101", "S105", "S106", "S311", "PLR2004", "PLC0415", "DTZ001"]
+# Verbatim example log lines must not be wrapped (they are test vectors).
+"src/sentinelops/parsers/linux_auth.py" = ["E501"]
+"../generator/src/musterfirma/quality.py" = ["E501"]
+"../generator/src/musterfirma/writers.py" = ["E501"]
+"../generator/src/musterfirma/events.py" = ["E501"]
 
 [tool.mypy]
 strict = true

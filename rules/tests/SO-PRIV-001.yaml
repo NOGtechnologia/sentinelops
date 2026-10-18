@@ -1,0 +1,27 @@
+rule_id: SO-PRIV-001
+cases:
+  - name: account added to Domain Admins
+    expect: alert
+    start: "2026-03-12T02:19:07Z"
+    events:
+      - fields: {event.action: user-added-to-group, event.code: "4728", user.name: jonas.becker, user.target.name: jonas.becker, group.name: Domain Admins, host.name: dc01}
+  - name: Linux account added to sudo (case-insensitive group name)
+    expect: alert
+    start: "2026-03-12T02:13:15Z"
+    events:
+      - fields: {event.action: user-added-to-group, user.target.name: backdoor, group.name: SUDO, host.name: srv-lnx01}
+  - name: German group name Domänen-Admins
+    expect: alert
+    start: "2026-03-12T02:19:07Z"
+    events:
+      - fields: {event.action: user-added-to-group, user.name: x, user.target.name: y, group.name: "Domänen-Admins"}
+  - name: added to a normal group
+    expect: no_alert
+    start: "2026-03-10T09:00:00Z"
+    events:
+      - fields: {event.action: user-added-to-group, user.name: adm-mueller, user.target.name: anna.schmidt, group.name: GG-VPN-Users, host.name: dc01}
+  - name: privileged group name in a different action
+    expect: no_alert
+    start: "2026-03-10T09:00:00Z"
+    events:
+      - fields: {event.action: group-created, group.name: Domain Admins Backup}

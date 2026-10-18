@@ -13,7 +13,9 @@ from musterfirma.ground_truth import GroundTruth
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog="musterfirma-gen", description="Generate SentinelOps test data (Musterfirma GmbH).")
+    parser = argparse.ArgumentParser(
+        prog="musterfirma-gen", description="Generate SentinelOps test data (Musterfirma GmbH)."
+    )
     parser.add_argument("--seed", default="dev", help=f"seed name ({', '.join(SEEDS)} or any string)")
     parser.add_argument("--out", type=Path, required=False, help="output directory")
     parser.add_argument("--events-per-day", type=int, default=50_000)

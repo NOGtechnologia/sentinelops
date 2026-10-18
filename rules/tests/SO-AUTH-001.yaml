@@ -1,0 +1,41 @@
+rule_id: SO-AUTH-001
+cases:
+  - name: 15 Windows logon failures for one account within 2 minutes
+    expect: alert
+    start: "2026-03-12T02:10:00Z"
+    events:
+      - repeat: 15
+        every: 8s
+        fields: {event.action: logon-failed, event.outcome: failure, event.code: "4625", user.name: jonas.becker, source.ip: 203.0.113.45, host.name: srv-gw01}
+  - name: 20 SSH failures for root, spelled in two notations
+    expect: alert
+    start: "2026-03-12T01:15:00Z"
+    events:
+      - repeat: 10
+        every: 3s
+        fields: {event.action: logon-failed, event.outcome: failure, user.name: "MUSTERFIRMA\\backup", source.ip: 203.0.113.77, host.name: srv-lnx01}
+      - offset: 31s
+        repeat: 10
+        every: 3s
+        fields: {event.action: logon-failed, event.outcome: failure, user.name: backup@musterfirma.example, source.ip: 203.0.113.77, host.name: srv-lnx01}
+  - name: 14 failures are below the threshold
+    expect: no_alert
+    start: "2026-03-12T02:10:00Z"
+    events:
+      - repeat: 14
+        every: 10s
+        fields: {event.action: logon-failed, event.outcome: failure, user.name: jonas.becker, source.ip: 203.0.113.45, host.name: srv-gw01}
+  - name: 15 failures spread over 1 hour (typos after password change)
+    expect: no_alert
+    start: "2026-03-12T07:00:00Z"
+    events:
+      - repeat: 15
+        every: 4m
+        fields: {event.action: logon-failed, event.outcome: failure, user.name: lena.hoffmann, source.ip: 127.0.0.1, host.name: ws-0042}
+  - name: 20 failures of machine accounts are ignored
+    expect: no_alert
+    start: "2026-03-12T02:00:00Z"
+    events:
+      - repeat: 20
+        every: 5s
+        fields: {event.action: logon-failed, event.outcome: failure, user.name: "WS-0042$", host.name: dc01}

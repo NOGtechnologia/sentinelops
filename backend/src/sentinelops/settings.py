@@ -56,6 +56,8 @@ class Settings:
     llm_pseudonymize: bool = field(default_factory=lambda: _bool("SENTINELOPS_LLM_PSEUDONYMIZE", True))
     drop_folder: str | None = field(default_factory=lambda: os.environ.get("SENTINELOPS_DROP_FOLDER"))
     syslog_port: int | None = field(
-        default_factory=lambda: int(os.environ["SENTINELOPS_SYSLOG_PORT"]) if os.environ.get("SENTINELOPS_SYSLOG_PORT") else None
+        default_factory=lambda: (
+            int(os.environ["SENTINELOPS_SYSLOG_PORT"]) if os.environ.get("SENTINELOPS_SYSLOG_PORT") else None
+        )
     )
     static_dir: str | None = field(default_factory=lambda: os.environ.get("SENTINELOPS_STATIC_DIR"))

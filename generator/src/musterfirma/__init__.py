@@ -1,1 +1,1 @@
-﻿"""Musterfirma GmbH test data generator."""
+"""Musterfirma GmbH test data generator."""

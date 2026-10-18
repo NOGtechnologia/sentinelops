@@ -1,0 +1,59 @@
+rule_id: SO-AUTH-005
+cases:
+  - name: logon at 03:04 from a new network after 3 days of office logons
+    expect: alert
+    start: "2026-03-09T06:30:00Z"
+    events:
+      - repeat: 3
+        every: 1d
+        fields: {event.action: logon, event.outcome: success, user.name: petra.wagner, host.name: ws-0003, source.ip: 127.0.0.1, logon.type: 2}
+      - offset: 2h
+        repeat: 3
+        every: 1d
+        fields: {event.action: logon, event.outcome: success, user.name: petra.wagner, host.name: ws-0003, source.ip: 127.0.0.1, logon.type: 7}
+      - offset: 2d20h34m
+        fields: {event.action: logon, event.outcome: success, user.name: petra.wagner, host.name: srv-gw01, source.ip: 192.0.2.50, logon.type: 10}
+  - name: logon on a never used host on a Saturday
+    expect: alert
+    start: "2026-03-09T07:00:00Z"
+    events:
+      - repeat: 4
+        every: 1d
+        fields: {event.action: logon, event.outcome: success, user.name: max.m, host.name: ws-0010, source.ip: 127.0.0.1, logon.type: 2}
+      - offset: 1h
+        repeat: 4
+        every: 1d
+        fields: {event.action: logon, event.outcome: success, user.name: max.m, host.name: ws-0010, source.ip: 127.0.0.1, logon.type: 7}
+      - offset: 5d3h
+        fields: {event.action: logon, event.outcome: success, user.name: max.m, host.name: ws-0099, source.ip: 127.0.0.1, logon.type: 2}
+  - name: no history - baseline under construction
+    expect: no_alert
+    start: "2026-03-12T02:04:00Z"
+    events:
+      - fields: {event.action: logon, event.outcome: success, user.name: new.user, host.name: srv-gw01, source.ip: 192.0.2.50, logon.type: 10}
+  - name: usual time, usual host, only the network is new (one criterion)
+    expect: no_alert
+    start: "2026-03-09T06:30:00Z"
+    events:
+      - repeat: 3
+        every: 1d
+        fields: {event.action: logon, event.outcome: success, user.name: erika.m, host.name: ws-0020, source.ip: 127.0.0.1, logon.type: 2}
+      - offset: 1h
+        repeat: 3
+        every: 1d
+        fields: {event.action: logon, event.outcome: success, user.name: erika.m, host.name: ws-0020, source.ip: 127.0.0.1, logon.type: 7}
+      - offset: 3d
+        fields: {event.action: logon, event.outcome: success, user.name: erika.m, host.name: ws-0020, source.ip: 198.51.100.20, logon.type: 10}
+  - name: network logons (type 3) are not part of the profile
+    expect: no_alert
+    start: "2026-03-09T06:30:00Z"
+    events:
+      - repeat: 3
+        every: 1d
+        fields: {event.action: logon, event.outcome: success, user.name: thomas.k, host.name: ws-0030, source.ip: 127.0.0.1, logon.type: 2}
+      - offset: 1h
+        repeat: 3
+        every: 1d
+        fields: {event.action: logon, event.outcome: success, user.name: thomas.k, host.name: ws-0030, source.ip: 127.0.0.1, logon.type: 7}
+      - offset: 3d16h
+        fields: {event.action: logon, event.outcome: success, user.name: thomas.k, host.name: srv-sql01, source.ip: 10.20.1.30, logon.type: 3}

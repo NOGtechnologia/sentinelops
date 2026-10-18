@@ -1,0 +1,26 @@
+rule_id: SO-PRIV-002
+cases:
+  - name: special privileges for a normal user
+    expect: alert
+    start: "2026-03-12T02:20:07Z"
+    events:
+      - fields: {event.action: special-privileges-assigned, event.code: "4672", user.name: jonas.becker, user.id: "S-1-5-21-1004336348-1177238915-682003330-1107", host.name: dc01}
+  - name: special privileges for an unknown service account
+    expect: alert
+    start: "2026-03-12T02:20:07Z"
+    events:
+      - fields: {event.action: special-privileges-assigned, user.name: svc_new, host.name: srv-app01}
+  - name: expected admin account (adm-*)
+    expect: no_alert
+    start: "2026-03-10T09:00:00Z"
+    events:
+      - fields: {event.action: special-privileges-assigned, user.name: adm-weber, host.name: srv-file01}
+  - name: SYSTEM and machine accounts
+    expect: no_alert
+    start: "2026-03-10T09:00:00Z"
+    events:
+      - fields: {event.action: special-privileges-assigned, user.name: SYSTEM, user.id: S-1-5-18}
+      - offset: 1s
+        fields: {event.action: special-privileges-assigned, user.name: "DC01$"}
+      - offset: 2s
+        fields: {event.action: special-privileges-assigned, user.name: svc_backup}

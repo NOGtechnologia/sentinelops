@@ -1,0 +1,37 @@
+rule_id: SO-ACC-001
+cases:
+  - name: Windows account created and deleted after 14 minutes
+    expect: alert
+    start: "2026-03-09T22:15:00Z"
+    events:
+      - fields: {event.action: user-created, event.code: "4720", user.name: adm-weber, user.target.name: tmp.svc01, host.name: dc01}
+      - offset: 14m
+        fields: {event.action: user-deleted, event.code: "4726", user.name: adm-weber, user.target.name: tmp.svc01, host.name: dc01}
+  - name: Linux useradd then userdel
+    expect: alert
+    start: "2026-03-09T22:15:00Z"
+    events:
+      - fields: {event.action: user-created, user.target.name: tmpx, host.name: srv-lnx01}
+      - offset: 50m
+        fields: {event.action: user-deleted, user.target.name: tmpx, host.name: srv-lnx01}
+  - name: deleted after two hours
+    expect: no_alert
+    start: "2026-03-09T09:00:00Z"
+    events:
+      - fields: {event.action: user-created, user.target.name: intern01}
+      - offset: 2h
+        fields: {event.action: user-deleted, user.target.name: intern01}
+  - name: deleted before created (wrong order)
+    expect: no_alert
+    start: "2026-03-09T09:00:00Z"
+    events:
+      - fields: {event.action: user-deleted, user.target.name: old.user}
+      - offset: 5m
+        fields: {event.action: user-created, user.target.name: old.user}
+  - name: different accounts
+    expect: no_alert
+    start: "2026-03-09T09:00:00Z"
+    events:
+      - fields: {event.action: user-created, user.target.name: new.user}
+      - offset: 5m
+        fields: {event.action: user-deleted, user.target.name: left.user}

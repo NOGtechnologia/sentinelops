@@ -18,7 +18,7 @@ from defusedxml.ElementTree import fromstring
 
 from sentinelops.normalize.quality import Malformed, decode_text
 from sentinelops.normalize.schema import MalformedCode, SourceType
-from sentinelops.parsers.base import ParseContext, ParseResult, RawRecord
+from sentinelops.parsers.base import ParseContext, ParseResult, RawRecord, Readable
 from sentinelops.parsers.windows_common import WinEvent, to_parsed
 
 _START = re.compile(rb"<Event[\s>]")
@@ -29,44 +29,38 @@ def _local(tag: str) -> str:
     return tag.rsplit("}", 1)[-1]
 
 
-def _utf8_stream(stream: BinaryIO) -> BinaryIO:
+def _utf8_stream(stream: BinaryIO) -> Readable:
     """Transcode UTF-16 exports (Event Viewer default) to UTF-8 on the fly."""
     head = stream.read(2)
-    rest = stream
     if head in (b"\xff\xfe", b"\xfe\xff"):
         encoding = "utf-16-le" if head == b"\xff\xfe" else "utf-16-be"
-        text = io.TextIOWrapper(rest, encoding=encoding, errors="replace")
-        return _Utf8Reader(text)
-    return _Prefixed(head, rest)
+        return _Utf8Reader(io.TextIOWrapper(stream, encoding=encoding, errors="replace"))
+    return _Prefixed(head, stream)
 
 
-class _Prefixed(io.RawIOBase):
+class _Prefixed:
     def __init__(self, prefix: bytes, stream: BinaryIO) -> None:
         self._prefix = prefix
         self._stream = stream
 
-    def readable(self) -> bool:
-        return True
-
-    def read(self, size: int = -1) -> bytes:
+    def read(self, size: int = -1, /) -> bytes:
         if self._prefix:
             data, self._prefix = self._prefix, b""
             return data
         return self._stream.read(size)
 
 
-class _Utf8Reader(io.RawIOBase):
+class _Utf8Reader:
     def __init__(self, text: io.TextIOWrapper) -> None:
         self._text = text
 
-    def readable(self) -> bool:
-        return True
-
-    def read(self, size: int = -1) -> bytes:
+    def read(self, size: int = -1, /) -> bytes:
         return self._text.read(size if size > 0 else -1).encode("utf-8")
 
 
-def split_events(stream: BinaryIO, max_record_bytes: int, chunk_size: int = 1 << 16) -> Iterator[RawRecord | tuple[RawRecord, Malformed]]:
+def split_events(
+    stream: BinaryIO, max_record_bytes: int, chunk_size: int = 1 << 16
+) -> Iterator[RawRecord | tuple[RawRecord, Malformed]]:
     source = _utf8_stream(stream)
     buffer = b""
     offset = 0  # offset of buffer[0] in the (UTF-8) stream
@@ -92,7 +86,12 @@ def split_events(stream: BinaryIO, max_record_bytes: int, chunk_size: int = 1 <<
             if len(buffer) - start > max_record_bytes:
                 position += 1
                 raw = RawRecord(position, buffer[start : start + 256], offset + start)
-                yield raw, Malformed(MalformedCode.OVERSIZED, f"event element exceeds {max_record_bytes} bytes", offset + start)
+                yield (
+                    raw,
+                    Malformed(
+                        MalformedCode.OVERSIZED, f"event element exceeds {max_record_bytes} bytes", offset + start
+                    ),
+                )
                 next_start = _START.search(buffer, start + 1)
                 cut = next_start.start() if next_start else len(buffer)
                 offset += cut

@@ -64,8 +64,13 @@ def _network(event: CanonicalEvent) -> str | None:
     return network_key(ip)
 
 
-def evaluate(meta: RuleMeta, events: Iterable[CanonicalEvent], cfg: BaselineConfig, tz: ZoneInfo,
-             hub_hosts: frozenset[str] = frozenset()) -> BaselineResult:
+def evaluate(
+    meta: RuleMeta,
+    events: Iterable[CanonicalEvent],
+    cfg: BaselineConfig,
+    tz: ZoneInfo,
+    hub_hosts: frozenset[str] = frozenset(),
+) -> BaselineResult:
     """``hub_hosts`` (access gateways, DCs) never satisfy the ``new_host``
     criterion: every remote user passes them, a first use is not unusual."""
     holidays = {date.fromisoformat(d) for d in cfg.holidays}
@@ -106,7 +111,9 @@ def evaluate(meta: RuleMeta, events: Iterable[CanonicalEvent], cfg: BaselineConf
             criteria: list[dict[str, str]] = []
             net = _network(event)
             if net and net not in networks:
-                criteria.append({"criterion": "new_network", "detail": f"{net} not in {sorted(networks) or ['(none)']}"})
+                criteria.append(
+                    {"criterion": "new_network", "detail": f"{net} not in {sorted(networks) or ['(none)']}"}
+                )
             host = host_key(str(event.fields.get("host.name") or ""))
             if host and host not in hosts and host not in hub_hosts:
                 criteria.append({"criterion": "new_host", "detail": f"{host} not in {sorted(hosts)}"})
@@ -114,8 +121,9 @@ def evaluate(meta: RuleMeta, events: Iterable[CanonicalEvent], cfg: BaselineConf
             high = quantile(hours, cfg.hour_quantile_high) + cfg.hour_margin
             hour = local.hour + local.minute / 60
             if not low <= hour <= high:
-                criteria.append({"criterion": "unusual_hour",
-                                 "detail": f"{local:%H:%M} outside {_hm(low)}-{_hm(high)} ({tz.key})"})
+                criteria.append(
+                    {"criterion": "unusual_hour", "detail": f"{local:%H:%M} outside {_hm(low)}-{_hm(high)} ({tz.key})"}
+                )
             if today.weekday() >= 5 or today in holidays:
                 criteria.append({"criterion": "off_day", "detail": f"{today.isoformat()} weekend/holiday"})
             if len(criteria) < cfg.min_criteria:
@@ -124,20 +132,36 @@ def evaluate(meta: RuleMeta, events: Iterable[CanonicalEvent], cfg: BaselineConf
                 "type": "baseline",
                 "criteria": criteria,
                 "min_criteria": cfg.min_criteria,
-                "history": {"days": len(window), "logons": history_logons,
-                            "learning_days": cfg.learning_days},
+                "history": {"days": len(window), "logons": history_logons, "learning_days": cfg.learning_days},
                 "event_time": format_timestamp(event.timestamp),
             }
-            alerts.append(Alert(
-                alert_id=alert_id(meta.rule_id, meta.version, [event.event_id], event.timestamp),
-                rule_id=meta.rule_id, rule_version=meta.version, rule_hash=meta.content_hash, kind="baseline",
-                title=meta.title, title_de=meta.title_de, level=meta.level, maturity=meta.maturity,
-                tactics=meta.tactics, techniques=meta.techniques, event_ids=(event.event_id,),
-                window_start=event.timestamp, window_end=event.timestamp, group_key=(("user.name", user),),
-                entities=merge_entities([event]), explanation=explanation,
-                thresholds={"min_criteria": cfg.min_criteria, "learning_days": cfg.learning_days,
-                            "min_active_days": cfg.min_active_days, "min_logons": cfg.min_logons},
-            ))
+            alerts.append(
+                Alert(
+                    alert_id=alert_id(meta.rule_id, meta.version, [event.event_id], event.timestamp),
+                    rule_id=meta.rule_id,
+                    rule_version=meta.version,
+                    rule_hash=meta.content_hash,
+                    kind="baseline",
+                    title=meta.title,
+                    title_de=meta.title_de,
+                    level=meta.level,
+                    maturity=meta.maturity,
+                    tactics=meta.tactics,
+                    techniques=meta.techniques,
+                    event_ids=(event.event_id,),
+                    window_start=event.timestamp,
+                    window_end=event.timestamp,
+                    group_key=(("user.name", user),),
+                    entities=merge_entities([event]),
+                    explanation=explanation,
+                    thresholds={
+                        "min_criteria": cfg.min_criteria,
+                        "learning_days": cfg.learning_days,
+                        "min_active_days": cfg.min_active_days,
+                        "min_logons": cfg.min_logons,
+                    },
+                )
+            )
         if insufficient:
             learning.append(user)
     return BaselineResult(alerts, learning)

@@ -107,7 +107,7 @@ class Alert:
             "event_ids": list(self.event_ids),
             "window_start": format_timestamp(self.window_start),
             "window_end": format_timestamp(self.window_end),
-            "group_key": {k: v for k, v in self.group_key},
+            "group_key": dict(self.group_key),
             "entities": [e.to_dict() for e in self.entities],
             "explanation": self.explanation,
             "thresholds": self.thresholds,

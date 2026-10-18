@@ -1,0 +1,22 @@
+rule_id: SO-DEF-001
+cases:
+  - name: Security log cleared on a file server
+    expect: alert
+    start: "2026-03-11T21:45:00Z"
+    events:
+      - fields: {event.action: audit-log-cleared, event.code: "1102", event.provider: Microsoft-Windows-Eventlog, user.name: adm-schulz, host.name: srv-file01}
+  - name: Security log cleared on a workstation
+    expect: alert
+    start: "2026-03-11T21:45:00Z"
+    events:
+      - fields: {event.action: audit-log-cleared, user.name: anna.schmidt, host.name: ws-0010}
+  - name: logoff event
+    expect: no_alert
+    start: "2026-03-11T21:45:00Z"
+    events:
+      - fields: {event.action: logoff, user.name: adm-schulz, host.name: srv-file01}
+  - name: other Windows event with code 1100 (service shutdown)
+    expect: no_alert
+    start: "2026-03-11T21:45:00Z"
+    events:
+      - fields: {event.action: windows-event-1100, event.code: "1100", host.name: srv-file01}

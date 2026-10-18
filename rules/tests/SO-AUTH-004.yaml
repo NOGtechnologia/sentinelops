@@ -1,0 +1,33 @@
+rule_id: SO-AUTH-004
+cases:
+  - name: three lockouts within 20 minutes
+    expect: alert
+    start: "2026-03-11T08:00:00Z"
+    events:
+      - repeat: 3
+        every: 10m
+        vary: {user.target.name: [a.user, b.user, c.user]}
+        fields: {event.action: account-locked, event.outcome: success, user.name: "DC01$", host.name: dc01}
+  - name: five lockouts of the same account within 5 minutes
+    expect: alert
+    start: "2026-03-11T08:00:00Z"
+    events:
+      - repeat: 5
+        every: 1m
+        fields: {event.action: account-locked, event.outcome: success, user.target.name: svc_sql, host.name: dc02}
+  - name: two lockouts are below the threshold
+    expect: no_alert
+    start: "2026-03-11T08:00:00Z"
+    events:
+      - repeat: 2
+        every: 5m
+        vary: {user.target.name: [a.user, b.user]}
+        fields: {event.action: account-locked, user.name: "DC01$", host.name: dc01}
+  - name: three lockouts spread over a day
+    expect: no_alert
+    start: "2026-03-11T06:00:00Z"
+    events:
+      - repeat: 3
+        every: 4h
+        vary: {user.target.name: [a.user, b.user, c.user]}
+        fields: {event.action: account-locked, host.name: dc01}

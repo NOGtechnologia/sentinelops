@@ -79,7 +79,9 @@ class BenchmarkReport:
         problems: list[str] = []
         for s in self.scenarios:
             if not s.detected:
-                problems.append(f"{s.id} not detected (rules {s.found_rules}, evidence {s.evidence_covered}/{s.evidence_total})")
+                problems.append(
+                    f"{s.id} not detected (rules {s.found_rules}, evidence {s.evidence_covered}/{s.evidence_total})"
+                )
             if not s.single_case:
                 problems.append(f"{s.id} not in exactly one case")
             if not s.priority_ok:
@@ -122,9 +124,11 @@ class BenchmarkReport:
             "| Szenario | erkannt | Fall | Priorität | Regeln |",
             "|---|---|---|---|---|",
         ]
-        for s in self.scenarios:
-            lines.append(f"| {s.id} {s.title} | {'✅' if s.detected else '❌'} | {'1' if s.single_case else '❌'} | "
-                         f"{s.priority or '-'} {'✅' if s.priority_ok else '❌'} | {', '.join(s.found_rules)} |")
+        lines.extend(
+            f"| {s.id} {s.title} | {'✅' if s.detected else '❌'} | {'1' if s.single_case else '❌'} | "
+            f"{s.priority or '-'} {'✅' if s.priority_ok else '❌'} | {', '.join(s.found_rules)} |"
+            for s in self.scenarios
+        )
         lines += ["", "| Regel | Alarme | Precision |", "|---|---|---|"]
         for rule in sorted(self.alerts_per_rule):
             lines.append(f"| {rule} | {self.alerts_per_rule[rule]} | {self.precision.get(rule, 1.0):.2f} |")
@@ -195,11 +199,21 @@ def evaluate(root: Path, config: DetectionConfig | None = None) -> tuple[Benchma
         priority_ok = priority is not None and PRIORITY_RANK[priority] <= PRIORITY_RANK[scenario["min_priority"]]
         if priority is not None and scenario.get("max_priority"):
             priority_ok = priority_ok and PRIORITY_RANK[priority] >= PRIORITY_RANK[scenario["max_priority"]]
-        scenario_results.append(ScenarioResult(
-            id=scenario["id"], title=scenario["title"], detected=rules_ok and covered == ids and single,
-            single_case=single, case_id=case_ids[0] if single else None, priority=priority, priority_ok=priority_ok,
-            expected_rules=expected, found_rules=found, evidence_covered=len(covered), evidence_total=len(ids),
-        ))
+        scenario_results.append(
+            ScenarioResult(
+                id=scenario["id"],
+                title=scenario["title"],
+                detected=rules_ok and covered == ids and single,
+                single_case=single,
+                case_id=case_ids[0] if single else None,
+                priority=priority,
+                priority_ok=priority_ok,
+                expected_rules=expected,
+                found_rules=found,
+                evidence_covered=len(covered),
+                evidence_total=len(ids),
+            )
+        )
 
     normal_cases: Counter[str] = Counter()
     for case in result.cases:
@@ -225,4 +239,4 @@ def evaluate_normal_only(root: Path) -> BenchmarkReport:
     per_rule: dict[str, int] = defaultdict(int)
     for alert in result.detection.active_alerts:
         per_rule[alert.rule_id] += 1
-    return BenchmarkReport(truth["seed"], len(ingest.events), [], {r: 0.0 for r in per_rule}, dict(per_rule), normal)
+    return BenchmarkReport(truth["seed"], len(ingest.events), [], dict.fromkeys(per_rule, 0.0), dict(per_rule), normal)

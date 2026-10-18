@@ -35,8 +35,17 @@ class BaselineConfig(_Model):
     #: remote interactive (10), cached interactive (11). Events without a
     #: logon type (SSH, VPN) always count.
     logon_types: tuple[int, ...] = (2, 7, 10, 11)
-    holidays: tuple[str, ...] = ("2026-01-01", "2026-04-03", "2026-04-06", "2026-05-01", "2026-05-14",
-                                 "2026-05-25", "2026-10-03", "2026-12-25", "2026-12-26")
+    holidays: tuple[str, ...] = (
+        "2026-01-01",
+        "2026-04-03",
+        "2026-04-06",
+        "2026-05-01",
+        "2026-05-14",
+        "2026-05-25",
+        "2026-10-03",
+        "2026-12-25",
+        "2026-12-26",
+    )
 
 
 class PriorityWeights(_Model):
@@ -61,9 +70,20 @@ class DetectionConfig(_Model):
     version: int = 1
     thresholds: dict[str, ThresholdOverride] = Field(default_factory=dict)
     privileged_groups: tuple[str, ...] = (
-        "Domain Admins", "Domänen-Admins", "Enterprise Admins", "Organisations-Admins", "Schema Admins",
-        "Schema-Admins", "Administrators", "Administratoren", "Account Operators", "Backup Operators",
-        "sudo", "wheel", "admin", "root",
+        "Domain Admins",
+        "Domänen-Admins",
+        "Enterprise Admins",
+        "Organisations-Admins",
+        "Schema Admins",
+        "Schema-Admins",
+        "Administrators",
+        "Administratoren",
+        "Account Operators",
+        "Backup Operators",
+        "sudo",
+        "wheel",
+        "admin",
+        "root",
     )
     expected_privileged_accounts: tuple[str, ...] = ("adm-*", "svc_backup", "Administrator", "SYSTEM")
     password_admins: tuple[str, ...] = ("adm-*", "helpdesk-*")

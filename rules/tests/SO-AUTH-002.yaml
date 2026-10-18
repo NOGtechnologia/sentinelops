@@ -1,0 +1,39 @@
+rule_id: SO-AUTH-002
+cases:
+  - name: one IP, 12 different accounts within 4 minutes
+    expect: alert
+    start: "2026-03-11T10:15:00Z"
+    events:
+      - repeat: 12
+        every: 20s
+        vary: {user.name: ["anna.a", "ben.b", "clara.c", "david.d", "emma.e", "felix.f", "greta.g", "hannah.h", "jonas.j", "julia.j", "karl.k", "lara.l"]}
+        fields: {event.action: logon-failed, event.outcome: failure, source.ip: 203.0.113.66, host.name: srv-gw01}
+  - name: IPv4-mapped IPv6 and plain IPv4 are the same source
+    expect: alert
+    start: "2026-03-11T10:15:00Z"
+    events:
+      - repeat: 5
+        every: 10s
+        vary: {user.name: ["u1", "u2", "u3", "u4", "u5"]}
+        fields: {event.action: logon-failed, event.outcome: failure, source.ip: 203.0.113.66}
+      - offset: 1m
+        repeat: 5
+        every: 10s
+        vary: {user.name: ["u6", "u7", "u8", "u9", "u10"]}
+        fields: {event.action: logon-failed, event.outcome: failure, source.ip: "::ffff:203.0.113.66"}
+  - name: many failures but only 3 accounts
+    expect: no_alert
+    start: "2026-03-11T10:15:00Z"
+    events:
+      - repeat: 30
+        every: 5s
+        vary: {user.name: ["u1", "u2", "u3"]}
+        fields: {event.action: logon-failed, event.outcome: failure, source.ip: 203.0.113.66}
+  - name: morning typos of many users on their own workstations (loopback)
+    expect: no_alert
+    start: "2026-03-11T07:00:00Z"
+    events:
+      - repeat: 12
+        every: 20s
+        vary: {user.name: ["anna.a", "ben.b", "clara.c", "david.d", "emma.e", "felix.f", "greta.g", "hannah.h", "jonas.j", "julia.j", "karl.k", "lara.l"]}
+        fields: {event.action: logon-failed, event.outcome: failure, source.ip: 127.0.0.1}

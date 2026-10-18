@@ -144,8 +144,10 @@ def build_cases(
             continue
         if open_cases:
             # earliest open case (by its first alert) receives new alerts
-            target = min(open_cases, key=lambda c: min((by_id[a].window_start, a) for a, cid in pinned.items()
-                                                      if cid == c and a in by_id))
+            target = min(
+                open_cases,
+                key=lambda c: min((by_id[a].window_start, a) for a, cid in pinned.items() if cid == c and a in by_id),
+            )
         else:
             target = case_id_for(free[0].alert_id)
             related[target].update(c for c in pinned_cases if c in closed_case_ids)
@@ -162,12 +164,14 @@ def build_cases(
         for alert in members:
             for entity in alert.entities:
                 entities.setdefault((entity.type, entity.key), entity)
-        drafts.append(CaseDraft(
-            case_id=case,
-            alert_ids=tuple(a.alert_id for a in members),
-            window_start=members[0].window_start,
-            window_end=max(a.window_end for a in members),
-            entities=tuple(sorted(entities.values())),
-            related_case_ids=tuple(sorted(related.get(case, ()))),
-        ))
+        drafts.append(
+            CaseDraft(
+                case_id=case,
+                alert_ids=tuple(a.alert_id for a in members),
+                window_start=members[0].window_start,
+                window_end=max(a.window_end for a in members),
+                entities=tuple(sorted(entities.values())),
+                related_case_ids=tuple(sorted(related.get(case, ()))),
+            )
+        )
     return sorted(drafts, key=lambda d: (d.window_start, d.case_id))

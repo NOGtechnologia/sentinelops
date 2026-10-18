@@ -102,7 +102,11 @@ def _set_user(fields: dict[str, Any], prefix: str, name: str | None, domain: str
 
 def _map_users(spec: EventSpec, d: dict[str, str], fields: dict[str, Any]) -> None:
     subject = (_clean(d, "SubjectUserName"), _clean(d, "SubjectDomainName"), _clean(d, "SubjectUserSid"))
-    target = (_clean(d, "TargetUserName"), _clean(d, "TargetDomainName"), _clean(d, "TargetUserSid") or _clean(d, "TargetSid"))
+    target = (
+        _clean(d, "TargetUserName"),
+        _clean(d, "TargetDomainName"),
+        _clean(d, "TargetUserSid") or _clean(d, "TargetSid"),
+    )
     if spec.role in ("logon", "kerberos", "ntlm"):
         _set_user(fields, "user", *target)
     elif spec.role == "subject":
@@ -173,7 +177,13 @@ def to_parsed(event: WinEvent, ctx: ParseContext, limits: Limits) -> ParsedEvent
     else:
         fields["event.action"] = f"windows-event-{event.event_id}"
         fields["event.outcome"] = Outcome.UNKNOWN.value
-        _set_user(fields, "user", _clean(data, "SubjectUserName"), _clean(data, "SubjectDomainName"), _clean(data, "SubjectUserSid"))
+        _set_user(
+            fields,
+            "user",
+            _clean(data, "SubjectUserName"),
+            _clean(data, "SubjectDomainName"),
+            _clean(data, "SubjectUserSid"),
+        )
     ip = canonical_ip(_clean(data, "IpAddress"))
     if ip:
         fields["source.ip"] = ip

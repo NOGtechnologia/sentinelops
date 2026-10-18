@@ -10,7 +10,7 @@ Rendering to JSON instead of XML is ~3x faster (Phase 0 measurement).
 from __future__ import annotations
 
 from collections.abc import Iterator
-from typing import Any, BinaryIO
+from typing import Any, BinaryIO, cast
 
 from evtx import PyEvtxParser
 
@@ -35,7 +35,8 @@ class WindowsEvtxParser:
             return
         stream.seek(0)
         try:
-            records: Iterator[dict[str, Any]] = iter(PyEvtxParser(stream).records_json())
+            # The bundled stub types the iterator as itself; records are dicts.
+            records = cast(Iterator[dict[str, Any]], iter(PyEvtxParser(stream).records_json()))
         except (OSError, RuntimeError, ValueError) as exc:
             yield RawRecord(1, b""), Malformed(MalformedCode.PARSE_ERROR, f"EVTX header: {exc}", 0)
             return

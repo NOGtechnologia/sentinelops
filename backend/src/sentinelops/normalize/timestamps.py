@@ -73,7 +73,8 @@ def parse_iso8601(text: str) -> tuple[datetime, bool]:
         raise TimestampError(f"not an ISO 8601 timestamp: {text[:64]!r}")
     frac = (match.group("frac") or "0")[:6].ljust(6, "0")
     try:
-        base = datetime.strptime(
+        # The offset is parsed separately below; a naive value is intended here.
+        base = datetime.strptime(  # noqa: DTZ007
             f"{match.group('date')} {match.group('h')}:{match.group('m')}:{match.group('s')}",
             "%Y-%m-%d %H:%M:%S",
         )
@@ -189,9 +190,7 @@ def apply_skew_policy(value: NormalizedTime, now_utc: datetime, policy: SkewPoli
     )
 
 
-def normalize_iso(
-    text: str, default_tz: ZoneInfo, previous_utc: datetime | None = None
-) -> NormalizedTime:
+def normalize_iso(text: str, default_tz: ZoneInfo, previous_utc: datetime | None = None) -> NormalizedTime:
     """Normalise an ISO timestamp; without offset the source time zone is assumed."""
     value, has_offset = parse_iso8601(text)
     if has_offset:

@@ -46,28 +46,33 @@ def recommend(
         meta = metas.get(alert.rule_id)
         if meta is None:
             continue
-        for step in meta.playbooks:
-            reasons.setdefault(step, set()).add(alert.rule_id)
-            evidence.setdefault(step, []).append(alert.event_ids[0])
+        for step_ref in meta.playbooks:
+            reasons.setdefault(step_ref, set()).add(alert.rule_id)
+            evidence.setdefault(step_ref, []).append(alert.event_ids[0])
     users = sorted({e.display for a in alerts for e in a.entities if e.type == "user"}, key=str.casefold)
     hosts = sorted({e.display for a in alerts for e in a.entities if e.type == "host"}, key=str.casefold)
     ips = sorted({e.display for a in alerts for e in a.entities if e.type == "ip"})
-    groups = sorted({
-        str(events_by_id[eid].fields["group.name"])
-        for a in alerts for eid in a.event_ids
-        if eid in events_by_id and events_by_id[eid].fields.get("group.name")
-    })
+    groups = sorted(
+        {
+            str(events_by_id[eid].fields["group.name"])
+            for a in alerts
+            for eid in a.event_ids
+            if eid in events_by_id and events_by_id[eid].fields.get("group.name")
+        }
+    )
     available = {"user": users, "host": hosts, "ip": ips, "group": groups}
     out: list[Recommendation] = []
     for step_id in sorted(reasons, key=lambda s: (catalog[s].priority, s)):
         step = catalog[step_id]
-        out.append(Recommendation(
-            step_id=step.id,
-            action=step.action,
-            title_de=step.title_de,
-            title_en=step.title_en,
-            reason_rules=tuple(sorted(reasons[step_id])),
-            targets={p: available.get(p, []) for p in step.parameters},
-            evidence=tuple(dict.fromkeys(evidence[step_id]))[:5],
-        ))
+        out.append(
+            Recommendation(
+                step_id=step.id,
+                action=step.action,
+                title_de=step.title_de,
+                title_en=step.title_en,
+                reason_rules=tuple(sorted(reasons[step_id])),
+                targets={p: available.get(p, []) for p in step.parameters},
+                evidence=tuple(dict.fromkeys(evidence[step_id]))[:5],
+            )
+        )
     return out

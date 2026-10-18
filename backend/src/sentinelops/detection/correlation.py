@@ -103,8 +103,15 @@ def _max_window(burst: list[BaseMatch], span: timedelta, value_field: str | None
     return best, best_start, best_end
 
 
-def _make_alert(meta: RuleMeta, anchor: Sequence[Any], events: list[CanonicalEvent], explanation: dict[str, Any],
-                key: tuple[tuple[str, str], ...], thresholds: dict[str, Any], related: tuple[str, ...] = ()) -> Alert:
+def _make_alert(
+    meta: RuleMeta,
+    anchor: Sequence[Any],
+    events: list[CanonicalEvent],
+    explanation: dict[str, Any],
+    key: tuple[tuple[str, str], ...],
+    thresholds: dict[str, Any],
+    related: tuple[str, ...] = (),
+) -> Alert:
     ordered = sorted(events, key=lambda e: (e.timestamp, e.event_id))
     start, end = ordered[0].timestamp, ordered[-1].timestamp
     return Alert(
@@ -161,12 +168,20 @@ def evaluate_count(rule: CorrelationRule, matches: list[BaseMatch]) -> list[Aler
                 "observed": value,
                 "timespan_seconds": rule.timespan_seconds,
                 "densest_window": {"start": format_timestamp(w_start), "end": format_timestamp(w_end)},
-                "group_by": {k: v for k, v in named_key},
+                "group_by": dict(named_key),
                 "events_in_burst": len(burst),
                 "referenced_rules": list(rule.rules),
             }
-            alerts.append(_make_alert(rule.meta, [list(key), burst[0].event.event_id], [m.event for m in burst],
-                                      explanation, named_key, thresholds))
+            alerts.append(
+                _make_alert(
+                    rule.meta,
+                    [list(key), burst[0].event.event_id],
+                    [m.event for m in burst],
+                    explanation,
+                    named_key,
+                    thresholds,
+                )
+            )
     return alerts
 
 
@@ -175,8 +190,7 @@ def evaluate_temporal(rule: CorrelationRule, matches_by_rule: dict[str, list[Bas
     ordered_mode = rule.type == "temporal_ordered"
     tagged: list[tuple[datetime, str, int, BaseMatch]] = []
     for index, name in enumerate(rule.rules):
-        for match in matches_by_rule.get(name, []):
-            tagged.append((match.event.timestamp, match.event.event_id, index, match))
+        tagged.extend((m.event.timestamp, m.event.event_id, index, m) for m in matches_by_rule.get(name, []))
     tagged.sort(key=lambda t: (t[0], t[1], t[2]))
     state: dict[tuple[str, ...], dict[int, BaseMatch]] = defaultdict(dict)
     alerts: list[Alert] = []
@@ -204,17 +218,32 @@ def evaluate_temporal(rule: CorrelationRule, matches_by_rule: dict[str, list[Bas
             "type": rule.type,
             "condition": " -> ".join(rule.rules) if ordered_mode else " & ".join(rule.rules),
             "timespan_seconds": rule.timespan_seconds,
-            "group_by": {k: v for k, v in named_key},
-            "chain": [{"rule": m.rule, "event_id": m.event.event_id, "time": format_timestamp(m.event.timestamp)} for m in chain],
+            "group_by": dict(named_key),
+            "chain": [
+                {"rule": m.rule, "event_id": m.event.event_id, "time": format_timestamp(m.event.timestamp)}
+                for m in chain
+            ],
         }
-        alerts.append(_make_alert(rule.meta, [list(key), *[m.event.event_id for m in chain]], [m.event for m in chain],
-                                  explanation, named_key, {"timespan_seconds": rule.timespan_seconds}))
+        alerts.append(
+            _make_alert(
+                rule.meta,
+                [list(key), *[m.event.event_id for m in chain]],
+                [m.event for m in chain],
+                explanation,
+                named_key,
+                {"timespan_seconds": rule.timespan_seconds},
+            )
+        )
         state[key] = {}
     return alerts
 
 
-def evaluate_sequence(rule: SequenceRule, first_alerts: list[Alert], then_matches: list[BaseMatch],
-                      events_by_id: dict[str, CanonicalEvent]) -> list[Alert]:
+def evaluate_sequence(
+    rule: SequenceRule,
+    first_alerts: list[Alert],
+    then_matches: list[BaseMatch],
+    events_by_id: dict[str, CanonicalEvent],
+) -> list[Alert]:
     span = timedelta(seconds=rule.timespan_seconds)
     coverage: dict[tuple[str, ...], list[tuple[Alert, list[CanonicalEvent]]]] = defaultdict(list)
     for alert in sorted(first_alerts, key=lambda a: (a.window_start, a.alert_id)):
@@ -252,12 +281,25 @@ def evaluate_sequence(rule: SequenceRule, first_alerts: list[Alert], then_matche
                 "condition": f"({' | '.join(rule.first_any)}) -> {rule.then}"
                 + (f" with same {', '.join(rule.same)}" if rule.same else ""),
                 "timespan_seconds": rule.timespan_seconds,
-                "group_by": {k: v for k, v in named_key},
-                "preceding_alert": {"alert_id": first.alert_id, "rule_id": first.rule_id, "failures_for_group": failures},
+                "group_by": dict(named_key),
+                "preceding_alert": {
+                    "alert_id": first.alert_id,
+                    "rule_id": first.rule_id,
+                    "failures_for_group": failures,
+                },
                 "success_event_id": match.event.event_id,
                 "success_time": format_timestamp(t),
                 "matched": match.explanation.get("matched", []),
             }
-            alerts.append(_make_alert(rule.meta, [list(key), match.event.event_id], [*events, match.event], explanation,
-                                      named_key, {"timespan_seconds": rule.timespan_seconds}, related=(first.alert_id,)))
+            alerts.append(
+                _make_alert(
+                    rule.meta,
+                    [list(key), match.event.event_id],
+                    [*events, match.event],
+                    explanation,
+                    named_key,
+                    {"timespan_seconds": rule.timespan_seconds},
+                    related=(first.alert_id,),
+                )
+            )
     return alerts

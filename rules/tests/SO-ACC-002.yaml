@@ -1,0 +1,27 @@
+rule_id: SO-ACC-002
+cases:
+  - name: normal user resets the password of a colleague
+    expect: alert
+    start: "2026-03-10T21:46:00Z"
+    events:
+      - fields: {event.action: password-reset, event.code: "4724", user.name: thomas.klein, user.target.name: sabine.koch, host.name: dc01}
+  - name: unknown service account resets an admin password
+    expect: alert
+    start: "2026-03-10T21:46:00Z"
+    events:
+      - fields: {event.action: password-reset, user.name: svc_sql, user.target.name: adm-mueller, host.name: dc01}
+  - name: reset by an administrator
+    expect: no_alert
+    start: "2026-03-10T09:46:00Z"
+    events:
+      - fields: {event.action: password-reset, user.name: adm-mueller, user.target.name: lena.hoffmann, host.name: dc01}
+  - name: own password (same account, different notation)
+    expect: no_alert
+    start: "2026-03-10T09:46:00Z"
+    events:
+      - fields: {event.action: password-reset, user.name: Erika.Muster, user.target.name: erika.muster}
+  - name: password changed by the user (not a reset)
+    expect: no_alert
+    start: "2026-03-10T09:46:00Z"
+    events:
+      - fields: {event.action: password-changed, user.target.name: lena.hoffmann}

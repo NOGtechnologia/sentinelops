@@ -13,7 +13,7 @@ Semantics (documented in docs/detection-catalog.md):
 * Keyword detections (no field) search the ``message`` field (substring).
 * List-valued fields (e.g. ``event.category``) match if any element matches.
 * Unsupported value types or condition elements raise
-  :class:`UnsupportedSigmaFeature` at load time - never silently ignored.
+  :class:`UnsupportedSigmaFeatureError` at load time - never silently ignored.
 """
 
 from __future__ import annotations
@@ -32,7 +32,7 @@ from sigma.rule import SigmaDetection, SigmaDetectionItem
 EventGetter = Callable[[str], Any]
 
 
-class UnsupportedSigmaFeature(ValueError):
+class UnsupportedSigmaFeatureError(ValueError):
     """A rule uses a Sigma feature the matcher cannot evaluate faithfully."""
 
 
@@ -90,7 +90,7 @@ def sigma_string_regex(value: st.SigmaString, cased: bool, anchored: bool = True
         elif part == st.SpecialChars.WILDCARD_SINGLE:
             parts.append(".")
         else:
-            raise UnsupportedSigmaFeature(f"unresolved placeholder in value {value}")
+            raise UnsupportedSigmaFeatureError(f"unresolved placeholder in value {value}")
     pattern = "".join(parts)
     if anchored:
         pattern = f"^(?:{pattern})$"
@@ -158,7 +158,7 @@ class NullMatcher:
     description: str = "null"
 
     def __call__(self, actual: Any, get: EventGetter) -> bool:
-        return actual is None or actual == "" or actual == []
+        return actual is None or actual in ("", [])
 
 
 @dataclass(slots=True)
@@ -294,7 +294,7 @@ def compile_value(value: Any, keyword: bool = False) -> ValueMatcher:
     if isinstance(value, st.SigmaString):
         return StringMatcher(value, cased=False, keyword=keyword)
     if keyword:
-        raise UnsupportedSigmaFeature(f"keyword value of type {type(value).__name__}")
+        raise UnsupportedSigmaFeatureError(f"keyword value of type {type(value).__name__}")
     if isinstance(value, st.SigmaNumber):
         return NumberMatcher(value.number)
     if isinstance(value, st.SigmaNull):
@@ -312,7 +312,7 @@ def compile_value(value: Any, keyword: bool = False) -> ValueMatcher:
         try:
             return RegexMatcher(re.compile(value.regexp.original, flags))
         except re.error as exc:
-            raise UnsupportedSigmaFeature(f"invalid regular expression: {exc}") from exc
+            raise UnsupportedSigmaFeatureError(f"invalid regular expression: {exc}") from exc
     if isinstance(value, st.SigmaCIDRExpression):
         return CidrMatcher(value.network)
     if isinstance(value, st.SigmaCompareExpression):
@@ -324,7 +324,7 @@ def compile_value(value: Any, keyword: bool = False) -> ValueMatcher:
         return ExistsMatcher(value.exists)
     if isinstance(value, st.SigmaExpansion):
         return AnyOfMatcher(tuple(compile_value(v) for v in value.values))
-    raise UnsupportedSigmaFeature(f"unsupported Sigma value type {type(value).__name__}")
+    raise UnsupportedSigmaFeatureError(f"unsupported Sigma value type {type(value).__name__}")
 
 
 # --- detections --------------------------------------------------------------
@@ -393,7 +393,7 @@ def compile_detection(name: str, detection: SigmaDetection) -> DetectionMatcher:
             keyword = item.field is None
             values = tuple(compile_value(v, keyword=keyword) for v in item.value)
             if not values:
-                raise UnsupportedSigmaFeature(f"detection item without values in {name}")
+                raise UnsupportedSigmaFeatureError(f"detection item without values in {name}")
             children.append(
                 ItemMatcher(
                     detection=name,
@@ -404,7 +404,7 @@ def compile_detection(name: str, detection: SigmaDetection) -> DetectionMatcher:
                 )
             )
         else:  # pragma: no cover - pySigma only produces the two types above
-            raise UnsupportedSigmaFeature(f"unexpected detection element {type(item).__name__}")
+            raise UnsupportedSigmaFeatureError(f"unexpected detection element {type(item).__name__}")
     return DetectionMatcher(name, tuple(children), require_all=detection.item_linking is sc.ConditionAND)
 
 
@@ -487,7 +487,7 @@ def compile_condition(tree: Any, detections: dict[str, DetectionMatcher]) -> Con
     if isinstance(tree, sc.ConditionIdentifier):
         name = tree.identifier
         if name not in detections:
-            raise UnsupportedSigmaFeature(f"condition references unknown detection {name!r}")
+            raise UnsupportedSigmaFeatureError(f"condition references unknown detection {name!r}")
         return Ref(name, detections[name])
     if isinstance(tree, sc.ConditionSelector):
         quantifier, pattern = str(tree.args[0]), str(tree.args[1])
@@ -496,13 +496,13 @@ def compile_condition(tree: Any, detections: dict[str, DetectionMatcher]) -> Con
         else:
             names = sorted(n for n in detections if fnmatchcase(n, pattern))
         if not names:
-            raise UnsupportedSigmaFeature(f"selector {quantifier} of {pattern} matches no detection")
+            raise UnsupportedSigmaFeatureError(f"selector {quantifier} of {pattern} matches no detection")
         refs = tuple(Ref(n, detections[n]) for n in names)
         if quantifier == "all":
             return And(refs)
         if quantifier in ("1", "any"):
             return Or(refs)
-        raise UnsupportedSigmaFeature(f"unsupported quantifier {quantifier!r}")
+        raise UnsupportedSigmaFeatureError(f"unsupported quantifier {quantifier!r}")
     if isinstance(tree, sc.ConditionAND):
         return And(tuple(compile_condition(a, detections) for a in tree.args))
     if isinstance(tree, sc.ConditionOR):
@@ -510,7 +510,7 @@ def compile_condition(tree: Any, detections: dict[str, DetectionMatcher]) -> Con
     if isinstance(tree, sc.ConditionNOT):
         inner = compile_condition(tree.args[0], detections)
         return Not(inner, _names(inner))
-    raise UnsupportedSigmaFeature(f"unsupported condition element {type(tree).__name__}")
+    raise UnsupportedSigmaFeatureError(f"unsupported condition element {type(tree).__name__}")
 
 
 @dataclass(slots=True)
@@ -542,14 +542,21 @@ def _gate(node: CondNode) -> tuple[str, frozenset[str]] | None:
         if not isinstance(candidate, Ref) or not candidate.detection.require_all:
             continue
         for child in candidate.detection.children:
-            if not isinstance(child, ItemMatcher) or child.field not in GATE_FIELDS or child.negated or child.require_all:
+            if (
+                not isinstance(child, ItemMatcher)
+                or child.field not in GATE_FIELDS
+                or child.negated
+                or child.require_all
+            ):
                 continue
             values: list[str] = []
             for matcher in child.matchers:
                 if isinstance(matcher, StringMatcher) and matcher._plain is not None and not matcher.cased:
                     values.append(matcher._plain)
                 elif isinstance(matcher, NumberMatcher):
-                    values.append(str(int(matcher.number)) if float(matcher.number).is_integer() else str(matcher.number))
+                    values.append(
+                        str(int(matcher.number)) if float(matcher.number).is_integer() else str(matcher.number)
+                    )
                 else:
                     break
             else:
@@ -561,6 +568,6 @@ def compile_rule_detection(detections: dict[str, SigmaDetection], conditions: li
     compiled = {name: compile_detection(name, det) for name, det in detections.items()}
     trees = [compile_condition(c, compiled) for c in conditions]
     if not trees:
-        raise UnsupportedSigmaFeature("rule without condition")
+        raise UnsupportedSigmaFeatureError("rule without condition")
     root: CondNode = trees[0] if len(trees) == 1 else Or(tuple(trees))
     return CompiledDetection(root, _gate(root))

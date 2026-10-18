@@ -47,24 +47,30 @@ class RuleException(BaseModel):
 def load_exceptions(directory: Path) -> list[RuleException]:
     items: list[RuleException] = []
     for path in sorted(directory.glob("*.yaml")):
-        for raw in yaml.safe_load(path.read_text(encoding="utf-8")) or []:
-            items.append(RuleException.model_validate(raw))
+        items.extend(
+            RuleException.model_validate(raw) for raw in yaml.safe_load(path.read_text(encoding="utf-8")) or []
+        )
     ids = [e.id for e in items]
     if len(ids) != len(set(ids)):
         raise ValueError("duplicate exception id")
     return sorted(items, key=lambda e: e.id)
 
 
-def apply_exceptions(alerts: Iterable[Alert], exceptions: Iterable[RuleException],
-                     events_by_id: Mapping[str, CanonicalEvent], now: datetime) -> list[Alert]:
+def apply_exceptions(
+    alerts: Iterable[Alert],
+    exceptions: Iterable[RuleException],
+    events_by_id: Mapping[str, CanonicalEvent],
+    now: datetime,
+) -> list[Alert]:
     active = [e for e in exceptions if e.active(now)]
     out: list[Alert] = []
     for alert in alerts:
+        result = alert
         for exc in active:
             if exc.rule_id not in (alert.rule_id, "*"):
                 continue
             if all(exc.matches_event(events_by_id[eid]) for eid in alert.event_ids):
-                alert = alert.with_suppression(exc.id)
+                result = alert.with_suppression(exc.id)
                 break
-        out.append(alert)
+        out.append(result)
     return out

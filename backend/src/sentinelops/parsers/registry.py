@@ -24,7 +24,7 @@ _FIXED: dict[str, type[Parser]] = {
 }
 
 
-class UnknownSourceType(LookupError):
+class UnknownSourceTypeError(LookupError):
     pass
 
 
@@ -40,4 +40,4 @@ def get_parser(source_type: str, profiles: Mapping[str, MappingProfile]) -> Pars
         profile = profiles.get(source_type.removeprefix("json:"))
         if profile is not None:
             return JsonMappedParser(profile)
-    raise UnknownSourceType(source_type)
+    raise UnknownSourceTypeError(source_type)

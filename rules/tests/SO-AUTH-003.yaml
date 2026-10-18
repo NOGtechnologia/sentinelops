@@ -1,0 +1,48 @@
+rule_id: SO-AUTH-003
+cases:
+  - name: brute force, then success from the attacking IP
+    expect: alert
+    start: "2026-03-12T02:10:00Z"
+    events:
+      - repeat: 20
+        every: 4s
+        fields: {event.action: logon-failed, event.outcome: failure, user.name: jonas.becker, source.ip: 203.0.113.45, host.name: srv-gw01}
+      - offset: 2m
+        fields: {event.action: logon, event.outcome: success, user.name: jonas.becker, source.ip: 203.0.113.45, host.name: srv-gw01, logon.type: 10}
+  - name: password spraying, then one sprayed account logs on from the spraying IP
+    expect: alert
+    start: "2026-03-11T10:15:00Z"
+    events:
+      - repeat: 12
+        every: 20s
+        vary: {user.name: ["anna.a", "ben.b", "clara.c", "david.d", "emma.e", "felix.f", "greta.g", "hannah.h", "jonas.j", "julia.j", "karl.k", "lara.l"]}
+        fields: {event.action: logon-failed, event.outcome: failure, source.ip: 203.0.113.66, host.name: srv-gw01}
+      - offset: 6m
+        fields: {event.action: logon, event.outcome: success, user.name: emma.e, source.ip: 203.0.113.66, host.name: srv-gw01}
+  - name: brute force, legitimate user later logs on from own workstation
+    expect: no_alert
+    start: "2026-03-12T02:10:00Z"
+    events:
+      - repeat: 20
+        every: 4s
+        fields: {event.action: logon-failed, event.outcome: failure, user.name: anna.schmidt, source.ip: 203.0.113.10, host.name: srv-gw01}
+      - offset: 5m
+        fields: {event.action: logon, event.outcome: success, user.name: anna.schmidt, source.ip: 127.0.0.1, host.name: ws-0010, logon.type: 2}
+  - name: success from the attacking IP, but 2 hours after the attack
+    expect: no_alert
+    start: "2026-03-12T02:10:00Z"
+    events:
+      - repeat: 20
+        every: 4s
+        fields: {event.action: logon-failed, event.outcome: failure, user.name: jonas.becker, source.ip: 203.0.113.45}
+      - offset: 2h
+        fields: {event.action: logon, event.outcome: success, user.name: jonas.becker, source.ip: 203.0.113.45}
+  - name: few failures (no brute force alert), then success
+    expect: no_alert
+    start: "2026-03-12T07:00:00Z"
+    events:
+      - repeat: 3
+        every: 10s
+        fields: {event.action: logon-failed, event.outcome: failure, user.name: erika.muster, source.ip: 198.51.100.20}
+      - offset: 1m
+        fields: {event.action: logon, event.outcome: success, user.name: erika.muster, source.ip: 198.51.100.20}

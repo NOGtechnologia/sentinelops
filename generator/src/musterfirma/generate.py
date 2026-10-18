@@ -93,12 +93,16 @@ def _sort_key(item: tuple[int, Record]) -> tuple[datetime, int]:
     return item[1].time, item[0]
 
 
-def build_records(cfg: GeneratorConfig, org: Organisation, rng: random.Random) -> tuple[list[Record], list[ScenarioTruth]]:
+def build_records(
+    cfg: GeneratorConfig, org: Organisation, rng: random.Random
+) -> tuple[list[Record], list[ScenarioTruth]]:
     records: list[Record] = []
     day = cfg.start
     end_utc = cfg.end.astimezone(UTC)
     while datetime.combine(day, datetime.min.time(), tzinfo=BERLIN) < cfg.end:
-        records.extend(r for r in generate_day(org, rng, day, cfg.events_per_day, frozenset(cfg.holidays)) if r.time <= end_utc)
+        records.extend(
+            r for r in generate_day(org, rng, day, cfg.events_per_day, frozenset(cfg.holidays)) if r.time <= end_utc
+        )
         day += timedelta(days=1)
     truths: list[ScenarioTruth] = []
     if cfg.scenarios:
@@ -128,7 +132,9 @@ def _render(spec: _FileSpec, org: Organisation, out_dir: Path) -> list[int]:
     if spec.source_type == "syslog_5424":
         return write_lines(path, [rfc5424_line(r) for r in sys_recs])
     if spec.source_type == "journald_json":
-        return write_lines(path, [json.dumps(journald_doc(r), ensure_ascii=False, separators=(",", ":")) for r in sys_recs])
+        return write_lines(
+            path, [json.dumps(journald_doc(r), ensure_ascii=False, separators=(",", ":")) for r in sys_recs]
+        )
     return write_lines(path, [rfc3164_line(r) for r in sys_recs])
 
 
@@ -196,7 +202,9 @@ def generate(cfg: GeneratorConfig, out_dir: Path) -> GroundTruth:
                 positions[id(rec)] = Locator(file=path, position=pos)
             flag = "future_timestamp" if rec.time > end_utc + timedelta(minutes=5) else None
             if rec.evidence or flag:
-                exceptions[str(pos)] = Label(status="accepted", assessment="suspicious" if rec.evidence else "normal", flag=flag)
+                exceptions[str(pos)] = Label(
+                    status="accepted", assessment="suspicious" if rec.evidence else "normal", flag=flag
+                )
         labels[path] = LabelSet(exceptions=exceptions)
         files.append(_file_entry(out_dir, path, spec.source_type, spec.timezone, len(written)))
 
@@ -207,10 +215,13 @@ def generate(cfg: GeneratorConfig, out_dir: Path) -> GroundTruth:
             ("quality/broken_vpn.ndjson", "json:musterfirma_vpn", "UTC", broken_vpn(), False),
         ):
             _write_labelled(out_dir / path, items, wrap_xml=xml)
-            labels[path] = LabelSet(exceptions={
-                str(i): Label(status=item.status, code=item.code, flag=item.flag)
-                for i, item in enumerate(items, start=1) if item.status != "accepted" or item.code or item.flag
-            })
+            labels[path] = LabelSet(
+                exceptions={
+                    str(i): Label(status=item.status, code=item.code, flag=item.flag)
+                    for i, item in enumerate(items, start=1)
+                    if item.status != "accepted" or item.code or item.flag
+                }
+            )
             files.append(_file_entry(out_dir, path, source_type, tz, len(items)))
 
     scenario_entries = [
@@ -247,7 +258,9 @@ def generate(cfg: GeneratorConfig, out_dir: Path) -> GroundTruth:
 
 def _file_entry(out_dir: Path, path: str, source_type: str, tz: str, records: int) -> FileEntry:
     data = (out_dir / path).read_bytes()
-    return FileEntry(path=path, source_type=source_type, timezone=tz, records=records, sha256=hashlib.sha256(data).hexdigest())
+    return FileEntry(
+        path=path, source_type=source_type, timezone=tz, records=records, sha256=hashlib.sha256(data).hexdigest()
+    )
 
 
 def summary(truth: GroundTruth) -> dict[str, Any]:

@@ -1,0 +1,42 @@
+rule_id: SO-AUTH-006
+cases:
+  - name: network logons to 8 hosts within 15 minutes
+    expect: alert
+    start: "2026-03-10T21:30:00Z"
+    events:
+      - repeat: 8
+        every: 95s
+        vary: {host.name: [srv-file01, srv-file02, srv-app01, srv-sql01, srv-mail01, srv-backup01, ws-0031, ws-0047]}
+        fields: {event.action: logon, event.outcome: success, logon.type: 3, user.name: thomas.klein, source.ip: 10.20.1.33}
+  - name: exactly five hosts
+    expect: alert
+    start: "2026-03-10T21:30:00Z"
+    events:
+      - repeat: 5
+        every: 2m
+        vary: {host.name: [h1, h2, h3, h4, h5]}
+        fields: {event.action: logon, event.outcome: success, logon.type: 3, user.name: x.user}
+  - name: four hosts only
+    expect: no_alert
+    start: "2026-03-10T01:00:00Z"
+    events:
+      - repeat: 4
+        every: 2m
+        vary: {host.name: [srv-file01, srv-file02, srv-sql01, srv-mail01]}
+        fields: {event.action: logon, event.outcome: success, logon.type: 3, user.name: svc_backup}
+  - name: monitoring account is covered by exception EXC-0001
+    expect: no_alert
+    start: "2026-03-10T10:00:00Z"
+    events:
+      - repeat: 10
+        every: 5s
+        vary: {host.name: [dc01, dc02, srv-file01, srv-file02, srv-app01, srv-sql01, srv-mail01, srv-print01, srv-backup01, srv-gw01]}
+        fields: {event.action: logon, event.outcome: success, logon.type: 3, user.name: svc_monitor}
+  - name: interactive logons (type 10) do not count
+    expect: no_alert
+    start: "2026-03-10T10:00:00Z"
+    events:
+      - repeat: 6
+        every: 1m
+        vary: {host.name: [h1, h2, h3, h4, h5, h6]}
+        fields: {event.action: logon, event.outcome: success, logon.type: 10, user.name: adm-weber}

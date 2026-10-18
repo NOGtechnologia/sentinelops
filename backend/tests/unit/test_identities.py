@@ -46,7 +46,14 @@ def test_user_key_unifies_notations() -> None:
 
 @pytest.mark.parametrize(
     ("raw", "expected"),
-    [("DC01.musterfirma.example", "dc01"), ("dc01.", "dc01"), ("10.0.0.1", "10.0.0.1"), ("-", None), (None, None), (".", None)],
+    [
+        ("DC01.musterfirma.example", "dc01"),
+        ("dc01.", "dc01"),
+        ("10.0.0.1", "10.0.0.1"),
+        ("-", None),
+        (None, None),
+        (".", None),
+    ],
 )
 def test_host_key(raw: str | None, expected: str | None) -> None:
     assert host_key(raw) == expected

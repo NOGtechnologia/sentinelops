@@ -21,18 +21,86 @@ EXTERNAL_ATTACK_NET = "203.0.113"  # attackers
 EXTERNAL_MISC_NET = "192.0.2"  # misc. internet noise / unusual logons
 
 FIRST_NAMES = (
-    "anna", "ben", "clara", "david", "emma", "felix", "greta", "hannah", "jonas", "julia", "karl", "lara",
-    "lena", "lukas", "marie", "max", "mia", "noah", "paul", "petra", "sabine", "sophie", "stefan", "thomas",
-    "tim", "ute", "vera", "wolfgang", "yvonne", "zoe", "erika", "frank", "heike", "ingo", "jana", "kai",
+    "anna",
+    "ben",
+    "clara",
+    "david",
+    "emma",
+    "felix",
+    "greta",
+    "hannah",
+    "jonas",
+    "julia",
+    "karl",
+    "lara",
+    "lena",
+    "lukas",
+    "marie",
+    "max",
+    "mia",
+    "noah",
+    "paul",
+    "petra",
+    "sabine",
+    "sophie",
+    "stefan",
+    "thomas",
+    "tim",
+    "ute",
+    "vera",
+    "wolfgang",
+    "yvonne",
+    "zoe",
+    "erika",
+    "frank",
+    "heike",
+    "ingo",
+    "jana",
+    "kai",
 )
 LAST_NAMES = (
-    "becker", "fischer", "hoffmann", "klein", "koch", "krueger", "lange", "meier", "mueller", "neumann",
-    "richter", "schaefer", "schmidt", "schneider", "schroeder", "schulz", "wagner", "weber", "wolf", "zimmermann",
-    "braun", "hartmann", "lehmann", "werner", "kraus", "vogel", "jung", "roth", "frank", "beck",
+    "becker",
+    "fischer",
+    "hoffmann",
+    "klein",
+    "koch",
+    "krueger",
+    "lange",
+    "meier",
+    "mueller",
+    "neumann",
+    "richter",
+    "schaefer",
+    "schmidt",
+    "schneider",
+    "schroeder",
+    "schulz",
+    "wagner",
+    "weber",
+    "wolf",
+    "zimmermann",
+    "braun",
+    "hartmann",
+    "lehmann",
+    "werner",
+    "kraus",
+    "vogel",
+    "jung",
+    "roth",
+    "frank",
+    "beck",
 )
 DEPARTMENTS = (
-    ("Vertrieb", 24), ("Einkauf", 10), ("Buchhaltung", 12), ("Personal", 6), ("IT", 8), ("Produktion", 40),
-    ("Marketing", 10), ("Logistik", 20), ("Geschaeftsfuehrung", 4), ("Qualitaet", 12),
+    ("Vertrieb", 24),
+    ("Einkauf", 10),
+    ("Buchhaltung", 12),
+    ("Personal", 6),
+    ("IT", 8),
+    ("Produktion", 40),
+    ("Marketing", 10),
+    ("Logistik", 20),
+    ("Geschaeftsfuehrung", 4),
+    ("Qualitaet", 12),
 )
 
 
@@ -76,7 +144,13 @@ class Organisation:
     linux_servers: list[Host]
     vpn: Host
     privileged_groups: tuple[str, ...] = ("Domain Admins", "Enterprise Admins", "Administrators", "sudo", "wheel")
-    normal_groups: tuple[str, ...] = ("GG-Vertrieb-Share", "GG-VPN-Users", "GG-Drucker-EG", "GG-Projekt-Alpha", "docker")
+    normal_groups: tuple[str, ...] = (
+        "GG-Vertrieb-Share",
+        "GG-VPN-Users",
+        "GG-Drucker-EG",
+        "GG-Projekt-Alpha",
+        "docker",
+    )
     by_name: dict[str, User] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
@@ -94,7 +168,9 @@ class Organisation:
 
 
 def build_organisation(rng: random.Random) -> Organisation:
-    workstations = [Host(f"ws-{i:04d}", f"10.20.{i // 200 + 1}.{i % 200 + 10}", "windows", "workstation") for i in range(1, 121)]
+    workstations = [
+        Host(f"ws-{i:04d}", f"10.20.{i // 200 + 1}.{i % 200 + 10}", "windows", "workstation") for i in range(1, 121)
+    ]
     servers = [
         Host("dc01", "10.10.0.10", "windows", "dc"),
         Host("dc02", "10.10.0.11", "windows", "dc"),
@@ -150,7 +226,11 @@ def build_organisation(rng: random.Random) -> Organisation:
             name, display = names.pop(0)
             slots.append((name, display, dept, None))
     for name, display, dept, remote_flag in slots:
-        remote = remote_flag if remote_flag is not None else (dept in ("Vertrieb", "Marketing", "Einkauf") and rng.random() < 0.5)
+        remote = (
+            remote_flag
+            if remote_flag is not None
+            else (dept in ("Vertrieb", "Marketing", "Einkauf") and rng.random() < 0.5)
+        )
         if dept == "Produktion":
             # production staff share terminals
             workstation = workstations[100 + (rid % 20)].name

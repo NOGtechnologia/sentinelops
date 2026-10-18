@@ -151,7 +151,9 @@ def _scalar(value: Any) -> str | int | float | bool | None:
     return None
 
 
-def _timestamp(profile: MappingProfile, doc: Mapping[str, Any], ctx: ParseContext) -> tuple[NormalizedTime, str] | Malformed:
+def _timestamp(
+    profile: MappingProfile, doc: Mapping[str, Any], ctx: ParseContext
+) -> tuple[NormalizedTime, str] | Malformed:
     raw = lookup(doc, profile.timestamp.field)
     if raw is None or raw == "":
         return Malformed(MalformedCode.MISSING_TIMESTAMP, f"field {profile.timestamp.field!r} missing")

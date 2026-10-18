@@ -111,12 +111,15 @@ def compute_priority(
         failures = int(first.explanation.get("preceding_alert", {}).get("failures_for_group", len(first.event_ids) - 1))
         ip = str(success.fields.get("source.ip", "?")) if success else "?"
         when = success.timestamp.astimezone(tz).strftime("%H:%M") if success else "?"
-        factors.append(Factor(
-            "success_after_failures", weights.success_after_failures,
-            f"Erfolgreiche Anmeldung von {ip} um {when} nach {failures} Fehlschlägen",
-            f"Successful logon from {ip} at {when} after {failures} failures",
-            _evidence([success_id, *first.event_ids[:2]]),
-        ))
+        factors.append(
+            Factor(
+                "success_after_failures",
+                weights.success_after_failures,
+                f"Erfolgreiche Anmeldung von {ip} um {when} nach {failures} Fehlschlägen",
+                f"Successful logon from {ip} at {when} after {failures} failures",
+                _evidence([success_id, *first.event_ids[:2]]),
+            )
+        )
 
     privileged: list[str] = []
     privileged_names: list[str] = []
@@ -130,7 +133,9 @@ def compute_priority(
                 if isinstance(name, str) and _matches_any(user_key(name) or name, cfg.expected_privileged_accounts):
                     privileged.append(eid)
                     privileged_names.append(name)
-            if event.action == "user-added-to-group" and _matches_any(str(event.fields.get("group.name", "")), cfg.privileged_groups):
+            if event.action == "user-added-to-group" and _matches_any(
+                str(event.fields.get("group.name", "")), cfg.privileged_groups
+            ):
                 privileged.append(eid)
                 privileged_names.append(str(event.fields.get("user.target.name") or event.fields.get("user.name")))
             if event.action == "special-privileges-assigned":
@@ -138,9 +143,15 @@ def compute_priority(
                 privileged_names.append(str(event.fields.get("user.name")))
     if privileged:
         names = ", ".join(sorted(set(privileged_names)))
-        factors.append(Factor("privileged_account", weights.privileged_account,
-                              f"Privilegiertes Konto beteiligt: {names}", f"Privileged account involved: {names}",
-                              _evidence(privileged)))
+        factors.append(
+            Factor(
+                "privileged_account",
+                weights.privileged_account,
+                f"Privilegiertes Konto beteiligt: {names}",
+                f"Privileged account involved: {names}",
+                _evidence(privileged),
+            )
+        )
 
     critical: list[str] = []
     critical_names: set[str] = set()
@@ -154,37 +165,68 @@ def compute_priority(
                 critical_names.add(host)
     if critical:
         names = ", ".join(sorted(critical_names))
-        factors.append(Factor("critical_asset", weights.critical_asset, f"Kritisches Asset beteiligt: {names}",
-                              f"Critical asset involved: {names}", _evidence(critical)))
+        factors.append(
+            Factor(
+                "critical_asset",
+                weights.critical_asset,
+                f"Kritisches Asset beteiligt: {names}",
+                f"Critical asset involved: {names}",
+                _evidence(critical),
+            )
+        )
 
     changes = [a for a in alerts if a.privilege_change]
     if changes:
         rules = ", ".join(sorted({a.rule_id for a in changes}))
-        factors.append(Factor("privilege_change", weights.privilege_change, f"Rechteänderung im Fall ({rules})",
-                              f"Privilege change in case ({rules})",
-                              _evidence([e for a in sorted(changes, key=lambda a: a.window_start) for e in a.event_ids])))
+        factors.append(
+            Factor(
+                "privilege_change",
+                weights.privilege_change,
+                f"Rechteänderung im Fall ({rules})",
+                f"Privilege change in case ({rules})",
+                _evidence([e for a in sorted(changes, key=lambda a: a.window_start) for e in a.event_ids]),
+            )
+        )
 
     tactics = sorted({t for a in alerts for t in a.tactics})
     if len(tactics) >= 2:
         bonus = min(weights.per_extra_tactic * (len(tactics) - 1), weights.max_tactic_bonus)
-        factors.append(Factor("attack_tactics", bonus, f"{len(tactics)} ATT&CK-Taktiken: {', '.join(tactics)}",
-                              f"{len(tactics)} ATT&CK tactics: {', '.join(tactics)}",
-                              _evidence([a.event_ids[0] for a in sorted(alerts, key=lambda a: a.window_start)])))
+        factors.append(
+            Factor(
+                "attack_tactics",
+                bonus,
+                f"{len(tactics)} ATT&CK-Taktiken: {', '.join(tactics)}",
+                f"{len(tactics)} ATT&CK tactics: {', '.join(tactics)}",
+                _evidence([a.event_ids[0] for a in sorted(alerts, key=lambda a: a.window_start)]),
+            )
+        )
 
     if top.maturity == "experimental":
-        factors.append(Factor("experimental_rule", weights.experimental_penalty,
-                              f"Regel {top.rule_id} hat Reifegrad experimental", f"Rule {top.rule_id} is experimental",
-                              _evidence(top.event_ids)))
+        factors.append(
+            Factor(
+                "experimental_rule",
+                weights.experimental_penalty,
+                f"Regel {top.rule_id} hat Reifegrad experimental",
+                f"Rule {top.rule_id} is experimental",
+                _evidence(top.event_ids),
+            )
+        )
 
     stats = (rule_stats or {}).get(top.rule_id)
     if stats is not None and stats.resolved >= 3 and stats.rate > 0:
         share = min(1.0, stats.rate / cfg.high_false_positive_rate)
         penalty = round(weights.max_false_positive_penalty * share)
         if penalty:
-            factors.append(Factor("false_positive_rate", penalty,
-                                  f"Historische Fehlalarmquote von {top.rule_id}: {stats.rate:.0%} ({stats.false_positives}/{stats.resolved})",
-                                  f"Historical false positive rate of {top.rule_id}: {stats.rate:.0%}",
-                                  ()))
+            factors.append(
+                Factor(
+                    "false_positive_rate",
+                    penalty,
+                    f"Historische Fehlalarmquote von {top.rule_id}: {stats.rate:.0%} "
+                    f"({stats.false_positives}/{stats.resolved})",
+                    f"Historical false positive rate of {top.rule_id}: {stats.rate:.0%}",
+                    (),
+                )
+            )
 
     score = max(0, min(100, sum(f.contribution for f in factors)))
     return PriorityResult(score, level_for(score, cfg), tuple(factors))

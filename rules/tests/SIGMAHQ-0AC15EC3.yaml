@@ -1,0 +1,22 @@
+rule_id: SIGMAHQ-0AC15EC3
+cases:
+  - name: new user with UID 0
+    expect: alert
+    start: "2026-03-12T02:13:10Z"
+    events:
+      - fields: {event.action: user-created, host.name: srv-lnx01, message: "new user: name=backdoor, UID=0, GID=0, home=/root, shell=/bin/bash, from=/dev/pts/0"}
+  - name: new user in group sudo (GID 27)
+    expect: alert
+    start: "2026-03-12T02:13:10Z"
+    events:
+      - fields: {host.name: srv-lnx02, message: "new user: name=helper, UID=1050, GID=27, home=/home/helper, shell=/bin/bash"}
+  - name: ordinary new user
+    expect: no_alert
+    start: "2026-03-12T02:13:10Z"
+    events:
+      - fields: {host.name: srv-lnx01, message: "new user: name=intern, UID=1051, GID=1051, home=/home/intern, shell=/bin/bash"}
+  - name: GID 0 mentioned outside of a new user message
+    expect: no_alert
+    start: "2026-03-12T02:13:10Z"
+    events:
+      - fields: {host.name: srv-lnx01, message: "group changed: GID=0, name=root"}

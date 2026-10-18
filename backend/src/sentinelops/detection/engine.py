@@ -58,7 +58,8 @@ class _RuleIndex:
 
 def _single_alert(rule: BaseRule, match: BaseMatch) -> Alert:
     meta = rule.meta
-    assert meta is not None
+    if meta is None:  # helper rules never raise alerts
+        raise ValueError(f"rule {rule.name} has no alert metadata")
     event = match.event
     return Alert(
         alert_id=alert_id(meta.rule_id, meta.version, [event.event_id], event.timestamp),

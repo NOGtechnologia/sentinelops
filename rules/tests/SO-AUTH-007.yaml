@@ -1,0 +1,22 @@
+rule_id: SO-AUTH-007
+cases:
+  - name: Windows account lockout (4740)
+    expect: alert
+    start: "2026-03-11T07:02:10Z"
+    events:
+      - fields: {event.action: account-locked, event.code: "4740", user.name: "DC01$", user.target.name: lena.hoffmann, host.name: dc01, source.host: WS-0042}
+  - name: lockout from a JSON source
+    expect: alert
+    start: "2026-03-11T07:02:10Z"
+    events:
+      - fields: {event.action: account-locked, user.target.name: erika.muster, host.name: idp01}
+  - name: failed logon without lockout
+    expect: no_alert
+    start: "2026-03-11T07:02:10Z"
+    events:
+      - fields: {event.action: logon-failed, event.outcome: failure, user.name: lena.hoffmann}
+  - name: account enabled again
+    expect: no_alert
+    start: "2026-03-11T07:30:00Z"
+    events:
+      - fields: {event.action: user-enabled, user.name: adm-mueller, user.target.name: lena.hoffmann}

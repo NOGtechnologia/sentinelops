@@ -20,8 +20,12 @@ from musterfirma.writers import BERLIN
 FILE_SERVERS = ("srv-file01", "srv-file02", "srv-mail01", "srv-app01", "srv-print01")
 ADMIN_SERVERS = ("srv-file01", "srv-file02", "srv-app01", "srv-sql01", "srv-mail01", "srv-backup01", "srv-print01")
 NORMAL_COMMANDS = (
-    "/usr/bin/systemctl restart nginx", "/usr/bin/apt-get update", "/usr/bin/journalctl -u ssh",
-    "/usr/bin/systemctl status app", "/usr/bin/tail -n 100 /var/log/syslog", "/usr/bin/df -h",
+    "/usr/bin/systemctl restart nginx",
+    "/usr/bin/apt-get update",
+    "/usr/bin/journalctl -u ssh",
+    "/usr/bin/systemctl status app",
+    "/usr/bin/tail -n 100 /var/log/syslog",
+    "/usr/bin/df -h",
 )
 
 
@@ -79,8 +83,11 @@ def _office_day(ctx: DayContext, user: User, start: float, end: float) -> list[t
     t_logon = local(ctx.day, start)
     if rng.random() < 0.08:  # password typo(s) in the morning
         for i in range(rng.randint(1, 2)):
-            ctx.out.append(ev.logon_failed(ws.name, t_logon - timedelta(seconds=40 - i * 15), user.name, 2,
-                                           "127.0.0.1", 0, ws.name.upper()))
+            ctx.out.append(
+                ev.logon_failed(
+                    ws.name, t_logon - timedelta(seconds=40 - i * 15), user.name, 2, "127.0.0.1", 0, ws.name.upper()
+                )
+            )
     ctx.out.append(ev.tgt_request(ctx.dc(), t_logon - timedelta(seconds=1), acc, ws.ip, ctx.next_port()))
     ctx.out.append(ev.logon(ws.name, t_logon, acc, 2, "127.0.0.1", 0, ws.name))
     for _ in range(rng.randint(2, 5)):
@@ -92,11 +99,21 @@ def _office_day(ctx: DayContext, user: User, start: float, end: float) -> list[t
 
 def _remote_day(ctx: DayContext, user: User, start: float) -> list[tuple[datetime, str, str]]:
     rng, org = ctx.rng, ctx.org
-    assert user.home_ip is not None
+    if user.home_ip is None:
+        raise ValueError(f"{user.name} has no home office address")
     t0 = local(ctx.day, start)
     vpn_ip = f"10.99.0.{(user.rid % 200) + 10}"
-    ctx.out.append(VpnRecord(t0 - timedelta(minutes=2), "auth", "ok", f"{user.name}@musterfirma.example",
-                             "certificate", user.home_ip, ctx.next_port()))
+    ctx.out.append(
+        VpnRecord(
+            t0 - timedelta(minutes=2),
+            "auth",
+            "ok",
+            f"{user.name}@musterfirma.example",
+            "certificate",
+            user.home_ip,
+            ctx.next_port(),
+        )
+    )
     acc = account(user)
     if rng.random() < 0.3:  # some remote users work via the RDP gateway
         gw = org.server("srv-gw01")
@@ -124,7 +141,9 @@ def _admin_day(ctx: DayContext, admin: User) -> None:
     for _ in range(rng.randint(0, 2)):
         target = rng.choice(org.users)
         t = local(ctx.day, rng.uniform(admin.start_hour + 0.5, admin.end_hour - 0.5))
-        ctx.out.append(ev.group_member_added("dc01", t, acc, account(target), target.display, rng.choice(org.normal_groups)))
+        ctx.out.append(
+            ev.group_member_added("dc01", t, acc, account(target), target.display, rng.choice(org.normal_groups))
+        )
     for _ in range(rng.randint(0, 2)):
         target = rng.choice(org.users)
         t = local(ctx.day, rng.uniform(admin.start_hour + 0.5, admin.end_hour - 0.5))
@@ -137,9 +156,18 @@ def _admin_day(ctx: DayContext, admin: User) -> None:
         ctx.out.append(ev.ssh_accepted(server, t, pid, admin.name, ws.ip, port))
         ctx.out.append(ev.ssh_session(server, t, pid, admin.name, 1000 + admin.rid % 100))
         for i in range(rng.randint(1, 3)):
-            ctx.out.append(ev.sudo_ok(server, t + timedelta(minutes=1 + i), admin.name, rng.choice(NORMAL_COMMANDS),
-                                      cwd=f"/home/{admin.name}"))
-        ctx.out.append(ev.ssh_disconnect(server, t + timedelta(minutes=rng.randint(10, 40)), pid, admin.name, ws.ip, port))
+            ctx.out.append(
+                ev.sudo_ok(
+                    server,
+                    t + timedelta(minutes=1 + i),
+                    admin.name,
+                    rng.choice(NORMAL_COMMANDS),
+                    cwd=f"/home/{admin.name}",
+                )
+            )
+        ctx.out.append(
+            ev.ssh_disconnect(server, t + timedelta(minutes=rng.randint(10, 40)), pid, admin.name, ws.ip, port)
+        )
 
 
 def _service_accounts(ctx: DayContext, weekend: bool) -> None:
@@ -174,7 +202,11 @@ def _service_accounts(ctx: DayContext, weekend: bool) -> None:
         t = local(ctx.day, hour + rng.uniform(0, 0.9))
         pid = ctx.next_pid()
         ctx.out.append(ev.ssh_accepted("srv-lnx03", t, pid, "svc_deploy", mon_ip, ctx.next_port()))
-        ctx.out.append(ev.sudo_ok("srv-lnx03", t + timedelta(seconds=5), "svc_deploy", "/usr/bin/systemctl restart app", cwd="/opt/app"))
+        ctx.out.append(
+            ev.sudo_ok(
+                "srv-lnx03", t + timedelta(seconds=5), "svc_deploy", "/usr/bin/systemctl restart app", cwd="/opt/app"
+            )
+        )
     for host in org.linux_servers:
         for slot in range(0, 144):
             ctx.out.append(ev.cron_session(host.name, local(ctx.day, slot / 6) + timedelta(seconds=1), ctx.next_pid()))
@@ -193,7 +225,9 @@ def _internet_noise(ctx: DayContext) -> None:
             t += timedelta(seconds=rng.randint(3, 30))
 
 
-def generate_day(org: Organisation, rng: random.Random, day: date, events_per_day: int, holidays: frozenset[date]) -> list[Record]:
+def generate_day(
+    org: Organisation, rng: random.Random, day: date, events_per_day: int, holidays: frozenset[date]
+) -> list[Record]:
     weekend = day.weekday() >= 5 or day in holidays
     ctx = DayContext(org, rng, day)
     sessions: list[tuple[User, datetime, str, str]] = []

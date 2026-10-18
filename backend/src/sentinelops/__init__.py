@@ -1,1 +1,1 @@
-﻿"""SentinelOps."""
+"""SentinelOps."""

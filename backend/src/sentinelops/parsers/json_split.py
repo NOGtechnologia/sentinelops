@@ -105,11 +105,14 @@ class _ArraySplitter:
                     break
             offset += len(chunk)
         if self.current.strip():
-            yield self._emit(Malformed(MalformedCode.TRUNCATED, "JSON array element not terminated", self.element_start))
+            yield self._emit(
+                Malformed(MalformedCode.TRUNCATED, "JSON array element not terminated", self.element_start)
+            )
         elif not self.closed:
             self.position += 1
-            yield RawRecord(self.position, b"", offset), Malformed(
-                MalformedCode.TRUNCATED, "JSON array not closed", offset
+            yield (
+                RawRecord(self.position, b"", offset),
+                Malformed(MalformedCode.TRUNCATED, "JSON array not closed", offset),
             )
 
     def _feed(self, value: int, pos: int) -> RawRecord | tuple[RawRecord, Malformed] | None:

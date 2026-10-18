@@ -1,0 +1,22 @@
+rule_id: SIGMAHQ-D99B79D2
+cases:
+  - name: 1102 from Microsoft-Windows-Eventlog
+    expect: alert
+    start: "2026-03-11T21:45:00Z"
+    events:
+      - fields: {event.action: audit-log-cleared, event.code: "1102", event.provider: Microsoft-Windows-Eventlog, host.name: srv-file01}
+  - name: legacy 517 from provider Security
+    expect: alert
+    start: "2026-03-11T21:45:00Z"
+    events:
+      - fields: {event.code: "517", event.provider: Security, host.name: srv-old01}
+  - name: 1102 from a different provider
+    expect: no_alert
+    start: "2026-03-11T21:45:00Z"
+    events:
+      - fields: {event.code: "1102", event.provider: Some-Other-Provider}
+  - name: different event id
+    expect: no_alert
+    start: "2026-03-11T21:45:00Z"
+    events:
+      - fields: {event.code: "1100", event.provider: Microsoft-Windows-Eventlog}

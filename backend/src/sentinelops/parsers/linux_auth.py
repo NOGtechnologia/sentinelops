@@ -57,9 +57,9 @@ def _ssh(groups: dict[str, str]) -> dict[str, Any]:
 def _sudo(groups: dict[str, str]) -> dict[str, Any]:
     out: dict[str, Any] = {"user.name": groups["user"]}
     rest = groups.get("rest") or ""
-    attrs = dict(
-        (key.strip(), value.strip()) for key, _, value in (p.partition("=") for p in rest.split(" ; ")) if key.strip()
-    )
+    attrs = {
+        key.strip(): value.strip() for key, _, value in (p.partition("=") for p in rest.split(" ; ")) if key.strip()
+    }
     if attrs.get("USER"):
         out["user.target.name"] = attrs["USER"]
     command = attrs.get("COMMAND")
@@ -168,7 +168,9 @@ PATTERNS: tuple[AuthPattern, ...] = (
         Outcome.UNKNOWN,
         ("network",),
         ("end",),
-        lambda g: _ip_port(g) | ({"user.name": g.get("user") or g.get("user2")} if (g.get("user") or g.get("user2")) else {}),
+        lambda g: (
+            _ip_port(g) | ({"user.name": g.get("user") or g.get("user2")} if (g.get("user") or g.get("user2")) else {})
+        ),
         (
             "Connection closed by 203.0.113.7 port 52211 [preauth]",
             "Disconnected from user erika.muster 10.20.1.15 port 50512",
@@ -203,8 +205,10 @@ PATTERNS: tuple[AuthPattern, ...] = (
         Outcome.SUCCESS,
         ("session",),
         ("start",),
-        lambda g: {"user.target.name": g["user"], "pam.service": g["service"]}
-        | ({"user.name": g["logname"]} if g.get("logname") else {}),
+        lambda g: (
+            {"user.target.name": g["user"], "pam.service": g["service"]}
+            | ({"user.name": g["logname"]} if g.get("logname") else {})
+        ),
         (
             "pam_unix(sshd:session): session opened for user erika.muster(uid=1004) by (uid=0)",
             "pam_unix(su:session): session opened for user root(uid=0) by max.mustermann(uid=1001)",
@@ -241,7 +245,9 @@ PATTERNS: tuple[AuthPattern, ...] = (
     AuthPattern(
         "sudo_denied",
         ("sudo",),
-        re.compile(r"^\s*(?P<user>\S+) : (?:user NOT in sudoers|user NOT authorized on host|command not allowed) ; (?P<rest>.*)$"),
+        re.compile(
+            r"^\s*(?P<user>\S+) : (?:user NOT in sudoers|user NOT authorized on host|command not allowed) ; (?P<rest>.*)$"
+        ),
         "sudo-denied",
         Outcome.FAILURE,
         ("process",),
@@ -255,23 +261,33 @@ PATTERNS: tuple[AuthPattern, ...] = (
     AuthPattern(
         "su_success",
         ("su",),
-        re.compile(r"^(?:Successful su for (?P<target2>\S+) by (?P<user2>\S+)|\(to (?P<target>\S+)\) (?P<user>\S+) on \S+)"),
+        re.compile(
+            r"^(?:Successful su for (?P<target2>\S+) by (?P<user2>\S+)|\(to (?P<target>\S+)\) (?P<user>\S+) on \S+)"
+        ),
         "su",
         Outcome.SUCCESS,
         _AUTH,
         ("start",),
-        lambda g: {"user.name": g.get("user") or g.get("user2") or "", "user.target.name": g.get("target") or g.get("target2") or ""},
+        lambda g: {
+            "user.name": g.get("user") or g.get("user2") or "",
+            "user.target.name": g.get("target") or g.get("target2") or "",
+        },
         ("(to root) max.mustermann on pts/0", "Successful su for root by max.mustermann"),
     ),
     AuthPattern(
         "su_failed",
         ("su",),
-        re.compile(r"^FAILED (?:SU|su) (?:\(to (?P<target>\S+)\) (?P<user>\S+) on \S+|for (?P<target2>\S+) by (?P<user2>\S+))"),
+        re.compile(
+            r"^FAILED (?:SU|su) (?:\(to (?P<target>\S+)\) (?P<user>\S+) on \S+|for (?P<target2>\S+) by (?P<user2>\S+))"
+        ),
         "su-failed",
         Outcome.FAILURE,
         _AUTH,
         ("start",),
-        lambda g: {"user.name": g.get("user") or g.get("user2") or "", "user.target.name": g.get("target") or g.get("target2") or ""},
+        lambda g: {
+            "user.name": g.get("user") or g.get("user2") or "",
+            "user.target.name": g.get("target") or g.get("target2") or "",
+        },
         ("FAILED SU (to root) max.mustermann on pts/0", "FAILED su for root by erika.muster"),
     ),
     AuthPattern(
@@ -352,7 +368,10 @@ PATTERNS: tuple[AuthPattern, ...] = (
         _IAM,
         ("user", "change"),
         lambda g: {"user.target.name": g["target"]},
-        ("pam_unix(passwd:chauthtok): password changed for erika.muster", "pam_unix(chpasswd:chauthtok): password changed for svc_backup"),
+        (
+            "pam_unix(passwd:chauthtok): password changed for erika.muster",
+            "pam_unix(chpasswd:chauthtok): password changed for svc_backup",
+        ),
     ),
 )
 

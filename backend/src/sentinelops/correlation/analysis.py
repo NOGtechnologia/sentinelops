@@ -83,12 +83,14 @@ def analyze(
     for draft in drafts:
         alerts = tuple(alerts_by_id[aid] for aid in draft.alert_ids)
         title_en, title_de = case_title(alerts)
-        cases.append(CaseAnalysis(
-            draft=draft,
-            alerts=alerts,
-            priority=compute_priority(alerts, events_by_id, config, rule_stats, tz),
-            recommendations=tuple(recommend(alerts, events_by_id, ruleset.metas, catalog)),
-            title=title_en,
-            title_de=title_de,
-        ))
+        cases.append(
+            CaseAnalysis(
+                draft=draft,
+                alerts=alerts,
+                priority=compute_priority(alerts, events_by_id, config, rule_stats, tz),
+                recommendations=tuple(recommend(alerts, events_by_id, ruleset.metas, catalog)),
+                title=title_en,
+                title_de=title_de,
+            )
+        )
     return AnalysisResult(detection, hubs, cases, events_by_id)

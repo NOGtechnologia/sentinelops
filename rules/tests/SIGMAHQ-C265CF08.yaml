@@ -1,0 +1,26 @@
+rule_id: SIGMAHQ-C265CF08
+cases:
+  - name: member added to local Administrators (4732, group name)
+    expect: alert
+    start: "2026-03-11T10:00:00Z"
+    events:
+      - fields: {event.code: "4732", event.action: user-added-to-group, host.name: ws-0010}
+        original: {winlog.event_data.TargetUserName: Administrators, winlog.event_data.SubjectUserName: adm-weber, winlog.event_data.TargetSid: "S-1-5-32-544"}
+  - name: German group name via well-known SID
+    expect: alert
+    start: "2026-03-11T10:00:00Z"
+    events:
+      - fields: {event.code: "4732", host.name: ws-0011}
+        original: {winlog.event_data.TargetUserName: Administratoren, winlog.event_data.SubjectUserName: x.user, winlog.event_data.TargetSid: "S-1-5-32-544"}
+  - name: change made by a machine account
+    expect: no_alert
+    start: "2026-03-11T10:00:00Z"
+    events:
+      - fields: {event.code: "4732"}
+        original: {winlog.event_data.TargetUserName: Administrators, winlog.event_data.SubjectUserName: "WS-0010$", winlog.event_data.TargetSid: "S-1-5-32-544"}
+  - name: other local group
+    expect: no_alert
+    start: "2026-03-11T10:00:00Z"
+    events:
+      - fields: {event.code: "4732"}
+        original: {winlog.event_data.TargetUserName: Remote Desktop Users, winlog.event_data.SubjectUserName: adm-weber, winlog.event_data.TargetSid: "S-1-5-32-555"}
