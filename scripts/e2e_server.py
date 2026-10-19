@@ -42,7 +42,9 @@ def main() -> int:
         print("invalid database name", file=sys.stderr)
         return 2
     port = os.environ.get("E2E_PORT", "8001")
-    dataset = Path(os.environ.get("E2E_DATASET", str(ROOT / ".cache" / "e2e-dataset")))
+    dataset = Path(os.environ.get("E2E_DATASET", ".cache/e2e-dataset"))
+    if not dataset.is_absolute():
+        dataset = ROOT / dataset  # relative to the repository, independent of the working directory
     static = ROOT / "frontend" / "dist"
     if not (static / "index.html").exists():
         print("frontend/dist is missing - run `pnpm --dir frontend build` first", file=sys.stderr)
