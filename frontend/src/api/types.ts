@@ -434,6 +434,29 @@ export interface CaseReport {
   notes: Note[];
 }
 
+/** A normalised event as returned by the event search (flat ECS field names). */
+export interface EventRow {
+  "event.id": string;
+  "@timestamp": string;
+  "event.action"?: string;
+  "event.outcome"?: string;
+  "event.code"?: string;
+  "event.time_quality"?: string;
+  "user.name"?: string;
+  "host.name"?: string;
+  "source.ip"?: string;
+  "process.command_line"?: string;
+  "log.source_type": string;
+  assessment: "normal" | "suspicious";
+  [field: string]: unknown;
+}
+
+export interface EventDetail {
+  event: Record<string, unknown>;
+  assessment: string;
+  raw: { text: string; position: number; run_id: string } | null;
+}
+
 export interface UploadResult {
   run_id: string;
   status: string;

@@ -11,6 +11,8 @@ import type {
   CaseSummaryRow,
   Dashboard,
   EntityRow,
+  EventDetail,
+  EventRow,
   Evidence,
   GraphData,
   IngestRun,
@@ -305,6 +307,30 @@ export const useUpload = () => {
     onSuccess: () => void client.invalidateQueries({ queryKey: keys.quality }),
   });
 };
+
+export interface EventFilters {
+  q?: string | undefined;
+  user?: string | undefined;
+  host?: string | undefined;
+  ip?: string | undefined;
+  action?: string | undefined;
+  start?: string | undefined;
+  end?: string | undefined;
+  assessment?: string | undefined;
+}
+
+export const useEvents = (filters: EventFilters) =>
+  useQuery({
+    queryKey: ["events", filters],
+    queryFn: () => api<{ offset: number; items: EventRow[] }>("/api/v1/events", { query: { ...filters, limit: 200 } }),
+    placeholderData: keepPreviousData,
+  });
+
+export const useEvent = (id: string) =>
+  useQuery({
+    queryKey: ["event", id],
+    queryFn: () => api<EventDetail>("/api/v1/events/{event_id}", { path: { event_id: id } }),
+  });
 
 export const useEntities = (type: string | undefined, q: string | undefined) =>
   useQuery({

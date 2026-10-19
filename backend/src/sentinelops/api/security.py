@@ -10,6 +10,7 @@ from __future__ import annotations
 import time
 from collections import defaultdict, deque
 from collections.abc import Awaitable, Callable
+from urllib.parse import urlsplit
 
 from fastapi import Request, Response
 from fastapi.responses import JSONResponse
@@ -24,8 +25,15 @@ RATE_LIMITS: tuple[tuple[str, int], ...] = (
 WINDOW_SECONDS = 60
 
 
+def _origin(url: str) -> str:
+    """CSP source for an URL: scheme://host[:port] (a path would only match that exact path)."""
+    parts = urlsplit(url)
+    return f"{parts.scheme}://{parts.netloc}" if parts.scheme and parts.netloc else ""
+
+
 def content_security_policy(extra_connect: str | None) -> str:
-    connect = "'self'" + (f" {extra_connect}" if extra_connect else "")
+    origin = _origin(extra_connect) if extra_connect else ""
+    connect = "'self'" + (f" {origin}" if origin else "")
     return (
         "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; "
         f"connect-src {connect}; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"

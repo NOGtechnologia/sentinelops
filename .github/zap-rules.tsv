@@ -1,0 +1,8 @@
+10049	IGNORE	(Non-storable content: API responses are intentionally Cache-Control: no-store)
+10055	FAIL	(CSP)
+10038	FAIL	(Content Security Policy header not set)
+10020	FAIL	(Anti-clickjacking header)
+10021	FAIL	(X-Content-Type-Options header missing)
+10035	FAIL	(Strict-Transport-Security header)
+40012	FAIL	(Cross Site Scripting, reflected)
+40014	FAIL	(Cross Site Scripting, persistent)

@@ -1,0 +1,109 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UV_VERSION: "0.13.1"
+  PNPM_VERSION: "10.34.7"
+  NODE_VERSION: "24"
+
+jobs:
+  check:
+    name: make check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    services:
+      postgres:
+        image: postgres:16.13-alpine@sha256:4e6e670bb069649261c9c18031f0aded7bb249a5b6664ddec29c013a89310d50
+        env:
+          POSTGRES_USER: sentinelops
+          POSTGRES_PASSWORD: ci-only
+          POSTGRES_DB: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U sentinelops"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      SENTINELOPS_TEST_DATABASE_URL: postgresql+asyncpg://sentinelops:ci-only@localhost:5432/postgres
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # gitleaks scans the whole history
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - name: Install tools (pinned, checksum verified)
+        run: bash scripts/ci/install-tools.sh
+      - name: Install dependencies
+        run: |
+          uv sync --frozen --all-packages
+          pnpm install --frozen-lockfile
+      - name: OpenAPI of the target branch (breaking-change check)
+        if: github.event_name == 'pull_request'
+        run: |
+          git show "origin/${GITHUB_BASE_REF}:docs/api/openapi.json" > "${RUNNER_TEMP}/openapi-base.json" || true
+          if [ -s "${RUNNER_TEMP}/openapi-base.json" ]; then echo "OPENAPI_BASE=${RUNNER_TEMP}/openapi-base.json" >> "$GITHUB_ENV"; fi
+      - name: make check
+        run: uv run --package sentinelops python scripts/tasks.py check
+      - name: Benchmark and coverage summary
+        if: always()
+        run: |
+          if [ -f backend/benchmark-report.md ]; then cat backend/benchmark-report.md >> "$GITHUB_STEP_SUMMARY"; fi
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: reports
+          path: |
+            backend/coverage.xml
+            backend/benchmark-report.md
+            frontend/coverage/lcov.info
+          if-no-files-found: ignore
+
+  container:
+    name: container (hadolint, build, trivy)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: hadolint/hadolint-action@06be81baf89a55ffd0e24b8f04a4185738dd3387 # v3.5.0
+        with:
+          dockerfile: deploy/Dockerfile
+          failure-threshold: warning
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: deploy/Dockerfile
+          tags: sentinelops:ci
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Trivy (no open high/critical findings)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: sentinelops:ci
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+          trivyignores: .trivyignore

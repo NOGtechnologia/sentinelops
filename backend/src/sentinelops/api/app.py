@@ -90,7 +90,12 @@ def create_app(runtime: Runtime | None = None) -> FastAPI:
     )
     app.state.runtime = rt
     app.state.oidc = (
-        OidcVerifier(rt.settings.oidc_issuer, rt.settings.oidc_audience, rt.settings.oidc_roles_claim)
+        OidcVerifier(
+            rt.settings.oidc_issuer,
+            rt.settings.oidc_audience,
+            rt.settings.oidc_roles_claim,
+            jwks_url=rt.settings.oidc_jwks_url,
+        )
         if rt.settings.oidc_issuer
         else None
     )

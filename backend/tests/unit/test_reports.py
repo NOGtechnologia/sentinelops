@@ -163,7 +163,7 @@ def report_input(with_ai: bool = True) -> ReportInput:
         },
         ai_summary={
             "source": "ai",
-            "provider": "mock",
+            "provider": "ollama",
             "model": "mock-1",
             "prompt_version": "case-summary/1",
             "validation_status": "partially_valid",
@@ -221,6 +221,17 @@ def test_markdown_escapes_log_data() -> None:
     assert "Verworfene KI-Aussagen" in md
     assert "Prompt-Injection" in md
     assert "| **100** | **Summe → P1** | |" in md
+
+
+def test_demo_simulator_is_labelled_in_reports() -> None:
+    data = report_input()
+    assert data.ai_summary is not None
+    data.ai_summary["provider"] = "mock"
+    report = build_report(data, CREATED)
+    assert "Demo-Simulation (kein echtes Modell)" in render_markdown(report)
+    assert "KI-generiert" not in render_markdown(report)
+    text = "".join(p.extract_text() for p in PdfReader(io.BytesIO(render_pdf(report))).pages)
+    assert "Demo-Simulation" in text
 
 
 def test_markdown_template_summary() -> None:

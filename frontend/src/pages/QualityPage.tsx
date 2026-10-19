@@ -219,21 +219,30 @@ function QuarantineSection() {
           data.items.length === 0 ? (
             <Empty title={t("quality.quarantineEmpty")} />
           ) : (
-            <ul className="flex max-h-[480px] flex-col gap-2 overflow-auto" data-testid="quarantine">
-              {data.items.map((item) => (
-                <li key={item.raw_record_id} className="rounded-md border border-border p-2.5">
-                  <div className="flex flex-wrap items-center gap-2 text-xs">
-                    <Tag tone="warn">{item.error_code}</Tag>
-                    <span className="font-mono text-muted">
-                      {item.file_name} · {t("quality.position", { position: item.position })}
-                      {item.error_position !== null && ` · ${t("quality.offset", { offset: item.error_position })}`}
-                    </span>
-                  </div>
-                  {item.error_detail && <p className="mt-1 text-xs">{item.error_detail}</p>}
-                  <pre className="raw-line mt-1.5 max-h-32 overflow-auto rounded bg-code p-2">{item.content}</pre>
-                </li>
-              ))}
-            </ul>
+            <div
+              role="region"
+              aria-label={t("quality.quarantine")}
+              tabIndex={0}
+              className="max-h-[480px] overflow-auto"
+            >
+              <ul className="flex flex-col gap-2" data-testid="quarantine">
+                {data.items.map((item) => (
+                  <li key={item.raw_record_id} className="rounded-md border border-border p-2.5">
+                    <div className="flex flex-wrap items-center gap-2 text-xs">
+                      <Tag tone="warn">{item.error_code}</Tag>
+                      <span className="font-mono text-muted">
+                        {item.file_name} · {t("quality.position", { position: item.position })}
+                        {item.error_position !== null && ` · ${t("quality.offset", { offset: item.error_position })}`}
+                      </span>
+                    </div>
+                    {item.error_detail && <p className="mt-1 text-xs">{item.error_detail}</p>}
+                    <pre tabIndex={0} className="raw-line mt-1.5 max-h-32 overflow-auto rounded bg-code p-2">
+                      {item.content}
+                    </pre>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )
         }
       </QueryView>

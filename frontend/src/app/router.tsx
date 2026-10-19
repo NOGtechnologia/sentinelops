@@ -1,6 +1,7 @@
 import { createRootRoute, createRoute, createRouter, Outlet } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
+import type { EventFilters } from "../api/hooks";
 import { useAuth } from "../auth/AuthProvider";
 import { Empty, Loading } from "../components/States";
 import { AdminPage } from "../pages/AdminPage";
@@ -14,6 +15,7 @@ import { TimelineTab } from "../pages/case/TimelineTab";
 import { CaseQueuePage, type QueueSearch } from "../pages/CaseQueuePage";
 import { DashboardPage } from "../pages/DashboardPage";
 import { EntitiesPage } from "../pages/EntitiesPage";
+import { EventsPage } from "../pages/EventsPage";
 import { LoginPage } from "../pages/LoginPage";
 import { QualityPage } from "../pages/QualityPage";
 import { RuleDetailPage } from "../pages/RuleDetailPage";
@@ -74,6 +76,21 @@ const entitiesRoute = createRoute({
     q: text(search.q),
   }),
 });
+const eventsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/events",
+  component: EventsPage,
+  validateSearch: (search: Record<string, unknown>): EventFilters => ({
+    q: text(search.q),
+    user: text(search.user),
+    host: text(search.host),
+    ip: text(search.ip),
+    action: text(search.action),
+    start: text(search.start),
+    end: text(search.end),
+    assessment: text(search.assessment),
+  }),
+});
 const auditRoute = createRoute({ getParentRoute: () => rootRoute, path: "/audit", component: AuditPage });
 const adminRoute = createRoute({ getParentRoute: () => rootRoute, path: "/admin", component: AdminPage });
 const callbackRoute = createRoute({
@@ -90,6 +107,7 @@ export const routeTree = rootRoute.addChildren([
   ruleRoute,
   qualityRoute,
   entitiesRoute,
+  eventsRoute,
   auditRoute,
   adminRoute,
   callbackRoute,

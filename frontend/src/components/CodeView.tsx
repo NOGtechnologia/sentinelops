@@ -75,6 +75,7 @@ export function YamlView({ yaml, markLines = [] }: { yaml: string; markLines?: r
   const lines = yaml.replace(/\n$/, "").split("\n");
   return (
     <pre
+      tabIndex={0}
       className="raw-line overflow-x-auto rounded-md border border-border bg-code py-2 text-text"
       data-testid="rule-yaml"
     >

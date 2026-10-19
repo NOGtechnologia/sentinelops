@@ -10,6 +10,7 @@
     "dashboard": "Overview",
     "cases": "Cases",
     "entities": "Entities",
+    "events": "Events",
     "rules": "Rules",
     "quality": "Data quality",
     "audit": "Audit log",
@@ -333,7 +334,7 @@
     "exceptionTitle": "Propose exception for {{rule}}",
     "exceptionDescription": "Exceptions are versioned, justified and expire. They take effect only after approval by L2.",
     "exceptionMatch": "Condition (field=value, one per line)",
-    "exceptionMatchHint": "Prefilled with the alert's grouping.",
+    "exceptionMatchHint": "Prefilled with the alert's grouping or the affected user.",
     "exceptionReason": "Reason (at least 10 characters)",
     "exceptionExpires": "Valid until",
     "exceptionApprovalHint": "Four-eyes principle: the person proposing the exception cannot approve it.",
@@ -484,6 +485,37 @@
     "hubConfigured": "configured",
     "hubAuto": "automatic: {{detail}}",
     "showCases": "Show cases"
+  },
+  "events": {
+    "title": "Events",
+    "subtitle": "Search normalised events by user, host, IP address and time",
+    "exportCsv": "Export CSV",
+    "search": "Search",
+    "empty": "No events for this search",
+    "count_one": "{{count}} event (newest first, max. 200)",
+    "count_other": "{{count}} events (newest first, max. 200)",
+    "filter": {
+      "q": "Full text (raw line)",
+      "user": "User",
+      "host": "Host",
+      "ip": "IP address",
+      "action": "Action",
+      "assessment": "Assessment"
+    },
+    "assessment": {
+      "normal": "normal",
+      "suspicious": "suspicious"
+    },
+    "col": {
+      "time": "Time",
+      "action": "Action",
+      "source": "Source",
+      "assessment": "Assessment",
+      "raw": "Raw line"
+    },
+    "showRaw": "Raw line",
+    "hideRaw": "Close",
+    "commandLine": "Command line"
   },
   "audit": {
     "title": "Audit log",

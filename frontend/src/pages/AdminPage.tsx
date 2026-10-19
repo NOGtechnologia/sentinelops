@@ -265,7 +265,9 @@ function SettingsSection() {
     <Section title={t("admin.settings")} aside={t("admin.settingsHint")}>
       <QueryView query={query}>
         {(data) => (
-          <pre className="raw-line max-h-96 overflow-auto rounded-md bg-code p-3">{JSON.stringify(data, null, 2)}</pre>
+          <pre tabIndex={0} className="raw-line max-h-96 overflow-auto rounded-md bg-code p-3">
+            {JSON.stringify(data, null, 2)}
+          </pre>
         )}
       </QueryView>
     </Section>

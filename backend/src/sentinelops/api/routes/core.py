@@ -76,7 +76,7 @@ async def auth_config(rt: RuntimeDep) -> AuthConfig:
         demo_mode=rt.settings.demo_mode,
         demo_users=demo,
         oidc_issuer=rt.settings.oidc_issuer,
-        oidc_client_id="sentinelops-web",
+        oidc_client_id=rt.settings.oidc_client_id,
         display_timezone=rt.settings.display_timezone,
     )
 

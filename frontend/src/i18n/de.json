@@ -10,6 +10,7 @@
     "dashboard": "Lagebild",
     "cases": "Fälle",
     "entities": "Entitäten",
+    "events": "Ereignisse",
     "rules": "Regeln",
     "quality": "Datenqualität",
     "audit": "Audit-Log",
@@ -333,7 +334,7 @@
     "exceptionTitle": "Ausnahme für {{rule}} vorschlagen",
     "exceptionDescription": "Ausnahmen sind versioniert, begründet und laufen ab. Sie werden erst nach Genehmigung durch L2 wirksam.",
     "exceptionMatch": "Bedingung (Feld=Wert, eine je Zeile)",
-    "exceptionMatchHint": "Vorbelegt mit der Gruppierung des Alarms.",
+    "exceptionMatchHint": "Vorbelegt mit der Gruppierung des Alarms bzw. dem betroffenen Benutzer.",
     "exceptionReason": "Begründung (mind. 10 Zeichen)",
     "exceptionExpires": "Gültig bis",
     "exceptionApprovalHint": "Vier-Augen-Prinzip: Die vorschlagende Person kann die Ausnahme nicht selbst genehmigen.",
@@ -484,6 +485,37 @@
     "hubConfigured": "konfiguriert",
     "hubAuto": "automatisch: {{detail}}",
     "showCases": "Fälle anzeigen"
+  },
+  "events": {
+    "title": "Ereignisse",
+    "subtitle": "Normalisierte Events nach Benutzer, Gerät, IP-Adresse und Zeit durchsuchen",
+    "exportCsv": "CSV exportieren",
+    "search": "Suchen",
+    "empty": "Keine Ereignisse für diese Suche",
+    "count_one": "{{count}} Ereignis (neueste zuerst, max. 200)",
+    "count_other": "{{count}} Ereignisse (neueste zuerst, max. 200)",
+    "filter": {
+      "q": "Volltext (Rohzeile)",
+      "user": "Benutzer",
+      "host": "Gerät",
+      "ip": "IP-Adresse",
+      "action": "Aktion",
+      "assessment": "Bewertung"
+    },
+    "assessment": {
+      "normal": "normal",
+      "suspicious": "verdächtig"
+    },
+    "col": {
+      "time": "Zeit",
+      "action": "Aktion",
+      "source": "Quelle",
+      "assessment": "Bewertung",
+      "raw": "Rohzeile"
+    },
+    "showRaw": "Rohzeile",
+    "hideRaw": "Schließen",
+    "commandLine": "Kommandozeile"
   },
   "audit": {
     "title": "Audit-Log",

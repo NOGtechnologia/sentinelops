@@ -358,9 +358,10 @@ function ExceptionDialog({ alert, onClose }: { alert: EvidenceAlert; onClose: ()
   const propose = useProposeException();
   const version = useVersion();
   const today = version.data?.demo_now ?? new Date().toISOString();
-  const initialMatch = Object.entries(alert.group_key)
-    .map(([k, v]) => `${k}=${v}`)
-    .join("\n");
+  // Prefill: the alert's grouping (correlations) or, for single rules, the affected user.
+  const grouping = Object.entries(alert.group_key).map(([k, v]) => `${k}=${v}`);
+  const user = alert.entities.find((e) => e.type === "user");
+  const initialMatch = (grouping.length ? grouping : user ? [`user.name=${user.display}`] : []).join("\n");
   const [match, setMatch] = useState(initialMatch);
   const [description, setDescription] = useState("");
   const [expires, setExpires] = useState(() => addDays(today, 90));

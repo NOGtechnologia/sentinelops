@@ -1,0 +1,37 @@
+# Local development: only the backing services. API and web app run on the host:
+#   docker compose -f deploy/docker-compose.dev.yml up -d
+#   SENTINELOPS_DATABASE_URL=postgresql+asyncpg://sentinelops:dev@localhost:5432/sentinelops uv run sentinelops migrate
+#   ... uv run sentinelops serve --port 8000      and      pnpm --dir frontend dev
+name: sentinelops-dev
+
+services:
+  db:
+    image: postgres:16.13-alpine@sha256:4e6e670bb069649261c9c18031f0aded7bb249a5b6664ddec29c013a89310d50
+    environment:
+      POSTGRES_USER: sentinelops
+      POSTGRES_PASSWORD: dev
+      POSTGRES_DB: sentinelops
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata-dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sentinelops -d sentinelops"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.7.5@sha256:37dbaf6f0722c9ec246335f36e1ef8b2e6cb960f7c27e0d8c615121a3d475a85
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: dev-only-admin
+      KC_HTTP_ENABLED: "true"
+    volumes:
+      - ./keycloak/realm-sentinelops.json:/opt/keycloak/data/import/realm-sentinelops.json:ro
+    ports:
+      - "127.0.0.1:8081:8080"
+
+volumes:
+  pgdata-dev:

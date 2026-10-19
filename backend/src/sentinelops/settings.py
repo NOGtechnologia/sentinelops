@@ -53,6 +53,8 @@ class Settings:
     display_timezone: str = field(default_factory=lambda: os.environ.get("SENTINELOPS_DISPLAY_TZ", "Europe/Berlin"))
     oidc_issuer: str | None = field(default_factory=lambda: os.environ.get("SENTINELOPS_OIDC_ISSUER"))
     oidc_audience: str = field(default_factory=lambda: os.environ.get("SENTINELOPS_OIDC_AUDIENCE", "sentinelops"))
+    oidc_client_id: str = field(default_factory=lambda: os.environ.get("SENTINELOPS_OIDC_CLIENT_ID", "sentinelops-web"))
+    oidc_jwks_url: str | None = field(default_factory=lambda: os.environ.get("SENTINELOPS_OIDC_JWKS_URL"))
     oidc_roles_claim: str = field(
         default_factory=lambda: os.environ.get("SENTINELOPS_OIDC_ROLES_CLAIM", "realm_access.roles")
     )

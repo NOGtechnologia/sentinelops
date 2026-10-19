@@ -69,6 +69,22 @@ def test_oidc_token_verified_with_jwks_and_cached() -> None:
     assert len(calls) == 2  # discovery + JWKS only once
 
 
+def test_oidc_internal_jwks_url_skips_discovery_but_checks_issuer() -> None:
+    key, jwk = keypair()
+    calls: list[str] = []
+    verifier = OidcVerifier(
+        ISSUER,
+        "sentinelops",
+        "realm_access.roles",
+        transport=transport(jwk, calls),
+        jwks_url="http://keycloak:8080/realms/sentinelops/protocol/openid-connect/certs",
+    )
+    assert verifier.verify(token(key)).username == "erika"
+    assert calls == ["/realms/sentinelops/protocol/openid-connect/certs"]
+    with pytest.raises(AuthError):
+        verifier.verify(token(key, iss="http://keycloak:8080/realms/sentinelops"))
+
+
 @pytest.mark.parametrize(
     "claims",
     [{"aud": "other"}, {"iss": "https://evil.example"}, {"exp": int(time.time()) - 10}],

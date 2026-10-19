@@ -92,6 +92,82 @@ describe("data quality", () => {
   });
 });
 
+describe("events", () => {
+  const hostile = "/usr/bin/echo <script>window.__xss=3</script> javascript:alert(document.domain)";
+  const row = {
+    "event.id": "ev1",
+    "@timestamp": "2026-03-12T08:20:00.000000Z",
+    "event.action": "sudo-exec",
+    "event.outcome": "success",
+    "event.time_quality": "assumed_timezone",
+    "user.name": "www-data",
+    "host.name": "srv-web01",
+    "process.command_line": hostile,
+    "log.source_type": "syslog_3164",
+    assessment: "normal",
+  };
+
+  it("searches by user/host/IP, shows raw lines and command lines as text and exports CSV", async () => {
+    const { calls } = mockApi({
+      "GET /api/v1/events": {
+        offset: 0,
+        items: [
+          row,
+          {
+            ...row,
+            "event.id": "ev2",
+            "event.outcome": "failure",
+            assessment: "suspicious",
+            "process.command_line": undefined,
+          },
+        ],
+      },
+      "GET /api/v1/events/ev1": {
+        event: row,
+        assessment: "normal",
+        raw: { text: `sudo: ${hostile}`, position: 1, run_id: "r" },
+      },
+      "GET /api/v1/events/export.csv": new Response('"timestamp"\n', {
+        status: 200,
+        headers: { "Content-Disposition": 'attachment; filename="events.csv"' },
+      }),
+    });
+    const { router } = renderApp("/events?user=www");
+    const table = await screen.findByRole("table", { name: "Ereignisse" });
+    expect(within(table).getByText("verdächtig")).toBeInTheDocument();
+    expect(within(table).getAllByText("Zeitzone angenommen")).toHaveLength(2);
+    await userEvent.click(within(table).getAllByRole("button", { name: "Rohzeile" })[0]!);
+    const raw = await screen.findByTestId("event-raw");
+    expect(raw.querySelector("script")).toBeNull();
+    expect(raw.querySelector("a")).toBeNull();
+    expect(within(raw).getByText(hostile)).toBeInTheDocument();
+    await userEvent.click(within(table).getByRole("button", { name: "Schließen" }));
+    await userEvent.type(screen.getByLabelText("IP-Adresse"), "203.0.113.45");
+    await userEvent.selectOptions(screen.getByLabelText("Bewertung"), "suspicious");
+    await userEvent.click(screen.getByRole("button", { name: "Suchen" }));
+    await waitFor(() => {
+      expect(router.state.location.search).toMatchObject({ user: "www", ip: "203.0.113.45", assessment: "suspicious" });
+    });
+    URL.createObjectURL = () => "blob:x";
+    URL.revokeObjectURL = () => undefined;
+    await userEvent.click(screen.getByRole("button", { name: "CSV exportieren" }));
+    await waitFor(() => {
+      expect(calls.some((c) => c.path === "/api/v1/events/export.csv")).toBe(true);
+    });
+  });
+
+  it("shows an empty result and export errors", async () => {
+    mockApi({
+      "GET /api/v1/events": { offset: 0, items: [] },
+      "GET /api/v1/events/export.csv": apiError(403, "forbidden"),
+    });
+    renderApp("/events");
+    expect(await screen.findByText("Keine Ereignisse für diese Suche")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "CSV exportieren" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("forbidden");
+  });
+});
+
 describe("entities, audit and administration", () => {
   it("pivots entities by type and search and explains hub reasons", async () => {
     const { calls } = mockApi();

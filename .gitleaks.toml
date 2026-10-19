@@ -15,6 +15,10 @@ paths = [
   '''frontend/public/fonts/''',
   '''uv\.lock''',
   '''pnpm-lock\.yaml''',
+  # fictitious demo accounts (temporary passwords "demo-only-*") and placeholders
+  '''deploy/keycloak/realm-sentinelops\.json''',
+  '''deploy/docker-compose\.dev\.yml''',
+  '''\.env\.example''',
 ]
 regexes = [
   '''soi_[a-z0-9]+_test[a-zA-Z0-9]*''',

@@ -145,6 +145,10 @@ async def test_duplicate_proposal_and_decision(client: httpx.AsyncClient) -> Non
 def test_security_helpers() -> None:
     assert "connect-src 'self' https://idp.example" in content_security_policy("https://idp.example")
     assert "connect-src 'self';" in content_security_policy(None)
+    # a path in the issuer would only allow that exact path, not the token endpoint below it
+    csp = content_security_policy("http://localhost:8081/realms/sentinelops")
+    assert "connect-src 'self' http://localhost:8081;" in csp
+    assert "connect-src 'self';" in content_security_policy("not a url")
 
 
 async def test_rate_limit_middleware() -> None:

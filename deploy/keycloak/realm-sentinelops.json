@@ -1,0 +1,103 @@
+{
+  "realm": "sentinelops",
+  "displayName": "SentinelOps (Demo)",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": false,
+  "bruteForceProtected": true,
+  "accessTokenLifespan": 900,
+  "ssoSessionIdleTimeout": 3600,
+  "roles": {
+    "realm": [
+      { "name": "analyst", "description": "Analyst (L1)" },
+      { "name": "senior_analyst", "description": "Senior analyst / approver (L2)" },
+      { "name": "detection_engineer", "description": "Detection engineer" },
+      { "name": "admin", "description": "Administrator" },
+      { "name": "auditor", "description": "Auditor (read only)" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "sentinelops-web",
+      "name": "SentinelOps web app",
+      "enabled": true,
+      "publicClient": true,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": ["http://localhost:8080/auth/callback"],
+      "webOrigins": ["http://localhost:8080"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:8080/"
+      },
+      "protocolMappers": [
+        {
+          "name": "audience-sentinelops",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "sentinelops",
+            "access.token.claim": "true",
+            "id.token.claim": "false"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "erika.analyst",
+      "firstName": "Erika",
+      "lastName": "Analyst",
+      "email": "erika.analyst@musterfirma.example",
+      "emailVerified": true,
+      "enabled": true,
+      "credentials": [{ "type": "password", "value": "demo-only-analyst", "temporary": true }],
+      "realmRoles": ["analyst"]
+    },
+    {
+      "username": "sam.senior",
+      "firstName": "Sam",
+      "lastName": "Senior",
+      "email": "sam.senior@musterfirma.example",
+      "emailVerified": true,
+      "enabled": true,
+      "credentials": [{ "type": "password", "value": "demo-only-senior", "temporary": true }],
+      "realmRoles": ["senior_analyst"]
+    },
+    {
+      "username": "dana.engineer",
+      "firstName": "Dana",
+      "lastName": "Engineer",
+      "email": "dana.engineer@musterfirma.example",
+      "emailVerified": true,
+      "enabled": true,
+      "credentials": [{ "type": "password", "value": "demo-only-engineer", "temporary": true }],
+      "realmRoles": ["detection_engineer"]
+    },
+    {
+      "username": "alex.admin",
+      "firstName": "Alex",
+      "lastName": "Admin",
+      "email": "alex.admin@musterfirma.example",
+      "emailVerified": true,
+      "enabled": true,
+      "credentials": [{ "type": "password", "value": "demo-only-admin", "temporary": true }],
+      "realmRoles": ["admin"]
+    },
+    {
+      "username": "audrey.auditor",
+      "firstName": "Audrey",
+      "lastName": "Auditor",
+      "email": "audrey.auditor@musterfirma.example",
+      "emailVerified": true,
+      "enabled": true,
+      "credentials": [{ "type": "password", "value": "demo-only-auditor", "temporary": true }],
+      "realmRoles": ["auditor"]
+    }
+  ]
+}

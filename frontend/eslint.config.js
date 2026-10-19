@@ -50,6 +50,8 @@ export default tseslint.config(
           },
         },
       ],
+      // Scrollable regions and code blocks must be keyboard focusable (axe: scrollable-region-focusable).
+      "jsx-a11y/no-noninteractive-tabindex": ["error", { tags: ["pre"], roles: ["tabpanel", "region"] }],
       // We do not use the React Compiler; the advisory about TanStack Virtual does not apply.
       "react-hooks/incompatible-library": "off",
       "@typescript-eslint/restrict-template-expressions": ["error", { allowNumber: true }],

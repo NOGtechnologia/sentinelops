@@ -39,3 +39,4 @@ Thumbs.db
 .idea/
 .vscode/
 frontend/.api-check.d.ts
+.cache/

@@ -113,9 +113,17 @@ class OidcVerifier:
     """Verifies access tokens of one issuer; caches the JWKS for 10 minutes."""
 
     def __init__(
-        self, issuer: str, audience: str, roles_claim: str, transport: httpx.BaseTransport | None = None
+        self,
+        issuer: str,
+        audience: str,
+        roles_claim: str,
+        transport: httpx.BaseTransport | None = None,
+        jwks_url: str | None = None,
     ) -> None:
         self.issuer = issuer.rstrip("/")
+        # Inside a container the public issuer URL may not be reachable; the key set can then be
+        # fetched from an internal address. The token issuer is still checked against `issuer`.
+        self.jwks_url = jwks_url
         self.audience = audience
         self.roles_claim = roles_claim
         self.transport = transport
@@ -125,8 +133,10 @@ class OidcVerifier:
     def _keys(self) -> dict[str, Any]:
         if self._jwks is None or time.time() - self._fetched > 600:
             with httpx.Client(timeout=10, transport=self.transport) as client:
-                config = client.get(f"{self.issuer}/.well-known/openid-configuration").json()
-                self._jwks = client.get(config["jwks_uri"]).json()
+                jwks_uri = (
+                    self.jwks_url or client.get(f"{self.issuer}/.well-known/openid-configuration").json()["jwks_uri"]
+                )
+                self._jwks = client.get(jwks_uri).json()
             self._fetched = time.time()
         return self._jwks
 
