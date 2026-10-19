@@ -15,7 +15,7 @@
   <a href="https://scorecard.dev/viewer/?uri=github.com/NOGtechnologia/sentinelops"><img alt="OpenSSF Scorecard" src="https://api.scorecard.dev/projects/github.com/NOGtechnologia/sentinelops/badge"></a>
   <a href="LICENSE"><img alt="Lizenz Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-blue"></a>
   <a href="https://github.com/NOGtechnologia/sentinelops/releases"><img alt="Release" src="https://img.shields.io/github/v/release/NOGtechnologia/sentinelops"></a>
-  <a href="https://github.com/NOGtechnologia/sentinelops/pkgs/container/sentinelops"><img alt="Docker-Image" src="https://img.shields.io/badge/image-ghcr.io%2FNOGtechnologia%2Fsentinelops-informational"></a>
+  <a href="https://github.com/NOGtechnologia/sentinelops/pkgs/container/sentinelops"><img alt="Docker-Image" src="https://img.shields.io/badge/image-ghcr.io%2Fnogtechnologia%2Fsentinelops-informational"></a>
 </p>
 
 <picture>
