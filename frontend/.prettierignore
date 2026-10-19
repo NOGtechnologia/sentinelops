@@ -1,0 +1,6 @@
+dist
+coverage
+node_modules
+pnpm-lock.yaml
+public/fonts
+.api-check.d.ts

@@ -694,7 +694,11 @@ async def case_report(
     format: Literal["json", "md", "pdf"] = "json",
     created_at: str | None = None,
     pseudonymize: bool = False,
+    preview: bool = False,
 ) -> Response:
+    """Export a case report. `preview=true` (JSON only) renders it for the UI without recording an export."""
+    if preview and format != "json":
+        raise HTTPException(422, "preview is only available as JSON")
     try:
         created = parse_timestamp(created_at) if created_at else rt.clock.now()
     except ValueError as exc:
@@ -714,6 +718,8 @@ async def case_report(
         else:
             body = render_pdf(report)
         digest = hashlib.sha256(body).hexdigest()
+        if preview:
+            return Response(body, media_type=MEDIA[format], headers={"X-Content-SHA256": digest})
         now = rt.clock.now()
         await conn.execute(
             pg_insert(reports)

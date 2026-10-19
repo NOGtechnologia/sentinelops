@@ -453,6 +453,26 @@ async def test_admin_sources_and_settings(client: httpx.AsyncClient) -> None:
     assert (await client.get("/api/v1/admin/settings", headers=auth("auditor"))).status_code == 403
 
 
+async def test_report_preview_is_not_an_export(client: httpx.AsyncClient) -> None:
+    case = await case_by_title(client, "Password Spraying")
+    cid = case["case_id"]
+
+    async def exports() -> int:
+        rows = (await client.get("/api/v1/audit", params={"object_id": cid}, headers=auth("auditor"))).json()["items"]
+        return sum(1 for r in rows if r["action"] == "report.exported")
+
+    before = await exports()
+    preview = await client.get(f"/api/v1/cases/{cid}/report", params={"preview": "true"}, headers=auth("analyst"))
+    assert preview.status_code == 200
+    assert json.loads(preview.content)["case"]["case_id"] == cid
+    assert "content-disposition" not in preview.headers
+    assert await exports() == before
+    md = await client.get(
+        f"/api/v1/cases/{cid}/report", params={"preview": "true", "format": "md"}, headers=auth("analyst")
+    )
+    assert md.status_code == 422
+
+
 async def test_report_pseudonymized(client: httpx.AsyncClient) -> None:
     case = await case_by_title(client, "Brute Force auf ein Konto: anna")
     cid = case["case_id"]
