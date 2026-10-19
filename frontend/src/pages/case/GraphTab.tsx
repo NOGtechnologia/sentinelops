@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useGraph } from "../../api/hooks";
 import type { GraphData } from "../../api/types";
 import { EntityIcon } from "../../components/Badges";
-import { EntityGraph } from "../../components/EntityGraph";
+import { EntityGraph } from "../../components/LazyCanvas";
 import { Section } from "../../components/Layout";
 import { QueryView } from "../../components/States";
 

@@ -78,6 +78,8 @@ async function login(page: Page, user: DemoUser): Promise<void> {
 
 async function settle(page: Page): Promise<void> {
   await page.waitForLoadState("networkidle");
+  // lazily loaded charts/graphs show an aria-busy placeholder until their chunk is ready
+  await page.locator('[aria-busy="true"]').first().waitFor({ state: "detached" });
   await page.evaluate(() => document.fonts.ready);
   await page.mouse.move(0, 0);
   await page.waitForTimeout(300);
