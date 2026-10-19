@@ -63,6 +63,10 @@ VALIDATOR_EXCLUSIONS = {
     "notags",
     # Custom rules have a `sentinelops` block; pySigma flags unknown attributes.
     "custom_attributes",
+    # Downloads the MITRE D3FEND ontology at runtime (and caches it under ~/.cache). SentinelOps must work
+    # offline with a read-only root file system; no rule uses D3FEND tags. ATT&CK tags are checked offline
+    # against TACTICS / TECHNIQUE_RE (the ``attacktag`` validator above downloads ATT&CK data the same way).
+    "d3_fendtag",
 }
 
 
