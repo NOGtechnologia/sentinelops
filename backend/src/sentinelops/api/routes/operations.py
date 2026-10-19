@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import and_, func, select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
-from sentinelops.api.deps import RuntimeDep, ingest_principal, require
+from sentinelops.api.deps import MAX_OFFSET, RuntimeDep, ingest_principal, require
 from sentinelops.auth.principal import Principal, new_ingest_token
 from sentinelops.ingest.runs import ingest_stream
 from sentinelops.ingest.sources import UnsupportedSourceError, known_source_types, validate_source_type
@@ -216,7 +216,7 @@ async def quarantine(
     _: Annotated[Principal, _p("quality:read")],
     run_id: str | None = None,
     code: str | None = None,
-    offset: Annotated[int, Query(ge=0)] = 0,
+    offset: Annotated[int, Query(ge=0, le=MAX_OFFSET)] = 0,
     limit: Annotated[int, Query(ge=1, le=500)] = 100,
 ) -> dict[str, Any]:
     cond: list[Any] = [raw_records.c.status == "malformed"]
@@ -291,7 +291,7 @@ async def audit_entries(
     _: Annotated[Principal, _p("audit:read")],
     object_id: str | None = None,
     action: str | None = None,
-    offset: Annotated[int, Query(ge=0)] = 0,
+    offset: Annotated[int, Query(ge=0, le=MAX_OFFSET)] = 0,
     limit: Annotated[int, Query(ge=1, le=1000)] = 200,
     verify: bool = False,
 ) -> dict[str, Any]:

@@ -7,11 +7,13 @@ import contextlib
 import os
 from collections.abc import AsyncIterator, Iterable, Iterator
 from pathlib import Path
+from typing import Any
 
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.routing import APIRoute
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy.exc import DBAPIError
 from starlette.routing import BaseRoute
 
 from sentinelops.api.routes import cases, core, data, operations
@@ -60,6 +62,60 @@ def check_route_permissions(app: FastAPI) -> None:
         raise PermissionMapError("routes without permissions.yaml entry: " + ", ".join(missing))
 
 
+def install_openapi_errors(app: FastAPI) -> None:
+    """Document the real error shape: ``detail`` is a message, or FastAPI's list of validation errors.
+
+    Semantic checks in the routes answer 422 with a plain message (``{"detail": "unknown rule"}``),
+    request validation with the list form. The contract tests validate responses against this schema.
+    """
+    original = app.openapi
+
+    def openapi() -> dict[str, Any]:
+        if app.openapi_schema is None:
+            schema = original()
+            error = schema.get("components", {}).get("schemas", {}).get("HTTPValidationError")
+            if error is not None:
+                error["properties"]["detail"] = {
+                    "title": "Detail",
+                    "anyOf": [
+                        {"type": "string"},
+                        {"type": "array", "items": {"$ref": "#/components/schemas/ValidationError"}},
+                    ],
+                }
+            app.openapi_schema = schema
+        return app.openapi_schema
+
+    app.openapi = openapi  # type: ignore[method-assign]  # FastAPI's documented way to customise the schema
+
+
+def _is_invalid_input(exc: BaseException) -> bool:
+    """Database rejected a *value* (SQLSTATE class 22: NUL byte, out of range, bad encoding)."""
+    for err in (exc, exc.__cause__, getattr(exc, "orig", None)):
+        if isinstance(err, UnicodeError):
+            return True
+        sqlstate = getattr(err, "sqlstate", None) or getattr(getattr(err, "__cause__", None), "sqlstate", None)
+        if isinstance(sqlstate, str) and sqlstate.startswith("22"):
+            return True
+    return False
+
+
+def install_input_error_handler(app: FastAPI) -> None:
+    """Values PostgreSQL cannot store (NUL bytes, lone surrogates, overflow) are client errors (422), not 500.
+
+    Everything else keeps surfacing as a server error, so real bugs stay visible to the contract tests.
+    """
+
+    @app.exception_handler(DBAPIError)
+    async def database_error(request: Request, exc: DBAPIError) -> JSONResponse:
+        if _is_invalid_input(exc):
+            return JSONResponse({"detail": "invalid input value"}, status_code=422)
+        raise exc
+
+    @app.exception_handler(UnicodeEncodeError)
+    async def encoding_error(request: Request, exc: UnicodeEncodeError) -> JSONResponse:
+        return JSONResponse({"detail": "invalid characters in input"}, status_code=422)
+
+
 def create_app(runtime: Runtime | None = None) -> FastAPI:
     rt = runtime or Runtime(Settings())
 
@@ -102,6 +158,8 @@ def create_app(runtime: Runtime | None = None) -> FastAPI:
     for router_module in (core, cases, data, operations):
         app.include_router(router_module.router)
     check_route_permissions(app)
+    install_openapi_errors(app)
+    install_input_error_handler(app)
 
     app.add_middleware(
         OriginCheckMiddleware, allowed=set(filter(None, os.environ.get("SENTINELOPS_ALLOWED_ORIGINS", "").split(",")))

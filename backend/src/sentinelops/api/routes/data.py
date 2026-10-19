@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import and_, func, or_, select, text, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
-from sentinelops.api.deps import RuntimeDep, require
+from sentinelops.api.deps import MAX_OFFSET, RuntimeDep, require
 from sentinelops.auth.principal import Principal
 from sentinelops.normalize.schema import format_timestamp, parse_timestamp
 from sentinelops.reports.csv_export import to_csv
@@ -43,7 +43,7 @@ async def list_alerts(
     _: Annotated[Principal, _p("alerts:read")],
     rule_id: str | None = None,
     include_suppressed: bool = False,
-    offset: Annotated[int, Query(ge=0)] = 0,
+    offset: Annotated[int, Query(ge=0, le=MAX_OFFSET)] = 0,
     limit: Annotated[int, Query(ge=1, le=500)] = 100,
 ) -> dict[str, Any]:
     cond: list[Any] = []
@@ -168,7 +168,7 @@ async def search_events(
     start: str | None = None,
     end: str | None = None,
     assessment: str | None = None,
-    offset: Annotated[int, Query(ge=0)] = 0,
+    offset: Annotated[int, Query(ge=0, le=MAX_OFFSET)] = 0,
     limit: Annotated[int, Query(ge=1, le=500)] = 100,
 ) -> dict[str, Any]:
     cond = _event_conditions(q, user, host, ip, action, start, end, assessment)
@@ -270,7 +270,7 @@ async def list_entities(
     _: Annotated[Principal, _p("entities:read")],
     type: str | None = None,
     q: str | None = None,
-    offset: Annotated[int, Query(ge=0)] = 0,
+    offset: Annotated[int, Query(ge=0, le=MAX_OFFSET)] = 0,
     limit: Annotated[int, Query(ge=1, le=500)] = 100,
 ) -> dict[str, Any]:
     cond: list[Any] = []

@@ -13,7 +13,7 @@ from sqlalchemy import and_, func, or_, select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from sentinelops.api.deps import RuntimeDep, require
+from sentinelops.api.deps import MAX_OFFSET, RuntimeDep, require
 from sentinelops.auth.principal import Principal
 from sentinelops.normalize.dedupe import stable_hash
 from sentinelops.normalize.schema import format_timestamp, parse_timestamp
@@ -73,7 +73,7 @@ async def list_cases(
     q: str | None = None,
     assignee: str | None = None,
     entity: str | None = None,
-    offset: Annotated[int, Query(ge=0)] = 0,
+    offset: Annotated[int, Query(ge=0, le=MAX_OFFSET)] = 0,
     limit: Annotated[int, Query(ge=1, le=500)] = 100,
 ) -> dict[str, Any]:
     has_alerts = select(case_alerts.c.case_id).where(case_alerts.c.case_id == cases.c.case_id).exists()
@@ -244,7 +244,7 @@ async def case_timeline(
     case_id: str,
     rt: RuntimeDep,
     _: Annotated[Principal, _p("cases:read")],
-    offset: Annotated[int, Query(ge=0)] = 0,
+    offset: Annotated[int, Query(ge=0, le=MAX_OFFSET)] = 0,
     limit: Annotated[int, Query(ge=1, le=10000)] = 5000,
 ) -> dict[str, Any]:
     async with rt.engine.connect() as conn:

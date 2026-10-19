@@ -198,3 +198,19 @@ async def test_spa_and_static_serving(demo_db: str, tmp_path: object, monkeypatc
         assert "SentinelOps" in (await c.get("/../../etc/passwd")).text
     async with app.router.lifespan_context(app):
         pass
+
+
+async def test_unstorable_input_is_a_client_error(client: httpx.AsyncClient) -> None:
+    """Found by the Schemathesis contract tests: NUL bytes, lone surrogates and huge offsets were 500."""
+    h = auth("analyst")
+    assert (await client.get("/api/v1/cases", params={"q": "a\x00b"}, headers=h)).status_code == 422
+    assert (await client.get("/api/v1/events", params={"user": "x\x00"}, headers=h)).status_code == 422
+    assert (await client.get("/api/v1/alerts", params={"offset": 10**20}, headers=h)).status_code == 422
+    body = '{"reason": "fp \\ud83d reason"}'
+    alerts = (await client.get("/api/v1/alerts", headers=h)).json()["items"]
+    response = await client.post(
+        f"/api/v1/alerts/{alerts[0]['alert_id']}/false-positive",
+        content=body,
+        headers=h | {"Content-Type": "application/json"},
+    )
+    assert response.status_code == 422

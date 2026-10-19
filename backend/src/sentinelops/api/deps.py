@@ -12,6 +12,9 @@ from sentinelops.auth.principal import AuthError, OidcVerifier, Principal, hash_
 from sentinelops.runtime import Runtime
 from sentinelops.storage.models import ingest_tokens
 
+#: Upper bound for list offsets (larger values cannot address real rows and would overflow BIGINT).
+MAX_OFFSET = 10_000_000
+
 
 def get_runtime(request: Request) -> Runtime:
     runtime: Runtime = request.app.state.runtime

@@ -117,7 +117,7 @@ def test_property() -> None:
 
 
 def test_integration() -> None:
-    uv("pytest", "tests/integration", "-q", "--cov=sentinelops", "--cov-append", "--cov-report=")
+    uv("pytest", "tests/integration", "tests/contract", "-q", "--cov=sentinelops", "--cov-append", "--cov-report=")
 
 
 def test_acceptance() -> None:

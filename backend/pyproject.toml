@@ -155,6 +155,7 @@ dev = [
     "httpx>=0.28.1",
     "hypothesis>=6.170.1",
     "import-linter>=2.15",
+    "mkdocs<2",
     "mkdocs-material>=9.7.7",
     "mutmut>=3.8.0",
     "mypy>=2.4.0",
@@ -165,5 +166,7 @@ dev = [
     "pytest-asyncio>=1.4.0",
     "pytest-cov>=7.1.0",
     "ruff>=0.17.1",
+    "schemathesis>=4.32.0",
+    "testcontainers>=4.15.0",
     "types-pyyaml>=6.0.12.20260906",
 ]

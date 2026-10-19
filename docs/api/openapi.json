@@ -244,11 +244,18 @@
       "HTTPValidationError": {
         "properties": {
           "detail": {
-            "items": {
-              "$ref": "#/components/schemas/ValidationError"
-            },
-            "title": "Detail",
-            "type": "array"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ValidationError"
+                },
+                "type": "array"
+              }
+            ],
+            "title": "Detail"
           }
         },
         "title": "HTTPValidationError",
@@ -940,6 +947,7 @@
             "required": false,
             "schema": {
               "default": 0,
+              "maximum": 10000000,
               "minimum": 0,
               "title": "Offset",
               "type": "integer"
@@ -1119,6 +1127,7 @@
             "required": false,
             "schema": {
               "default": 0,
+              "maximum": 10000000,
               "minimum": 0,
               "title": "Offset",
               "type": "integer"
@@ -1385,6 +1394,7 @@
             "required": false,
             "schema": {
               "default": 0,
+              "maximum": 10000000,
               "minimum": 0,
               "title": "Offset",
               "type": "integer"
@@ -2082,6 +2092,7 @@
             "required": false,
             "schema": {
               "default": 0,
+              "maximum": 10000000,
               "minimum": 0,
               "title": "Offset",
               "type": "integer"
@@ -2189,6 +2200,7 @@
             "required": false,
             "schema": {
               "default": 0,
+              "maximum": 10000000,
               "minimum": 0,
               "title": "Offset",
               "type": "integer"
@@ -2372,6 +2384,7 @@
             "required": false,
             "schema": {
               "default": 0,
+              "maximum": 10000000,
               "minimum": 0,
               "title": "Offset",
               "type": "integer"
@@ -2840,6 +2853,7 @@
             "required": false,
             "schema": {
               "default": 0,
+              "maximum": 10000000,
               "minimum": 0,
               "title": "Offset",
               "type": "integer"
