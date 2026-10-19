@@ -1,0 +1,81 @@
+# pre-commit (spec 15.9). Install: `uv run pre-commit install --hook-type pre-commit --hook-type commit-msg`
+# Most hooks run the project's own pinned tools (uv / pnpm), so they behave exactly like `make check`.
+default_install_hook_types: [pre-commit, commit-msg]
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0
+    hooks:
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: check-json
+        exclude: ^(frontend/tsconfig.*\.json)$
+      - id: check-toml
+      - id: end-of-file-fixer
+        exclude: \.(golden\.json|evtx|png|gif|woff2|ttf)$|^docs/api/openapi\.json$
+      - id: trailing-whitespace
+        exclude: \.(golden\.json|evtx|md)$|^backend/tests/fixtures/
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=2500]
+
+  - repo: local
+    hooks:
+      - id: ruff-format
+        name: ruff format
+        entry: uv run --package sentinelops ruff format
+        language: system
+        types: [python]
+      - id: ruff
+        name: ruff check
+        entry: uv run --package sentinelops ruff check --fix
+        language: system
+        types: [python]
+      - id: mypy
+        name: mypy (changed backend files)
+        entry: uv run --directory backend mypy
+        language: system
+        types: [python]
+        files: ^backend/src/
+        pass_filenames: false
+      - id: import-linter
+        name: import-linter (architecture rules)
+        entry: uv run --directory backend lint-imports
+        language: system
+        files: ^backend/src/
+        pass_filenames: false
+      - id: sigma-rules
+        name: Sigma validation and rule tests (changed rules)
+        entry: uv run --directory backend sentinelops rules check
+        language: system
+        files: ^rules/
+        pass_filenames: false
+      - id: prettier
+        name: prettier
+        entry: pnpm --dir frontend exec prettier --write --ignore-unknown
+        language: system
+        files: ^frontend/
+      - id: eslint
+        name: eslint
+        entry: pnpm --dir frontend exec eslint --max-warnings 0
+        language: system
+        files: ^frontend/src/.*\.(ts|tsx)$
+      - id: gitleaks
+        name: gitleaks (staged changes)
+        entry: gitleaks git --pre-commit --staged --redact --no-banner -c .gitleaks.toml
+        language: system
+        pass_filenames: false
+      - id: semgrep
+        name: semgrep (project rules)
+        entry: uvx --from semgrep==1.181.0 semgrep scan --error --metrics=off --config .semgrep.yml
+        language: system
+        files: ^(backend/src|frontend/src)/
+      - id: fixtures
+        name: no real data in fixtures, rules and docs
+        entry: uv run --package sentinelops python scripts/check_fixtures.py
+        language: system
+        pass_filenames: false
+      - id: conventional-commit
+        name: Conventional Commits (commit message)
+        entry: python scripts/check_commit_msg.py
+        language: system
+        stages: [commit-msg]

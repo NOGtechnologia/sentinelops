@@ -159,6 +159,7 @@ dev = [
     "mutmut>=3.8.0",
     "mypy>=2.4.0",
     "pip-audit>=2.10.1",
+    "pre-commit>=4.7.0",
     "pypdf>=6.21.1",
     "pytest>=9.1.1",
     "pytest-asyncio>=1.4.0",
