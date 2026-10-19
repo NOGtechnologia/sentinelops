@@ -191,7 +191,18 @@ async def test_spa_and_static_serving(demo_db: str, tmp_path: object, monkeypatc
     monkeypatch.setenv("SENTINELOPS_INPROCESS_WORKER", "true")
     app = create_app(rt)
     async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://t") as c:
-        assert "SentinelOps" in (await c.get("/cases/abc")).text
+        page = await c.get("/cases/abc")
+        assert "SentinelOps" in page.text
+        for header, value in {
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "no-referrer",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-embedder-policy": "require-corp",
+            "cross-origin-resource-policy": "same-origin",
+        }.items():
+            assert page.headers[header] == value, header
+        assert "default-src 'self'" in page.headers["content-security-policy"]
         assert (await c.get("/favicon.svg")).text == "<svg/>"
         asset = await c.get("/assets/app.js", headers={"Accept-Encoding": "gzip"})
         assert asset.status_code == 200

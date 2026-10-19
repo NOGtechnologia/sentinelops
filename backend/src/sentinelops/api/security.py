@@ -54,6 +54,10 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
         response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains"
         response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
+        # Everything (scripts, styles, fonts) is served from this origin, so cross-origin isolation is free.
+        # The OIDC login is a top-level navigation plus CORS requests, which these headers do not block.
+        response.headers["Cross-Origin-Embedder-Policy"] = "require-corp"
+        response.headers["Cross-Origin-Resource-Policy"] = "same-origin"
         if request.url.path.startswith("/api/"):
             response.headers.setdefault("Cache-Control", "no-store")
         return response
