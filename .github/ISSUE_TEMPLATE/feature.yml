@@ -1,0 +1,29 @@
+name: Funktionswunsch / Feature request
+description: Eine neue Funktion oder Verbesserung vorschlagen.
+labels: [enhancement, needs-triage]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Welches Problem soll gelöst werden?
+      description: Aus Sicht von Analysten, Detection Engineers oder Betrieb.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Vorschlag
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativen
+  - type: checkboxes
+    id: principles
+    attributes:
+      label: Grundprinzipien
+      description: SentinelOps folgt „Regeln vor KI“, „jede Aussage hat Belege“ und „Mensch entscheidet“.
+      options:
+        - label: Der Vorschlag ist mit diesen Prinzipien vereinbar.
+          required: true

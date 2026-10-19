@@ -1,0 +1,39 @@
+name: Fehlalarm melden / Report a false positive
+description: Eine Regel löst bei legitimer Aktivität aus.
+labels: [false-positive, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Bitte keine echten Unternehmensdaten:** Beschreiben Sie das Muster und rekonstruieren Sie ein
+        synthetisches Beispiel (Benutzer wie `max.mustermann`, Hosts `*.musterfirma.example`,
+        IP-Adressen aus 192.0.2.0/24, 198.51.100.0/24, 203.0.113.0/24). Keine echten Logs anhängen.
+  - type: input
+    id: rule
+    attributes:
+      label: Regel-ID und Version
+      placeholder: "SO-AUTH-001 v1"
+    validations:
+      required: true
+  - type: textarea
+    id: activity
+    attributes:
+      label: Welche legitime Aktivität hat den Alarm ausgelöst?
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Synthetisches Beispiel (anonymisiert)
+      render: json
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Vorschlag (Regelanpassung oder Ausnahme)
+  - type: checkboxes
+    id: data
+    attributes:
+      label: Datenschutz
+      options:
+        - label: Ich habe keine echten Unternehmensdaten, Indikatoren oder Zugangsdaten eingefügt.
+          required: true

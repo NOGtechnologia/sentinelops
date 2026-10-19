@@ -1,0 +1,47 @@
+name: Erkennungsregel vorschlagen / Propose a detection rule
+description: Eine neue Sigma- oder Korrelationsregel vorschlagen.
+labels: [detection-rule, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Jede Regel braucht Metadaten (ID, Schweregrad, Reifegrad, ATT&CK-Tags, Playbook-Verweis) und
+        **mindestens 2 positive und 2 negative Test-Events** (siehe CONTRIBUTING.md). Bitte nur synthetische
+        Beispiel-Events mit RFC-5737-Adressen und `.example`-Domains.
+  - type: textarea
+    id: behaviour
+    attributes:
+      label: Welches Verhalten soll erkannt werden?
+    validations:
+      required: true
+  - type: input
+    id: attack
+    attributes:
+      label: MITRE ATT&CK
+      placeholder: "z. B. T1110.003 Password Spraying"
+  - type: textarea
+    id: logic
+    attributes:
+      label: Erkennungslogik (Sigma-YAML oder Beschreibung)
+      render: yaml
+  - type: textarea
+    id: positives
+    attributes:
+      label: Positive Beispiel-Events (synthetisch)
+      render: json
+    validations:
+      required: true
+  - type: textarea
+    id: negatives
+    attributes:
+      label: Negative Beispiel-Events / bekannte Fehlalarmquellen
+      render: json
+    validations:
+      required: true
+  - type: checkboxes
+    id: data
+    attributes:
+      label: Datenschutz
+      options:
+        - label: Die Beispiele enthalten keine echten Unternehmensdaten oder Indikatoren.
+          required: true

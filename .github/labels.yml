@@ -1,0 +1,36 @@
+- name: bug
+  color: d73a4a
+  description: Something does not work as specified
+- name: enhancement
+  color: a2eeef
+  description: New feature or improvement
+- name: detection-rule
+  color: 5319e7
+  description: New or changed detection rule
+- name: false-positive
+  color: fbca04
+  description: A rule raises alerts for legitimate activity
+- name: security
+  color: b60205
+  description: Security relevant (use SECURITY.md for vulnerabilities)
+- name: documentation
+  color: 0075ca
+  description: Documentation and screenshots
+- name: dependencies
+  color: 0366d6
+  description: Dependency updates
+- name: frontend
+  color: 1d76db
+  description: Web app
+- name: backend
+  color: 0e8a16
+  description: API, worker, detection
+- name: ai
+  color: c5def5
+  description: AI summary, validator, providers
+- name: good first issue
+  color: 7057ff
+  description: Good for newcomers
+- name: needs-triage
+  color: ededed
+  description: Not yet reviewed

@@ -1,0 +1,47 @@
+name: Fehler melden / Bug report
+description: Etwas funktioniert nicht wie beschrieben.
+labels: [bug, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Keine echten Unternehmensdaten:** Bitte keine echten Logs, Benutzernamen, IP-Adressen oder Zugangsdaten
+        einfügen. Nutzen Sie die Demo-Daten (Musterfirma GmbH) oder anonymisieren Sie vollständig
+        (RFC-5737-Adressen, `.example`-Domains). Sicherheitslücken bitte **nicht** hier melden, sondern wie in SECURITY.md beschrieben.
+  - type: textarea
+    id: what
+    attributes:
+      label: Was ist passiert?
+      description: Beobachtetes Verhalten, Fehlermeldung (ohne echte Daten).
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Was haben Sie erwartet?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Schritte zum Nachvollziehen
+      placeholder: "1. Demo-Stack starten …\n2. Fall … öffnen …"
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Anzeige unten links in der Oberfläche oder `GET /api/v1/version`.
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: Betrieb
+      options: [Docker Compose (Demo), Docker Compose (eigene Daten), Lokale Entwicklung, Anderes]
+  - type: checkboxes
+    id: data
+    attributes:
+      label: Datenschutz
+      options:
+        - label: Ich habe keine echten Unternehmensdaten, Indikatoren oder Zugangsdaten eingefügt.
+          required: true

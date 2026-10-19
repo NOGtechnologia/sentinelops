@@ -1,0 +1,54 @@
+name: Screenshots
+
+# Spec 17.3: README/docs images are generated, never edited by hand. This workflow renders them again
+# and compares them with the committed images (pixel diff <= 0.5 %). Outdated images fail the run and
+# the fresh images are uploaded as an artifact.
+on:
+  pull_request:
+    paths: ["frontend/**", "backend/src/**", "generator/**", "rules/**", "scripts/screenshots.ts", "docs/images/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:16.13-alpine@sha256:4e6e670bb069649261c9c18031f0aded7bb249a5b6664ddec29c013a89310d50
+        env:
+          POSTGRES_USER: sentinelops
+          POSTGRES_PASSWORD: ci-only
+          POSTGRES_DB: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U sentinelops"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      SENTINELOPS_E2E_ADMIN_URL: postgresql+asyncpg://sentinelops:ci-only@localhost:5432/postgres
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.13.1"
+          enable-cache: true
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          version: "10.34.7"
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+          cache: pnpm
+      - run: uv sync --frozen --all-packages && pnpm install --frozen-lockfile && pnpm --dir frontend build
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Render and compare with the committed images
+        run: node scripts/screenshots.ts --check
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: failure()
+        with:
+          name: screenshots
+          path: .cache/screenshots

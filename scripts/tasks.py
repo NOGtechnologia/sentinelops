@@ -243,17 +243,38 @@ def check() -> None:
         task()
 
 
+def root_pnpm(*args: str) -> None:
+    exe = tool("pnpm")
+    if exe:
+        run([exe, *args], cwd=ROOT)
+
+
 def e2e() -> None:
-    pnpm("--dir", str(ROOT / "e2e"), "exec", "playwright", "test")
+    # Fresh demo instance per run (scripts/e2e_server.py); needs SENTINELOPS_E2E_ADMIN_URL.
+    pnpm("run", "build")
+    root_pnpm("e2e")
 
 
 def screenshots() -> None:
-    pnpm("--dir", str(ROOT / "e2e"), "run", "screenshots")
+    pnpm("run", "build")
+    root_pnpm("screenshots")
+    root_pnpm("social-preview")
 
 
 def nightly() -> None:
-    uv("pytest", "tests/benchmark", "tests/property", "-q", env={"HYPOTHESIS_PROFILE": "nightly"})
-    uv("mutmut", "run")
+    uv(
+        "pytest",
+        "tests/benchmark",
+        "tests/property",
+        "tests/unit/test_cases_priority.py",
+        "-q",
+        env={"HYPOTHESIS_PROFILE": "nightly"},
+    )
+    if sys.platform != "win32":  # mutmut needs fork(); the nightly CI job runs on Linux
+        uv("mutmut", "run", env={"SENTINELOPS_RULES_DIR": str(ROOT / "rules")})
+        uv("mutmut", "export-cicd-stats")
+        uv("python", str(ROOT / "scripts" / "check_mutation.py"), "mutants/mutmut-cicd-stats.json")
+    run(["uv", "run", "--package", "sentinelops", "python", str(ROOT / "scripts" / "load_test.py")], cwd=ROOT)
 
 
 TASKS: dict[str, Callable[[], None]] = {
