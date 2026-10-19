@@ -116,6 +116,12 @@ ALLOWED_DOMAINS = {
     "linux-pam.org",
     "freedesktop.org",
     "apple.com",
+    # sources cited in docs/privacy.md (legal notes) and docs/open-questions.md (name check)
+    "dr-datenschutz.de",
+    "haufe.de",
+    "gleisslutz.com",
+    "sentinelone.com",
+    "justia.com",
 }
 
 

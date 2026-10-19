@@ -261,7 +261,8 @@ def s10_prompt_injection(org: Organisation, rng: random.Random, day: date) -> Sc
             t + timedelta(minutes=5),
             "sudo",
             None,
-            f"www-data : TTY=pts/3 ; PWD=/var/www ; USER=root ; COMMAND={INJECTION_COMMAND} {XSS_HOST_SCRIPT} {XSS_LINK}",
+            "www-data : TTY=pts/3 ; PWD=/var/www ; USER=root ; "
+            f"COMMAND={INJECTION_COMMAND} {XSS_HOST_SCRIPT} {XSS_LINK}",
         ),
     ]
     return ScenarioTruth(

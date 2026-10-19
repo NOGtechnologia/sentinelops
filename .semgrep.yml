@@ -71,6 +71,10 @@ rules:
     languages: [typescript]
     severity: ERROR
     message: Tokens are kept in memory only.
-    pattern-either:
-      - pattern: localStorage.setItem($K, $V)
-      - pattern: sessionStorage.setItem($K, $V)
+    patterns:
+      - pattern-either:
+          - pattern: localStorage.setItem($K, $V)
+          - pattern: sessionStorage.setItem($K, $V)
+      # the single reviewed exception: non-secret login hints (demo user id, "OIDC login happened")
+      - pattern-not-inside: |
+          function writeHint(...) { ... }
