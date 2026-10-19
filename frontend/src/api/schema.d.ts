@@ -467,7 +467,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** Case Report */
+    /**
+     * Case Report
+     * @description Export a case report. `preview=true` (JSON only) renders it for the UI without recording an export.
+     */
     get: operations["case_report_api_v1_cases__case_id__report_get"];
     put?: never;
     post?: never;
@@ -2020,6 +2023,7 @@ export interface operations {
         format?: "json" | "md" | "pdf";
         created_at?: string | null;
         pseudonymize?: boolean;
+        preview?: boolean;
       };
       header?: never;
       path: {

@@ -35,7 +35,16 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: ["src/**/*.{ts,tsx}"],
-      exclude: ["src/**/*.test.{ts,tsx}", "src/test/**", "src/api/schema.d.ts", "src/main.tsx", "src/vite-env.d.ts"],
+      // Chart.tsx / EntityGraph.tsx draw on canvas (not available in jsdom); covered by Playwright E2E.
+      exclude: [
+        "src/**/*.test.{ts,tsx}",
+        "src/test/**",
+        "src/api/schema.d.ts",
+        "src/main.tsx",
+        "src/vite-env.d.ts",
+        "src/components/Chart.tsx",
+        "src/components/EntityGraph.tsx",
+      ],
       thresholds: { lines: 80, statements: 80, functions: 80, branches: 75 },
       reporter: ["text-summary", "lcov"],
     },

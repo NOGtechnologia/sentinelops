@@ -119,12 +119,15 @@ export function Timeline({ items, refs }: { items: TimelineItem[]; refs: Record<
         </p>
       </div>
 
-      <VirtualList items={filtered} refs={refs} locale={locale(i18n.language)} />
+      <TimelineList items={filtered} refs={refs} locale={locale(i18n.language)} />
     </div>
   );
 }
 
-function VirtualList({
+/** Lists up to this size are rendered directly; larger ones (thousands of events) are virtualised. */
+const VIRTUALIZE_FROM = 200;
+
+function TimelineList({
   items,
   refs,
   locale: loc,
@@ -134,42 +137,57 @@ function VirtualList({
   locale: string;
 }) {
   const { t } = useTranslation();
-  const parent = useRef<HTMLElement>(null);
-  const virtualizer = useVirtualizer({
-    count: items.length,
-    getScrollElement: () => parent.current,
-    estimateSize: () => 44,
-    overscan: 12,
-  });
   return (
     // A scrollable region must be reachable by keyboard (axe: scrollable-region-focusable).
     <section
-      ref={parent}
       className="card h-[60vh] min-h-80 overflow-auto"
       aria-label={t("timeline.listLabel")}
       // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- scrollable region needs keyboard focus
       tabIndex={0}
       data-testid="timeline-list"
     >
-      <div role="list" className="relative w-full" style={{ height: virtualizer.getTotalSize() }}>
-        {virtualizer.getVirtualItems().map((row) => {
-          const item = items[row.index];
-          if (!item) return null;
-          return (
-            <div
-              key={row.key}
-              role="listitem"
-              className="absolute top-0 left-0 w-full"
-              style={{ transform: `translateY(${row.start}px)` }}
-              ref={virtualizer.measureElement}
-              data-index={row.index}
-            >
+      {items.length >= VIRTUALIZE_FROM ? (
+        <VirtualRows items={items} refs={refs} loc={loc} />
+      ) : (
+        <div role="list">
+          {items.map((item, index) => (
+            <div key={`${item.kind}-${item.id ?? item.rule_id ?? ""}-${String(index)}`} role="listitem">
               <TimelineRow item={item} refId={item.id ? refs[item.id] : undefined} loc={loc} />
             </div>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      )}
     </section>
+  );
+}
+
+function VirtualRows({ items, refs, loc }: { items: TimelineItem[]; refs: Record<string, string>; loc: string }) {
+  const marker = useRef<HTMLDivElement>(null);
+  const virtualizer = useVirtualizer({
+    count: items.length,
+    getScrollElement: () => marker.current?.parentElement ?? null,
+    estimateSize: () => 44,
+    overscan: 12,
+  });
+  return (
+    <div ref={marker} role="list" className="relative w-full" style={{ height: virtualizer.getTotalSize() }}>
+      {virtualizer.getVirtualItems().map((row) => {
+        const item = items[row.index];
+        if (!item) return null;
+        return (
+          <div
+            key={row.key}
+            role="listitem"
+            className="absolute top-0 left-0 w-full"
+            style={{ transform: `translateY(${String(row.start)}px)` }}
+            ref={virtualizer.measureElement}
+            data-index={row.index}
+          >
+            <TimelineRow item={item} refId={item.id ? refs[item.id] : undefined} loc={loc} />
+          </div>
+        );
+      })}
+    </div>
   );
 }
 

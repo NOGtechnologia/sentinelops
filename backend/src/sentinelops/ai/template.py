@@ -33,11 +33,12 @@ def template_output(package: EvidencePackage, recommendations: Sequence[Recommen
     for alert in alerts:
         evidence = alert["evidence"][:3]
         if evidence:
-            statement = f"Regel {alert['rule_id']} ({alert['title']}) hat mit {alert['event_count']} Ereignis(sen)"
+            title = alert.get("title_de") or alert["title"]
+            statement = f"Regel {alert['rule_id']} ({title}) hat mit {alert['event_count']} Ereignis(sen)"
             facts.append({"statement": f"{statement} ausgelöst.", "evidence": evidence})
     facts.extend(
         {
-            "statement": f"Prioritätsfaktor ({factor['contribution']:+d}): {factor['label']}",
+            "statement": f"Prioritätsfaktor ({factor['contribution']:+d}): {factor.get('label_de') or factor['label']}",
             "evidence": factor["evidence"][:3],
         }
         for factor in priority["factors"]

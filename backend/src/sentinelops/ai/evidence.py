@@ -164,6 +164,7 @@ def build_package(
         {
             "rule_id": a.rule_id,
             "title": a.title,
+            "title_de": a.title_de,
             "level": a.level,
             "tactics": list(a.tactics),
             "window_start": format_timestamp(a.window_start),
@@ -179,6 +180,7 @@ def build_package(
         "factors": [
             {
                 "label": f.label_en,
+                "label_de": f.label_de,
                 "contribution": f.contribution,
                 "evidence": [ref_of[e] for e in f.evidence if e in ref_of],
             }

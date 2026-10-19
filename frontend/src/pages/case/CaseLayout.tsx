@@ -130,7 +130,10 @@ function CaseFrame({ data }: { data: CaseDetail }) {
         </div>
       </header>
 
-      <nav aria-label={t("case.sections")} className="mb-4 flex gap-1 overflow-x-auto overflow-y-hidden border-b border-border">
+      <nav
+        aria-label={t("case.sections")}
+        className="mb-4 flex gap-1 overflow-x-auto overflow-y-hidden border-b border-border"
+      >
         {TABS.map((tab, index) => (
           <Link
             key={tab.key}
