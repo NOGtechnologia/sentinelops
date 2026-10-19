@@ -2,7 +2,7 @@
 # Publish SentinelOps to GitHub (spec 17.5). NOT reversible - run only after explicit approval
 # (CLAUDE.md rule 13). Always try `--dry-run` first: it runs every check and prints the commands.
 #
-#   scripts/publish_github.sh --owner <github-user-or-org> [--name sentinelops] [--dry-run]
+#   scripts/publish_github.sh --owner <github-user-or-org> [--name sentinelops] [--reviews 1] [--dry-run]
 #
 # Requires: git, gh (authenticated: `gh auth status`), uv, pnpm, gitleaks; PostgreSQL for the tests
 # (SENTINELOPS_TEST_DATABASE_URL, SENTINELOPS_E2E_ADMIN_URL).
@@ -12,17 +12,20 @@ OWNER=""
 NAME="sentinelops"
 DRY_RUN=0
 SKIP_CHECK=0
+REVIEWS=1
 while [ $# -gt 0 ]; do
   case "$1" in
     --owner) OWNER="$2"; shift 2 ;;
     --name) NAME="$2"; shift 2 ;;
     --dry-run) DRY_RUN=1; shift ;;
+    --reviews) REVIEWS="$2"; shift 2 ;; # required approvals on main; 0 = PR required, no approval (single maintainer)
     --skip-make-check) SKIP_CHECK=1; shift ;; # only meaningful together with --dry-run
     -h|--help) sed -n '2,9p' "$0"; exit 0 ;;
     *) echo "unknown option $1" >&2; exit 2 ;;
   esac
 done
 if [ -z "$OWNER" ]; then echo "--owner is required" >&2; exit 2; fi
+case "$REVIEWS" in ''|*[!0-9]*) echo "--reviews must be a number" >&2; exit 2 ;; esac
 if [ "$SKIP_CHECK" = 1 ] && [ "$DRY_RUN" = 0 ]; then echo "--skip-make-check is only allowed with --dry-run" >&2; exit 2; fi
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -103,7 +106,7 @@ CHECKS_JSON="$(json "json.dumps([{'context': c} for c in d['branch_protection'][
 PROTECTION=$(cat <<EOF
 {"required_status_checks":{"strict":true,"checks":${CHECKS_JSON}},
  "enforce_admins":true,
- "required_pull_request_reviews":{"required_approving_review_count":1,"dismiss_stale_reviews":true},
+ "required_pull_request_reviews":{"required_approving_review_count":${REVIEWS},"dismiss_stale_reviews":true},
  "restrictions":null,
  "required_linear_history":true,
  "allow_force_pushes":false,
@@ -124,6 +127,9 @@ run gh api -X PATCH "repos/${REPO}" -F "security_and_analysis[secret_scanning][s
   -F "security_and_analysis[secret_scanning_push_protection][status]=enabled"
 run gh api -X PUT "repos/${REPO}/private-vulnerability-reporting"
 run gh api -X POST "repos/${REPO}/pages" -f "build_type=workflow"
+# release-please and the visual-baselines workflow open pull requests with GITHUB_TOKEN
+run gh api -X PUT "repos/${REPO}/actions/permissions/workflow" -f "default_workflow_permissions=read" \
+  -F "can_approve_pull_request_reviews=true"
 echo "Falls ein Aufruf mangels Berechtigung scheitert: Settings -> Code security -> Dependabot alerts, Secret scanning,"
 echo "Push protection, Private vulnerability reporting aktivieren; Settings -> Pages -> Source: GitHub Actions."
 
