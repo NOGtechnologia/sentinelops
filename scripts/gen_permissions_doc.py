@@ -17,7 +17,7 @@ def render() -> str:
     data = yaml.safe_load(SOURCE.read_text(encoding="utf-8"))
     roles: dict[str, list[str]] = data["roles"]
     routes: dict[str, str] = data["routes"]
-    permissions = sorted({p for perms in roles.values() for p in perms} | {p for p in routes.values()})
+    permissions = sorted({p for perms in roles.values() for p in perms} | set(routes.values()))
     lines = [
         "# Rollen und Berechtigungen",
         "",

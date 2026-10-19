@@ -18,6 +18,7 @@ from sentinelops.parsers.base import ParseContext
 from sentinelops.parsers.json_mapped import load_profiles
 from sentinelops.parsers.registry import get_parser, source_types
 from sentinelops.settings import PROFILES_DIR
+from tests.conftest import scaled
 
 REF = datetime(2026, 3, 12, 9, 30, tzinfo=UTC)
 PROFILES = load_profiles(PROFILES_DIR, REF)
@@ -53,20 +54,20 @@ def run(source_type: str, data: bytes, dedupe: Deduplicator | None = None) -> li
     return [(o.status.value, o.event_id) for o in outcomes]
 
 
-@settings(max_examples=150, deadline=None, suppress_health_check=[HealthCheck.too_slow])
+@settings(max_examples=scaled(150), deadline=None, suppress_health_check=[HealthCheck.too_slow])
 @given(st.sampled_from(TYPES), st.binary(max_size=2000))
 def test_parsers_never_crash_on_arbitrary_bytes(source_type: str, data: bytes) -> None:
     for status, _ in run(source_type, data):
         assert status in {s.value for s in RecordStatus}
 
 
-@settings(max_examples=150, deadline=None)
+@settings(max_examples=scaled(150), deadline=None)
 @given(st.sampled_from(TYPES), st.lists(LINE_FRAGMENTS, max_size=12), st.sampled_from([b"\n", b"\r\n", b"", b" "]))
 def test_parsers_never_crash_on_structured_garbage(source_type: str, parts: list[bytes], sep: bytes) -> None:
     run(source_type, sep.join(parts))
 
 
-@settings(max_examples=60, deadline=None)
+@settings(max_examples=scaled(60), deadline=None)
 @given(
     st.sampled_from(["syslog_3164", "syslog_5424", "json:musterfirma_vpn", "windows_json", "journald_json"]),
     st.lists(LINE_FRAGMENTS, min_size=1, max_size=10),
@@ -81,7 +82,7 @@ def test_duplicate_import_changes_nothing(source_type: str, parts: list[bytes]) 
     assert {e for s, e in second if s == "duplicate"} == accepted_first | {e for s, e in first if s == "duplicate"}
 
 
-@settings(max_examples=200, deadline=None)
+@settings(max_examples=scaled(200), deadline=None)
 @given(st.datetimes(min_value=datetime(2025, 3, 1), max_value=datetime(2027, 11, 30)))
 def test_localize_matches_zoneinfo_or_flags_the_gap(naive: datetime) -> None:
     result = localize(naive, BERLIN)
@@ -93,7 +94,7 @@ def test_localize_matches_zoneinfo_or_flags_the_gap(naive: datetime) -> None:
     assert result.utc.tzinfo is UTC
 
 
-@settings(max_examples=100, deadline=None)
+@settings(max_examples=scaled(100), deadline=None)
 @given(st.integers(min_value=0, max_value=3 * 3600 - 1))
 def test_monotone_stream_through_fall_back(offset: int) -> None:
     """A chronological stream of local times across the October switch maps to

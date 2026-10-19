@@ -1,0 +1,101 @@
+name: Nightly
+
+# Spec 15.1 "make nightly": holdout benchmark, long property tests/fuzzing, mutation tests, load test
+# (1 million events), optional evaluation with a real model. Regressions > 20 % fail the run.
+on:
+  schedule:
+    - cron: "41 1 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  UV_VERSION: "0.13.1"
+
+jobs:
+  quality:
+    name: benchmark, long property tests, mutation tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+      - run: uv sync --frozen --all-packages
+      - name: Holdout benchmark (full volume)
+        working-directory: backend
+        env:
+          SENTINELOPS_BENCHMARK_REPORT: ${{ github.workspace }}/benchmark-report.md
+        run: uv run pytest tests/benchmark -q
+      - name: Long property tests and parser fuzzing
+        working-directory: backend
+        env:
+          HYPOTHESIS_PROFILE: nightly
+        run: uv run pytest tests/property tests/unit/test_cases_priority.py -q
+      - name: Mutation tests (score >= 85 % on core logic)
+        working-directory: backend
+        env:
+          SENTINELOPS_RULES_DIR: ${{ github.workspace }}/rules
+        run: |
+          uv run mutmut run --max-children 4 || true
+          uv run mutmut export-cicd-stats
+          uv run python ../scripts/check_mutation.py mutants/mutmut-cicd-stats.json
+      - name: Summary
+        if: always()
+        run: if [ -f benchmark-report.md ]; then cat benchmark-report.md >> "$GITHUB_STEP_SUMMARY"; fi
+
+  load:
+    name: load test (1 million events)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    services:
+      postgres:
+        image: postgres:16.13-alpine@sha256:4e6e670bb069649261c9c18031f0aded7bb249a5b6664ddec29c013a89310d50
+        env:
+          POSTGRES_USER: sentinelops
+          POSTGRES_PASSWORD: ci-only
+          POSTGRES_DB: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U sentinelops"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+      - run: uv sync --frozen --all-packages
+      - name: Load test
+        env:
+          SENTINELOPS_E2E_ADMIN_URL: postgresql+asyncpg://sentinelops:ci-only@localhost:5432/postgres
+        run: uv run --package sentinelops python scripts/load_test.py
+
+  ai-evaluation:
+    name: optional evaluation with a real model (no gate)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    if: ${{ vars.SENTINELOPS_EVAL_PROVIDER != '' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: ${{ env.UV_VERSION }}
+      - run: uv sync --frozen --all-packages
+      - name: Evaluate rejected statements and ground-truth coverage
+        env:
+          SENTINELOPS_LLM_PROVIDER: ${{ vars.SENTINELOPS_EVAL_PROVIDER }}
+          SENTINELOPS_LLM_MODEL: ${{ vars.SENTINELOPS_EVAL_MODEL }}
+          SENTINELOPS_LLM_BASE_URL: ${{ vars.SENTINELOPS_EVAL_BASE_URL }}
+          SENTINELOPS_LLM_API_KEY: ${{ secrets.SENTINELOPS_EVAL_API_KEY }}
+          SENTINELOPS_LLM_CLOUD_OPT_IN: "true"
+        run: uv run --package sentinelops python scripts/ai_evaluation.py >> "$GITHUB_STEP_SUMMARY"

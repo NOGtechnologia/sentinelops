@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -12,6 +13,13 @@ from sentinelops.normalize.schema import CanonicalEvent
 T0 = datetime(2026, 3, 12, 2, 0, tzinfo=UTC)
 
 EventFactory = Callable[..., CanonicalEvent]
+
+#: Property tests: short in every CI run, long in the nightly run (spec 15.2 "PR kurz, Nightly lang").
+NIGHTLY = os.environ.get("HYPOTHESIS_PROFILE") == "nightly"
+
+
+def scaled(examples: int) -> int:
+    return examples * 25 if NIGHTLY else examples
 
 
 def make_event(

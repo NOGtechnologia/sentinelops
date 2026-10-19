@@ -126,6 +126,21 @@ type = "forbidden"
 source_modules = ["sentinelops.ai"]
 forbidden_modules = ["sentinelops.response"]
 
+# Mutation testing (nightly, Linux): score >= 85 % on the core logic (spec 15.2), checked by
+# scripts/check_mutation.py from mutants/mutmut-cicd-stats.json.
+[tool.mutmut]
+paths_to_mutate = [
+    "src/sentinelops/normalize/",
+    "src/sentinelops/detection/matcher.py",
+    "src/sentinelops/detection/correlation.py",
+    "src/sentinelops/correlation/",
+    "src/sentinelops/ai/validator.py",
+    "src/sentinelops/response/approvals.py",
+]
+tests_dir = ["tests/unit/", "tests/property/"]
+# Rules are read via SENTINELOPS_RULES_DIR (absolute) in the nightly job.
+also_copy = ["tests/"]
+
 [tool.coverage.run]
 branch = true
 source = ["sentinelops"]
