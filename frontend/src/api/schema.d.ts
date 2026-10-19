@@ -917,7 +917,7 @@ export interface components {
     /** HTTPValidationError */
     HTTPValidationError: {
       /** Detail */
-      detail?: components["schemas"]["ValidationError"][];
+      detail?: string | components["schemas"]["ValidationError"][];
     };
     /** Health */
     Health: {
