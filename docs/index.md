@@ -22,6 +22,7 @@ gezwungen, nur Belegtes zu behaupten. Maßnahmen schlägt das System vor; ein Me
 
 ## Einstieg
 
+- [Rundgang](tour.md) – ein Angriff vom Log bis zur freigegebenen Maßnahme, mit allen Ansichten
 - [Benutzerhandbuch](user-guide/index.md) – Arbeiten mit Lagebild, Fällen, Belegen und Maßnahmen
 - [Installation und Betrieb](operations.md) – Demo in fünf Befehlen, Konfiguration, Aufbewahrung
 - [Erkennungskatalog](detection-catalog.md) – alle Regeln mit Logik, Schwellen und Tests

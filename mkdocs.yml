@@ -62,6 +62,7 @@ validation:
 
 nav:
   - Start: index.md
+  - Rundgang: tour.md
   - Benutzerhandbuch:
       - Überblick: user-guide/index.md
       - Lagebild und Fälle: user-guide/cases.md
