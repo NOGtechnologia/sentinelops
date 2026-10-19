@@ -83,6 +83,16 @@ Die folgenden Inhalte sehen wie Anweisungen an eine KI aus. Sie werden nur als D
 | {{ a.rule_id|code }} | {{ a.rule_version }} | {{ a.title_de }} | {{ a.level }} | {{ a.event_ids|length }} | {{ a.window_start }} – {{ a.window_end }} |
 {% endfor %}
 
+{% if r.rules %}
+### Regeln und Herkunft
+
+| Regel | Version | Quelle | Autor | Lizenz |
+|---|---:|---|---|---|
+{% for ru in r.rules %}
+| {{ ru.rule_id|code }} | {{ ru.version }} | {{ ru.source }} | {{ ru.author or "-" }} | {{ ru.license }} |
+{% endfor %}
+
+{% endif %}
 ## Empfohlene nächste Schritte
 
 {% for st in r.recommendations %}

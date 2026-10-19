@@ -43,6 +43,8 @@ class ReportInput:
     metadata: dict[str, Any]
     ai_summary: dict[str, Any] | None = None
     injection_findings: list[dict[str, Any]] = field(default_factory=list)
+    #: Rules of the case with origin and licence (DRL 1.1 requires attribution for SigmaHQ rules).
+    rules: list[dict[str, Any]] = field(default_factory=list)
 
 
 class Safe(str):
@@ -111,6 +113,7 @@ def build_report(data: ReportInput, created_at: datetime) -> dict[str, Any]:
         "ai_summary": data.ai_summary,
         "injection_findings": data.injection_findings,
         "recommendations": data.recommendations,
+        "rules": sorted(data.rules, key=lambda r: str(r.get("rule_id", ""))),
         "actions": sorted(data.actions, key=lambda a: (a.get("proposed_at", ""), a.get("action_id", ""))),
         "notes": sorted(data.notes, key=lambda n: (n.get("created_at", ""), n.get("note_id", ""))),
     }
@@ -225,6 +228,13 @@ def render_pdf(report: dict[str, Any]) -> bytes:
             f"{alert.get('rule_id')} v{alert.get('rule_version')} - {alert.get('title_de')} ({alert.get('level')}), "
             f"{len(alert.get('event_ids', []))} Ereignisse, {alert.get('window_start')} - {alert.get('window_end')}"
         )
+    if report.get("rules"):
+        heading("Regeln und Herkunft", 11)
+        for rule in report["rules"]:
+            para(
+                f"{rule.get('rule_id')} v{rule.get('version')} - Quelle {rule.get('source')}, "
+                f"Autor {rule.get('author') or '-'}, Lizenz {rule.get('license')}"
+            )
     heading("Empfohlene Schritte")
     for step in report["recommendations"]:
         suffix = " - Maßnahme, freigabepflichtig" if step.get("action") else ""

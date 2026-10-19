@@ -40,7 +40,7 @@ der Paketname `sentinelops` ist nur technisch.
   pySigma **2.0.1**. `make rules-check` führt deshalb `sigma check --fail-on-error --fail-on-issues`
   in einer isolierten Umgebung (`uvx`) über alle Standardregeln aus **und** validiert mit pySigma 2.x
   im eigenen Loader. Die Regel SO-AUTH-003 nutzt die dokumentierte Erweiterung `sequence`
-  ([ADR 0002](adr/0002-sigma-auswertung.md)) und wird nur vom eigenen Loader geprüft.
+  ([ADR-0003](adr/0003-sigma-auswertung.md)) und wird nur vom eigenen Loader geprüft.
 - `diskcache` (transitive Abhängigkeit von pySigma) hat eine bekannte Schwachstelle ohne
   Fix-Release (PYSEC-2026-2447) – akzeptiert und begründet in
   [`security/accepted-risks.md`](security/accepted-risks.md).

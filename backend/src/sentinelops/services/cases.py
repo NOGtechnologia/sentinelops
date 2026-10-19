@@ -35,6 +35,8 @@ from sentinelops.storage.models import (
     notes,
     priority_explanations,
     raw_records,
+    rule_versions,
+    rules,
 )
 
 
@@ -300,4 +302,35 @@ async def report_input(conn: AsyncConnection, bundle: CaseBundle, config_hash: s
         },
         ai_summary=record,
         injection_findings=bundle.case["injection_findings"],
+        rules=await _rule_origins(conn, sorted({a.rule_id for a in bundle.alerts})),
     )
+
+
+RULE_LICENSES = {"sigmahq": "DRL-1.1", "custom": "Apache-2.0"}
+
+
+async def _rule_origins(conn: AsyncConnection, rule_ids: list[str]) -> list[dict[str, Any]]:
+    """Origin, author and licence of the case's rules in their current version."""
+    if not rule_ids:
+        return []
+    rows = await conn.execute(
+        select(rules.c.rule_id, rules.c.current_version, rules.c.source, rule_versions.c.meta)
+        .join(
+            rule_versions,
+            (rule_versions.c.rule_id == rules.c.rule_id)
+            & (rule_versions.c.version == rules.c.current_version)
+            & (rule_versions.c.content_hash == rules.c.current_hash),
+        )
+        .where(rules.c.rule_id.in_(rule_ids))
+        .order_by(rules.c.rule_id)
+    )
+    return [
+        {
+            "rule_id": row.rule_id,
+            "version": row.current_version,
+            "source": row.source,
+            "author": str(row.meta.get("author", "")),
+            "license": RULE_LICENSES.get(row.source, "-"),
+        }
+        for row in rows
+    ]

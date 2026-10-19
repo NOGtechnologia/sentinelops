@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import asyncio
+import dataclasses
 import json
+import socket
 from pathlib import Path
 
 import pytest
@@ -14,7 +16,7 @@ from sentinelops.runtime import Runtime
 from sentinelops.storage import jobs
 from sentinelops.storage.models import cases, events, ingest_runs
 from sentinelops.storage.models import jobs as jobs_table
-from sentinelops.worker.main import run_job, schedule_retention, work_once
+from sentinelops.worker.main import run_forever, run_job, schedule_retention, work_once
 from tests.integration.conftest import Database
 from tests.integration.demo_data import generate_dataset, settings_for
 
@@ -85,6 +87,56 @@ def test_migrate_ingest_analyze_commands(
     assert applied == dry | {"dry_run": False}
     assert cli.main(["demo-load", "--out", str(small_dataset)]) == 0
     assert cli.main(["migrate", "--down"]) == 0
+
+
+def test_worker_drop_folder_and_syslog(fresh_db: Database, tmp_path: Path) -> None:
+    drop = tmp_path / "drop"
+    (drop / "syslog_3164").mkdir(parents=True)
+    (drop / "no_such_type").mkdir()
+    (drop / "syslog_3164" / "auth.log").write_bytes((FIXTURES / "syslog_3164" / "auth.log").read_bytes())
+    (drop / "no_such_type" / "x.log").write_text("x\n", encoding="utf-8")
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
+        probe.bind(("127.0.0.1", 0))
+        port = int(probe.getsockname()[1])
+    settings = dataclasses.replace(
+        settings_for(fresh_db.url), drop_folder=str(drop), syslog_port=port, syslog_host="127.0.0.1"
+    )
+    line = (
+        b"<86>1 2026-03-12T09:01:02Z srv-web01 sshd 811 - - Accepted publickey for anna from 192.0.2.5 port 50000 ssh2"
+    )
+
+    async def scenario() -> None:
+        rt = Runtime(settings)
+        stop = asyncio.Event()
+        worker = asyncio.create_task(run_forever(rt, poll_seconds=0.05, stop=stop))
+        try:
+            await asyncio.sleep(0.5)  # listeners up
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.sendto(line, ("127.0.0.1", port))
+            sock.close()
+            channels: set[str] = set()
+            for _ in range(300):
+                async with rt.engine.connect() as conn:
+                    channels = set((await conn.execute(select(ingest_runs.c.channel))).scalars())
+                if {"drop_folder", "syslog"} <= channels and not any((drop / ".processing").glob("*")):
+                    break
+                await asyncio.sleep(0.1)
+            assert {"drop_folder", "syslog"} <= channels
+            async with rt.engine.connect() as conn:
+                accepted = dict(
+                    (await conn.execute(select(ingest_runs.c.channel, ingest_runs.c.accepted))).all()
+                )
+            assert accepted == {"drop_folder": 13, "syslog": 1}
+            assert not (drop / "syslog_3164" / "auth.log").exists()
+            failed = sorted(p.name for p in (drop / "failed").iterdir())
+            assert len(failed) == 2
+            assert failed[1].endswith("x.log.error.txt")
+        finally:
+            stop.set()
+            await asyncio.wait_for(worker, 10)
+            await rt.engine.dispose()
+
+    asyncio.run(scenario())
 
 
 def test_worker_runs_queued_jobs(fresh_db: Database, tmp_path: Path) -> None:

@@ -402,6 +402,8 @@ async def test_reports_reproducible_and_escaped(client: httpx.AsyncClient) -> No
     assert a.content == b.content
     report = json.loads(a.content)
     assert report["metadata"]["created_at"] == "2026-03-12T10:30:00.000000Z"
+    assert report["rules"]
+    assert all(r["license"] in ("Apache-2.0", "DRL-1.1") and r["author"] for r in report["rules"])
     assert report["injection_findings"]
     md = (
         await client.get(f"/api/v1/cases/{cid}/report", params={**params, "format": "md"}, headers=auth("analyst"))

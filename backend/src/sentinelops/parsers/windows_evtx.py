@@ -4,7 +4,8 @@ The library renders each binary record as JSON (same shape as
 ``evtx_dump -o json``). That rendering is stored as the raw record - a single
 EVTX record is not addressable as bytes on its own - and mapped by the same
 code as the other Windows formats, which guarantees identical normalisation.
-Rendering to JSON instead of XML is ~3x faster (Phase 0 measurement).
+JSON rendering is slightly faster than XML and avoids parsing XML a second
+time (measurement in ADR-0005, ``scripts/bench_evtx.py``).
 """
 
 from __future__ import annotations

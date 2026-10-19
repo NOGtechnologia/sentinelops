@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import io
 import logging
 import os
 import socket
@@ -13,7 +14,9 @@ from typing import Any
 from sqlalchemy import select
 
 from sentinelops.detection.exceptions import RuleException
-from sentinelops.ingest.runs import ingest_path
+from sentinelops.ingest.drop_folder import DropFolderScanner
+from sentinelops.ingest.runs import ingest_path, ingest_stream
+from sentinelops.ingest.syslog_receiver import Sink, SyslogCollector, serve
 from sentinelops.runtime import Runtime
 from sentinelops.storage import jobs
 from sentinelops.storage.models import rule_exceptions
@@ -54,21 +57,20 @@ async def run_job(rt: Runtime, job: dict[str, Any]) -> None:
         await run_analysis(rt.engine, rt.analysis_context(await effective_exceptions(rt)), rt.clock.now())
     elif kind == "ingest_file":
         path = Path(payload["path"])
-        try:
-            await ingest_path(
-                rt.engine,
-                path,
-                source_type=payload["source_type"],
-                timezone=payload["timezone"],
-                file_name=payload["file_name"],
-                channel=payload["channel"],
-                actor=payload["actor"],
-                profiles=rt.profiles,
-                now=rt.clock.now(),
-            )
-        finally:
-            if payload.get("delete_after"):
-                await asyncio.to_thread(path.unlink, missing_ok=True)
+        await ingest_path(
+            rt.engine,
+            path,
+            source_type=payload["source_type"],
+            timezone=payload["timezone"],
+            file_name=payload["file_name"],
+            channel=payload["channel"],
+            actor=payload["actor"],
+            profiles=rt.profiles,
+            now=rt.clock.now(),
+        )
+        # Only after success: a failed import keeps the file for the retry.
+        if payload.get("delete_after"):
+            await asyncio.to_thread(path.unlink, missing_ok=True)
     elif kind == "retention":
         await apply_retention(rt.engine, RetentionPolicy.from_settings(rt.settings), rt.clock.now(), "worker")
     else:
@@ -104,10 +106,45 @@ async def schedule_retention(rt: Runtime, last: datetime | None) -> datetime | N
     return now
 
 
+def syslog_sink(rt: Runtime) -> Sink:
+    async def sink(source_type: str, data: bytes, sha256: str) -> None:
+        await ingest_stream(
+            rt.engine,
+            io.BytesIO(data),
+            sha256,
+            source_type=source_type,
+            timezone=rt.settings.syslog_timezone,
+            file_name=f"syslog/{source_type}",
+            channel="syslog",
+            actor="syslog",
+            profiles=rt.profiles,
+            now=rt.clock.now(),
+        )
+
+    return sink
+
+
 async def run_forever(rt: Runtime, poll_seconds: float = 2.0, stop: asyncio.Event | None = None) -> None:
     worker_id = f"{socket.gethostname()}-{os.getpid()}"
+    stop = stop or asyncio.Event()
     last_retention: datetime | None = None
-    while stop is None or not stop.is_set():
-        last_retention = await schedule_retention(rt, last_retention)
-        if not await work_once(rt, worker_id):
-            await asyncio.sleep(poll_seconds)
+    scanner = (
+        DropFolderScanner(Path(rt.settings.drop_folder), rt.settings.drop_folder_timezone)
+        if rt.settings.drop_folder
+        else None
+    )
+    receiver: asyncio.Task[None] | None = None
+    if rt.settings.syslog_port:
+        collector = SyslogCollector(syslog_sink(rt))
+        receiver = asyncio.create_task(serve(collector, rt.settings.syslog_host, rt.settings.syslog_port, stop))
+    try:
+        while not stop.is_set():
+            last_retention = await schedule_retention(rt, last_retention)
+            if scanner is not None:
+                await scanner.scan(rt.engine, rt.profiles, rt.clock.now())
+            if not await work_once(rt, worker_id):
+                await asyncio.sleep(poll_seconds)
+    finally:
+        stop.set()
+        if receiver is not None:
+            await receiver

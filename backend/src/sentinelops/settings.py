@@ -70,6 +70,9 @@ class Settings:
             int(os.environ["SENTINELOPS_SYSLOG_PORT"]) if os.environ.get("SENTINELOPS_SYSLOG_PORT") else None
         )
     )
+    drop_folder_timezone: str = field(default_factory=lambda: os.environ.get("SENTINELOPS_DROP_FOLDER_TZ", "UTC"))
+    syslog_host: str = field(default_factory=lambda: os.environ.get("SENTINELOPS_SYSLOG_HOST", "0.0.0.0"))  # noqa: S104 - container listener, opt-in via port
+    syslog_timezone: str = field(default_factory=lambda: os.environ.get("SENTINELOPS_SYSLOG_TZ", "UTC"))
     static_dir: str | None = field(default_factory=lambda: os.environ.get("SENTINELOPS_STATIC_DIR"))
     #: Retention in days per data type (spec 16.2); 0 keeps data forever.
     retention_events_days: int = field(default_factory=lambda: _int("SENTINELOPS_RETENTION_EVENTS_DAYS", 90))

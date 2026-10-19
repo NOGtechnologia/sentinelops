@@ -81,7 +81,7 @@ SIGMA_CLI_VERSION = "3.1.0"
 def rules_check() -> None:
     # Reference validation with the official sigma-cli in an isolated environment (it ships pySigma 1.x,
     # the product uses 2.x). Rules with the SentinelOps `sequence` extension are not standard Sigma and
-    # are validated by our own loader only (ADR 0002).
+    # are validated by our own loader only (ADR-0003).
     # sigma-cli resolves correlation references per argument, so the standard rules are staged in one directory.
     staging = ROOT / "dist" / "sigma-check"
     shutil.rmtree(staging, ignore_errors=True)
