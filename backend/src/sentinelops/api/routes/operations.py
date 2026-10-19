@@ -11,6 +11,7 @@ import tempfile
 from datetime import timedelta
 from pathlib import Path
 from typing import Annotated, Any, Literal
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, Response, UploadFile
 from pydantic import BaseModel, Field
@@ -20,12 +21,14 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sentinelops.api.deps import RuntimeDep, ingest_principal, require
 from sentinelops.auth.principal import Principal, new_ingest_token
 from sentinelops.ingest.runs import ingest_stream
-from sentinelops.ingest.sources import UnsupportedSourceError, validate_source_type
+from sentinelops.ingest.sources import UnsupportedSourceError, known_source_types, validate_source_type
+from sentinelops.normalize.dedupe import stable_hash
 from sentinelops.normalize.quality import DEFAULT_LIMITS
 from sentinelops.normalize.schema import format_timestamp, parse_timestamp
 from sentinelops.reports.aggregate import CaseFacts, build_aggregate
 from sentinelops.reports.csv_export import to_csv
 from sentinelops.services.cases import row_dict
+from sentinelops.settings import SOFTWARE_VERSION
 from sentinelops.storage import audit, jobs
 from sentinelops.storage.audit import verify_chain
 from sentinelops.storage.models import (
@@ -35,6 +38,7 @@ from sentinelops.storage.models import (
     ingest_tokens,
     raw_records,
     role_assignments,
+    sources,
     users,
 )
 
@@ -380,6 +384,97 @@ async def list_users(rt: RuntimeDep, _: Annotated[Principal, _p("admin:manage")]
     for r in roles:
         by_user.setdefault(r.subject, []).append(r.role)
     return [row_dict(r) | {"roles": sorted(by_user.get(r["subject"], []))} for r in rows]
+
+
+class SourceIn(BaseModel):
+    name: str = Field(min_length=1, max_length=200)
+    source_type: str = Field(min_length=1, max_length=64)
+    timezone: str = Field(default="UTC", max_length=64)
+
+
+@router.get("/admin/sources")
+async def list_sources(rt: RuntimeDep, _: Annotated[Principal, _p("admin:manage")]) -> dict[str, Any]:
+    """Configured data sources (presets for uploads, drop folder and API) and all known source types."""
+    async with rt.engine.connect() as conn:
+        rows = (await conn.execute(select(sources).order_by(sources.c.name))).mappings().all()
+    return {"items": [row_dict(r) for r in rows], "source_types": known_source_types(rt.profiles)}
+
+
+@router.post("/admin/sources", status_code=201)
+async def create_source(
+    body: SourceIn, rt: RuntimeDep, principal: Annotated[Principal, _p("admin:manage")]
+) -> dict[str, Any]:
+    _check_source_type(rt, body.source_type)
+    try:
+        ZoneInfo(body.timezone)
+    except (ZoneInfoNotFoundError, ValueError) as exc:
+        raise HTTPException(422, f"unknown timezone {body.timezone!r}") from exc
+    now = rt.clock.now()
+    source_id = stable_hash("source", body.name, length=16)
+    async with rt.engine.begin() as conn:
+        result = await conn.execute(
+            pg_insert(sources)
+            .values(
+                source_id=source_id,
+                name=body.name,
+                source_type=body.source_type,
+                timezone=body.timezone,
+                created_at=now,
+            )
+            .on_conflict_do_nothing()
+        )
+        if result.rowcount == 0:
+            raise HTTPException(409, "a source with this name exists")
+        await audit.append(conn, principal.username, "source.created", "source", source_id, body.model_dump(), now)
+    return {"source_id": source_id, **body.model_dump(), "created_at": format_timestamp(now)}
+
+
+@router.delete("/admin/sources/{source_id}", status_code=204)
+async def delete_source(
+    source_id: str, rt: RuntimeDep, principal: Annotated[Principal, _p("admin:manage")]
+) -> Response:
+    now = rt.clock.now()
+    async with rt.engine.begin() as conn:
+        result = await conn.execute(sources.delete().where(sources.c.source_id == source_id))
+        if result.rowcount == 0:
+            raise HTTPException(404, "source not found")
+        await audit.append(conn, principal.username, "source.deleted", "source", source_id, {}, now)
+    return Response(status_code=204)
+
+
+@router.get("/admin/settings")
+async def effective_settings(rt: RuntimeDep, _: Annotated[Principal, _p("admin:manage")]) -> dict[str, Any]:
+    """Effective configuration without secrets. Changes are made through environment variables (operations.md)."""
+    s = rt.settings
+    return {
+        "software_version": SOFTWARE_VERSION,
+        "demo_mode": s.demo_mode,
+        "display_timezone": s.display_timezone,
+        "auth": {"oidc_issuer": s.oidc_issuer, "oidc_audience": s.oidc_audience, "roles_claim": s.oidc_roles_claim},
+        "four_eyes": s.four_eyes,
+        "ai": {
+            "provider": s.llm_provider,
+            "model": s.llm_model,
+            "base_url": s.llm_base_url,
+            "cloud_opt_in": s.llm_cloud_opt_in,
+            "pseudonymize": s.llm_pseudonymize,
+            "api_key_configured": bool(s.llm_api_key),
+        },
+        "ingest": {
+            "drop_folder": s.drop_folder,
+            "drop_folder_timezone": s.drop_folder_timezone,
+            "syslog_port": s.syslog_port,
+            "syslog_timezone": s.syslog_timezone,
+            "max_upload_bytes": MAX_UPLOAD_BYTES,
+        },
+        "retention_days": {
+            "events": s.retention_events_days,
+            "raw_records": s.retention_raw_days,
+            "closed_cases": s.retention_closed_cases_days,
+            "jobs": s.retention_jobs_days,
+        },
+        "detection": {"config_hash": rt.config.config_hash(), "config": rt.config.model_dump(mode="json")},
+    }
 
 
 @router.post("/admin/analysis")

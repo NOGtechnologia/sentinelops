@@ -423,6 +423,36 @@ async def test_reports_reproducible_and_escaped(client: httpx.AsyncClient) -> No
     assert csv_agg.text.startswith('"rule_id"')
 
 
+async def test_admin_sources_and_settings(client: httpx.AsyncClient) -> None:
+    listed = (await client.get("/api/v1/admin/sources", headers=auth("admin"))).json()
+    assert "json:musterfirma_vpn" in listed["source_types"]
+    body = {"name": "VPN Zentrale", "source_type": "json:musterfirma_vpn", "timezone": "Europe/Berlin"}
+    assert (await client.post("/api/v1/admin/sources", json=body, headers=auth("analyst"))).status_code == 403
+    created = await client.post("/api/v1/admin/sources", json=body, headers=auth("admin"))
+    assert created.status_code == 201
+    assert (await client.post("/api/v1/admin/sources", json=body, headers=auth("admin"))).status_code == 409
+    bad_type = await client.post(
+        "/api/v1/admin/sources", json=body | {"name": "x", "source_type": "nope"}, headers=auth("admin")
+    )
+    assert bad_type.status_code == 422
+    bad_tz = await client.post(
+        "/api/v1/admin/sources", json=body | {"name": "y", "timezone": "Mars/Base"}, headers=auth("admin")
+    )
+    assert bad_tz.status_code == 422
+    items = (await client.get("/api/v1/admin/sources", headers=auth("admin"))).json()["items"]
+    assert [i["name"] for i in items] == ["VPN Zentrale"]
+    source_id = created.json()["source_id"]
+    assert (await client.delete(f"/api/v1/admin/sources/{source_id}", headers=auth("admin"))).status_code == 204
+    assert (await client.delete(f"/api/v1/admin/sources/{source_id}", headers=auth("admin"))).status_code == 404
+
+    settings = (await client.get("/api/v1/admin/settings", headers=auth("admin"))).json()
+    assert settings["ai"]["provider"] in ("none", "mock")
+    assert "api_key" not in settings["ai"]
+    assert settings["retention_days"]["events"] == 90
+    assert len(settings["detection"]["config_hash"]) >= 16
+    assert (await client.get("/api/v1/admin/settings", headers=auth("auditor"))).status_code == 403
+
+
 async def test_report_pseudonymized(client: httpx.AsyncClient) -> None:
     case = await case_by_title(client, "Brute Force auf ein Konto: anna")
     cid = case["case_id"]

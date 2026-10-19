@@ -216,6 +216,7 @@ def security() -> None:
 
 def docs_check() -> None:
     uv("sentinelops", "rules", "catalog-check")
+    uv("python", str(ROOT / "scripts" / "gen_permissions_doc.py"), "--check")
     run(
         ["uv", "run", "--package", "sentinelops", "mkdocs", "build", "--strict", "--site-dir", str(ROOT / "site")],
         cwd=ROOT,

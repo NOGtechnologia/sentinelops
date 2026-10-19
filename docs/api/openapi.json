@@ -348,6 +348,34 @@
         "title": "RuleUpdate",
         "type": "object"
       },
+      "SourceIn": {
+        "properties": {
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "source_type": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Source Type",
+            "type": "string"
+          },
+          "timezone": {
+            "default": "UTC",
+            "maxLength": 64,
+            "title": "Timezone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "source_type"
+        ],
+        "title": "SourceIn",
+        "type": "object"
+      },
       "SplitIn": {
         "properties": {
           "alert_ids": {
@@ -690,6 +718,118 @@
           }
         },
         "summary": "Revoke Token"
+      }
+    },
+    "/api/v1/admin/settings": {
+      "get": {
+        "description": "Effective configuration without secrets. Changes are made through environment variables (operations.md).",
+        "operationId": "effective_settings_api_v1_admin_settings_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Effective Settings Api V1 Admin Settings Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Effective Settings"
+      }
+    },
+    "/api/v1/admin/sources": {
+      "get": {
+        "description": "Configured data sources (presets for uploads, drop folder and API) and all known source types.",
+        "operationId": "list_sources_api_v1_admin_sources_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Sources Api V1 Admin Sources Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Sources"
+      },
+      "post": {
+        "operationId": "create_source_api_v1_admin_sources_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SourceIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Source Api V1 Admin Sources Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Source"
+      }
+    },
+    "/api/v1/admin/sources/{source_id}": {
+      "delete": {
+        "operationId": "delete_source_api_v1_admin_sources__source_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "source_id",
+            "required": true,
+            "schema": {
+              "title": "Source Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Source"
       }
     },
     "/api/v1/admin/users": {

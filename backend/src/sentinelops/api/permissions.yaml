@@ -130,4 +130,8 @@ routes:
   "POST /api/v1/admin/ingest-tokens": admin:manage
   "DELETE /api/v1/admin/ingest-tokens/{token_id}": admin:manage
   "GET /api/v1/admin/users": admin:manage
+  "GET /api/v1/admin/sources": admin:manage
+  "POST /api/v1/admin/sources": admin:manage
+  "DELETE /api/v1/admin/sources/{source_id}": admin:manage
+  "GET /api/v1/admin/settings": admin:manage
   "POST /api/v1/admin/analysis": analysis:run

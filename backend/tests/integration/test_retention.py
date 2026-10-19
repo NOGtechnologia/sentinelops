@@ -74,11 +74,13 @@ async def test_retention_deletes_in_evidence_order(fresh_db: Database) -> None:
             first_event = (await conn.execute(select(func.min(events.c.ts)))).scalar()
             assert first_event is not None
             old = first_event - timedelta(days=400)
-            await conn.execute(insert(cases).values(_case("closed-old", "closed", old, old + timedelta(days=1))))
+            await conn.execute(
+                insert(cases).values(_case("closed-old", "resolved_benign", old, old + timedelta(days=1)))
+            )
             await conn.execute(
                 insert(notes).values(note_id="n1", case_id="closed-old", author="a", text="x", created_at=old)
             )
-            await conn.execute(insert(cases).values(_case("open-recent", "open", first_event, None)))
+            await conn.execute(insert(cases).values(_case("open-recent", "in_progress", first_event, None)))
             await jobs.enqueue(conn, "analyze", {}, INGESTED)
         events_before = await _count(engine, events)
         raw_before = await _count(engine, raw_records)
@@ -105,7 +107,9 @@ async def test_retention_deletes_in_evidence_order(fresh_db: Database) -> None:
         # Once the case is closed, the evidence follows the event period.
         async with engine.begin() as conn:
             await conn.execute(
-                cases.update().where(cases.c.case_id == "open-recent").values(status="closed", closed_at=INGESTED)
+                cases.update()
+                .where(cases.c.case_id == "open-recent")
+                .values(status="resolved_true_positive", closed_at=INGESTED)
             )
         final = await apply_retention(engine, policy, later, actor="test")
         assert final.events == events_before

@@ -33,7 +33,8 @@ from sentinelops.settings import Settings
 from sentinelops.storage import audit
 
 # Constant SQL only; all values are bound parameters.
-_OPEN_CASES_START = "SELECT min(window_start) FROM cases WHERE status <> 'closed'"
+#: Closed = one of the ``resolved_*`` states (spec 12); ``new`` and ``in_progress`` are open.
+_OPEN_CASES_START = "SELECT min(window_start) FROM cases WHERE status NOT LIKE 'resolved\\_%'"
 _COUNT_EVENTS = "SELECT count(*) FROM events WHERE ts < :cutoff"
 _DROP_PARTITIONS = "SELECT drop_event_partitions_before(:cutoff)"
 _DELETE_DEFAULT_PARTITION = "DELETE FROM events_default WHERE ts < :cutoff"
@@ -46,7 +47,7 @@ _DELETE_RAW = (
     "(r.event_id IS NULL OR NOT EXISTS (SELECT 1 FROM events e WHERE e.event_id = r.event_id))"
 )
 _SELECT_CASES = (
-    "SELECT case_id FROM cases WHERE status = 'closed' AND closed_at < :closed_cutoff "
+    "SELECT case_id FROM cases WHERE status LIKE 'resolved\\_%' AND closed_at < :closed_cutoff "
     "AND window_end < :events_cutoff ORDER BY case_id"
 )
 #: Dependent rows first; alerts last (cascades to alert_events and case_alerts).

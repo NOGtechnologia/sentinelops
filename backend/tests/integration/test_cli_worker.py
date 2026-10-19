@@ -123,9 +123,7 @@ def test_worker_drop_folder_and_syslog(fresh_db: Database, tmp_path: Path) -> No
                 await asyncio.sleep(0.1)
             assert {"drop_folder", "syslog"} <= channels
             async with rt.engine.connect() as conn:
-                accepted = dict(
-                    (await conn.execute(select(ingest_runs.c.channel, ingest_runs.c.accepted))).all()
-                )
+                accepted = dict((await conn.execute(select(ingest_runs.c.channel, ingest_runs.c.accepted))).all())
             assert accepted == {"drop_folder": 13, "syslog": 1}
             assert not (drop / "syslog_3164" / "auth.log").exists()
             failed = sorted(p.name for p in (drop / "failed").iterdir())
