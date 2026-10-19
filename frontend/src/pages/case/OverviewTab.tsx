@@ -125,7 +125,7 @@ function SummarySection({ data }: { data: CaseDetail }) {
             {isAi ? (
               <span className="inline-flex items-center gap-1 text-accent">
                 <Bot aria-hidden className="size-3.5" />
-                {t("case.aiGenerated")}
+                {summary.provider === "mock" ? t("case.demoSimulation") : t("case.aiGenerated")}
               </span>
             ) : (
               <span className="inline-flex items-center gap-1">

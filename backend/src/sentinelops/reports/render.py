@@ -201,7 +201,8 @@ def render_pdf(report: dict[str, Any]) -> bytes:
     source = summary.get("source", "template")
     para(
         f"Quelle: {source} | Modell: {summary.get('model', '-')} | Validierung: {summary.get('validation_status', '-')}"
-        " | KI-generiert, geprüft gegen Belege"
+        + (" | Demo-Simulation (kein echtes Modell)" if summary.get("provider") == "mock" else " | KI-generiert")
+        + ", geprüft gegen Belege"
         if source == "ai"
         else f"Quelle: {source} | Validierung: {summary.get('validation_status', '-')}"
     )

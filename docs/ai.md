@@ -56,7 +56,7 @@ behandelt. Szenario 10 des Generators enthält solche Fälle.
 | `SENTINELOPS_LLM_PROVIDER` | Beschreibung | Daten verlassen das Haus? |
 |---|---|---|
 | `none` (Standard) | Vorlagen-Zusammenfassung | nein |
-| `mock` | deterministische Antworten, auch bösartige Varianten (Tests/CI) | nein |
+| `mock` | **Demo-Simulation, kein Modell:** baut aus dem Evidenz-Paket belegte Fakten und regelbasierte Hypothesen (Demo, Screenshots); in UI und Bericht als „Demo-Simulation“ gekennzeichnet. In Tests zusätzlich mit bösartigen Antworten | nein |
 | `ollama` | lokales Modell über Ollama-kompatible API (`SENTINELOPS_LLM_BASE_URL`, `SENTINELOPS_LLM_MODEL`) | nein |
 | `openai` | OpenAI-kompatibler Endpunkt | **ja** – nur mit `SENTINELOPS_LLM_CLOUD_OPT_IN=true` |
 | `anthropic` | Claude über das offizielle SDK (Standardmodell `claude-opus-5-5`) | **ja** – nur mit Opt-in |

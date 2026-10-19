@@ -210,6 +210,7 @@
     "injectionText": "This content looks like instructions to an AI. It is shown as data only and never followed.",
     "summaryTitle": "Summary",
     "aiGenerated": "AI-generated, checked against evidence",
+    "demoSimulation": "Demo simulation (no real model), checked against evidence",
     "templateSummary": "Template summary (no AI)",
     "summaryMeta": "Version {{version}} · {{provider}}/{{model}} · validation: {{status}}",
     "noSummary": "No summary yet.",

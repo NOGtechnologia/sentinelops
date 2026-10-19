@@ -479,6 +479,24 @@ def test_cloud_provider_gets_pseudonymised_data() -> None:
 # --- providers ------------------------------------------------------------------------
 
 
+def test_demo_simulator_output_is_fully_grounded() -> None:
+    pkg = package()
+    provider = build_provider(ProviderConfig("mock", None, None, None, False))
+    assert provider is not None
+    record = summarize(pkg, recommendations(), provider, T0)
+    assert record.source == "ai"
+    assert record.validation.status == "valid"
+    assert record.validation.rejected == []
+    output = record.output
+    assert output is not None
+    assert output["hypotheses"]
+    assert all(h["evidence"] for h in output["hypotheses"])
+    assert {f["evidence"][0] for f in output["facts"]} <= {i.ref for i in pkg.items}
+    # deterministic
+    again = summarize(pkg, recommendations(), provider, T0)
+    assert again.output == output
+
+
 def test_build_provider() -> None:
     assert build_provider(ProviderConfig()) is None
     assert isinstance(build_provider(ProviderConfig("ollama")), OllamaProvider)

@@ -94,8 +94,12 @@ export function ReportPreview({ report }: { report: CaseReport }) {
 
       <h3 className="mt-5 mb-2 font-semibold">{t("report.summary")}</h3>
       <p className="text-xs text-muted">
-        {report.ai_summary?.source === "ai" ? t("case.aiGenerated") : t("case.templateSummary")} ·{" "}
-        {t("report.validation")}: {report.ai_summary?.validation_status ?? "–"}
+        {report.ai_summary?.source === "ai"
+          ? report.ai_summary.provider === "mock"
+            ? t("case.demoSimulation")
+            : t("case.aiGenerated")
+          : t("case.templateSummary")}{" "}
+        · {t("report.validation")}: {report.ai_summary?.validation_status ?? "–"}
       </p>
       <p className="mt-2 text-sm">{summary?.summary ?? "–"}</p>
       {summary && summary.facts.length > 0 && (

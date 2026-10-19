@@ -16,7 +16,9 @@
 
 {% set s = r.ai_summary or {} %}
 {% set out = s.output or {} %}
-{% if s.source == "ai" %}
+{% if s.source == "ai" and s.provider == "mock" %}
+*Demo-Simulation (kein echtes Modell), geprüft gegen Belege* – Prompt {{ s.prompt_version }}, Validierung: **{{ s.validation_status }}**.
+{% elif s.source == "ai" %}
 *KI-generiert, geprüft gegen Belege* – Anbieter {{ s.provider }}, Modell {{ s.model }}, Prompt {{ s.prompt_version }}, Validierung: **{{ s.validation_status }}**.
 {% else %}
 *Deterministische Vorlagen-Zusammenfassung* (ohne KI) – Validierung: **{{ s.validation_status or "-" }}**.

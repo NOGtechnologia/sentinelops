@@ -21,6 +21,7 @@ from typing import Any, Protocol
 import anthropic
 import httpx
 
+from sentinelops.ai.demo_provider import demo_responder
 from sentinelops.ai.prompts import Prompt
 
 DEFAULT_ANTHROPIC_MODEL = "claude-opus-5-5"
@@ -193,6 +194,9 @@ def build_provider(cfg: ProviderConfig) -> LLMProvider | None:
     kind = cfg.provider.lower()
     if kind == "none":
         return None
+    if kind == "mock":
+        # Deterministic demo simulator (no model, no data leaves the installation).
+        return MockProvider(demo_responder)
     if kind == "ollama":
         return OllamaProvider(cfg.base_url or "http://localhost:11434", cfg.model or "llama3.1")
     if kind in ("openai", "anthropic") and not cfg.cloud_opt_in:
