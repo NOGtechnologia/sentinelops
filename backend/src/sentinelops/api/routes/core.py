@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, timedelta
 from typing import Annotated, Any
+from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -153,10 +154,16 @@ async def me(principal: PrincipalDep, rt: RuntimeDep) -> Me:
 @router.get("/dashboard")
 async def dashboard(rt: RuntimeDep, _: Annotated[Principal, Depends(require("dashboard:read"))]) -> dict[str, Any]:
     now = rt.clock.now()
-    day_start = datetime(now.year, now.month, now.day, tzinfo=UTC)
+    # "Today" is the calendar day in the display time zone; events stamped after "now" (hosts with clock skew,
+    # flagged clock_skew_suspected) are not counted as recent activity.
+    local_now = now.astimezone(ZoneInfo(rt.settings.display_timezone))
+    day_start = local_now.replace(hour=0, minute=0, second=0, microsecond=0).astimezone(UTC)
+    until_now = events.c.ts <= now
     async with rt.engine.connect() as conn:
         events_today = (
-            await conn.execute(select(func.count()).select_from(events).where(events.c.ts >= day_start))
+            await conn.execute(
+                select(func.count()).select_from(events).where(and_(events.c.ts >= day_start, until_now))
+            )
         ).scalar()
         alerts_24h = (
             await conn.execute(
@@ -178,13 +185,13 @@ async def dashboard(rt: RuntimeDep, _: Annotated[Principal, Depends(require("das
         ).scalar()
         hours = await conn.execute(
             select(func.date_trunc("hour", events.c.ts).label("bucket"), func.count())
-            .where(events.c.ts >= now - timedelta(hours=24))
+            .where(and_(events.c.ts >= now - timedelta(hours=24), until_now))
             .group_by("bucket")
             .order_by("bucket")
         )
         days = await conn.execute(
             select(func.date_trunc("day", events.c.ts).label("bucket"), func.count())
-            .where(events.c.ts >= now - timedelta(days=7))
+            .where(and_(events.c.ts >= now - timedelta(days=7), until_now))
             .group_by("bucket")
             .order_by("bucket")
         )
@@ -201,9 +208,9 @@ async def dashboard(rt: RuntimeDep, _: Annotated[Principal, Depends(require("das
             .order_by("bucket")
         )
         top_rules = await conn.execute(
-            select(alerts.c.rule_id, alerts.c.title_de, func.count().label("n"))
+            select(alerts.c.rule_id, alerts.c.title, alerts.c.title_de, func.count().label("n"))
             .where(and_(alerts.c.window_end >= now - timedelta(days=7), alerts.c.suppressed_by.is_(None)))
-            .group_by(alerts.c.rule_id, alerts.c.title_de)
+            .group_by(alerts.c.rule_id, alerts.c.title, alerts.c.title_de)
             .order_by(func.count().desc(), alerts.c.rule_id)
             .limit(8)
         )
@@ -228,7 +235,7 @@ async def dashboard(rt: RuntimeDep, _: Annotated[Principal, Depends(require("das
             .order_by(ingest_runs.c.source_type)
         )
         state = (await conn.execute(select(analysis_state).where(analysis_state.c.id == 1))).mappings().first()
-        newest = (await conn.execute(select(func.max(events.c.ts)))).scalar()
+        newest = (await conn.execute(select(func.max(events.c.ts)).where(until_now))).scalar()
     return {
         "generated_at": format_timestamp(now),
         "data_as_of": format_timestamp(newest) if newest else None,
@@ -245,7 +252,9 @@ async def dashboard(rt: RuntimeDep, _: Annotated[Principal, Depends(require("das
             "alerts_24h": [{"t": format_timestamp(r[0]), "n": r[1]} for r in alert_hours],
             "alerts_7d": [{"t": format_timestamp(r[0]), "n": r[1]} for r in alert_days],
         },
-        "top_rules": [{"rule_id": r.rule_id, "title_de": r.title_de, "alerts": r.n} for r in top_rules],
+        "top_rules": [
+            {"rule_id": r.rule_id, "title": r.title, "title_de": r.title_de, "alerts": r.n} for r in top_rules
+        ],
         "top_entities": [{"type": r.type, "display": r.display, "cases": r.n} for r in top_entities],
         "ingestion": [
             {

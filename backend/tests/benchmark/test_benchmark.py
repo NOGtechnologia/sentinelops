@@ -61,8 +61,12 @@ def test_benchmark_normal_behaviour(normal_only: Path) -> None:
     assert report.normal_cases["P3"] + report.normal_cases["P4"] <= 5
 
 
-def test_fifty_thousand_events_under_sixty_seconds(normal_only: Path) -> None:
+def test_fifty_thousand_events_under_sixty_seconds(normal_only: Path, request: pytest.FixtureRequest) -> None:
     """Spec 5.7: 50,000 events incl. detection and case building in < 60 s."""
+    if request.config.getoption("cov_source", default=None):
+        # Branch-coverage tracing slows Python down several times; the measurement would not describe the
+        # product. `make test-benchmark` runs this module without coverage, so the gate is always enforced.
+        pytest.skip("timing is not meaningful under coverage instrumentation")
     started = time.perf_counter()
     report = evaluate_normal_only(normal_only)
     elapsed = time.perf_counter() - started

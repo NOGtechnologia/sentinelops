@@ -121,21 +121,20 @@ def test_integration() -> None:
 
 
 def test_acceptance() -> None:
-    uv("pytest", "tests/acceptance", "-q", "--cov=sentinelops", "--cov-append", "--cov-report=")
+    uv("pytest", "tests/acceptance", "-q", "--cov=sentinelops", "--cov-append", "--cov-report=xml:coverage.xml")
+    # Coverage gate over unit + property + integration + acceptance (spec 15.2).
+    run(
+        ["uv", "run", "python", str(ROOT / "scripts" / "check_coverage.py"), str(BACKEND / "coverage.xml")], cwd=BACKEND
+    )
 
 
 def test_benchmark() -> None:
+    # Without coverage instrumentation: the run also enforces the timing target of spec 5.7.
     uv(
         "pytest",
         "tests/benchmark",
         "-q",
-        "--cov=sentinelops",
-        "--cov-append",
-        "--cov-report=xml:coverage.xml",
         env={"SENTINELOPS_BENCHMARK_REPORT": str(BACKEND / "benchmark-report.md")},
-    )
-    run(
-        ["uv", "run", "python", str(ROOT / "scripts" / "check_coverage.py"), str(BACKEND / "coverage.xml")], cwd=BACKEND
     )
 
 

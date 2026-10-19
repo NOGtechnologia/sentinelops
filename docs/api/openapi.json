@@ -69,6 +69,55 @@
         "title": "Body_upload_api_v1_uploads_post",
         "type": "object"
       },
+      "BulkUpdate": {
+        "properties": {
+          "assignee": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assignee"
+          },
+          "case_ids": {
+            "items": {
+              "maxLength": 64,
+              "type": "string"
+            },
+            "maxItems": 500,
+            "minItems": 1,
+            "title": "Case Ids",
+            "type": "array"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "enum": [
+                  "new",
+                  "in_progress",
+                  "resolved_true_positive",
+                  "resolved_false_positive",
+                  "resolved_benign"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          }
+        },
+        "required": [
+          "case_ids"
+        ],
+        "title": "BulkUpdate",
+        "type": "object"
+      },
       "CaseUpdate": {
         "properties": {
           "assignee": {
@@ -1388,9 +1437,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "additionalProperties": true,
-                "title": "Body",
-                "type": "object"
+                "$ref": "#/components/schemas/BulkUpdate"
               }
             }
           },

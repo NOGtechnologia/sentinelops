@@ -165,18 +165,20 @@ async def _apply_update(conn: AsyncConnection, case_id: str, body: CaseUpdate, a
     await audit.append(conn, actor, "case.updated", "case", case_id, changes, now)
 
 
+class BulkUpdate(CaseUpdate):
+    case_ids: list[Annotated[str, Field(max_length=64)]] = Field(min_length=1, max_length=500)
+
+
 @router.patch("/cases/bulk")
 async def bulk_update(
-    rt: RuntimeDep, principal: Annotated[Principal, _p("cases:write")], body: dict[str, Any]
+    rt: RuntimeDep, principal: Annotated[Principal, _p("cases:write")], body: BulkUpdate
 ) -> dict[str, Any]:
-    ids = body.get("case_ids")
-    if not isinstance(ids, list) or not all(isinstance(i, str) for i in ids) or not 1 <= len(ids) <= 500:
-        raise HTTPException(422, "case_ids must be a list of 1-500 case ids")
-    update_body = CaseUpdate.model_validate({k: v for k, v in body.items() if k != "case_ids"})
+    ids = sorted(set(body.case_ids))
+    update_body = CaseUpdate(status=body.status, assignee=body.assignee)
     async with rt.engine.begin() as conn:
-        for case_id in sorted(set(ids)):
+        for case_id in ids:
             await _apply_update(conn, case_id, update_body, principal.username, rt.clock.now())
-    return {"updated": len(set(ids))}
+    return {"updated": len(ids)}
 
 
 @router.get("/cases/{case_id}")
