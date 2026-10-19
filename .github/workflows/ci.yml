@@ -35,6 +35,9 @@ jobs:
           --health-interval 5s --health-timeout 5s --health-retries 20
     env:
       SENTINELOPS_TEST_DATABASE_URL: postgresql+asyncpg://sentinelops:ci-only@localhost:5432/postgres
+      # backup/restore test: PostgreSQL 16 client tools of the runner image; never skipped in CI
+      SENTINELOPS_PG_BIN: /usr/lib/postgresql/16/bin
+      SENTINELOPS_REQUIRE_PG_TOOLS: "1"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -55,6 +58,7 @@ jobs:
         run: bash scripts/ci/install-tools.sh
       - name: Install dependencies
         run: |
+          sudo apt-get install -y --no-install-recommends postgresql-client-16
           uv sync --frozen --all-packages
           pnpm install --frozen-lockfile
       - name: OpenAPI of the target branch (breaking-change check)

@@ -88,6 +88,10 @@ Nach der Wiederherstellung prüft `GET /api/v1/audit?verify=true` die Hash-Kette
 Die Regeln liegen im Repository bzw. Image; Laufzeitänderungen (aktiv/inaktiv, Ausnahmen) sind
 in der Datenbank gesichert.
 
+Dieser Ablauf ist automatisch getestet (`backend/tests/integration/test_backup_restore.py`):
+Sicherung mit `pg_dump -Fc`, Wiederherstellung in eine leere Datenbank, danach identische
+Zählerstände, gültige Hash-Kette und weiterhin unveränderliches Audit-Log.
+
 ## Migrationen
 
 `sentinelops migrate` (beim Start des `api`-Containers), Rückbau: `sentinelops migrate --down`.
