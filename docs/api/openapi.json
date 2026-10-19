@@ -1779,6 +1779,16 @@
               ],
               "title": "Created At"
             }
+          },
+          {
+            "in": "query",
+            "name": "pseudonymize",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Pseudonymize",
+              "type": "boolean"
+            }
           }
         ],
         "responses": {

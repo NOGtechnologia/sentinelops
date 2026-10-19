@@ -421,6 +421,24 @@ async def test_reports_reproducible_and_escaped(client: httpx.AsyncClient) -> No
     assert csv_agg.text.startswith('"rule_id"')
 
 
+async def test_report_pseudonymized(client: httpx.AsyncClient) -> None:
+    case = await case_by_title(client, "Brute Force auf ein Konto: anna")
+    cid = case["case_id"]
+    params = {"created_at": "2026-03-12T10:30:00Z", "format": "json"}
+    plain = await client.get(f"/api/v1/cases/{cid}/report", params=params, headers=auth("analyst"))
+    pseudo = await client.get(
+        f"/api/v1/cases/{cid}/report", params={**params, "pseudonymize": "true"}, headers=auth("analyst")
+    )
+    assert re.search(r"\banna\b", plain.text, re.IGNORECASE)
+    assert not re.search(r"\banna\b", pseudo.text, re.IGNORECASE)
+    report = json.loads(pseudo.content)
+    assert report["metadata"]["pseudonymized"] is True
+    assert "USER_" in report["case"]["title"]
+    audit_rows = (await client.get("/api/v1/audit", params={"object_id": cid}, headers=auth("auditor"))).json()
+    exports = [r for r in audit_rows["items"] if r["action"] == "report.exported"]
+    assert any(r["details"]["pseudonymized"] for r in exports)
+
+
 async def test_ai_summary_regeneration_creates_new_version(client: httpx.AsyncClient) -> None:
     case = await case_by_title(client, "Brute Force auf ein Konto: anna")
     cid = case["case_id"]

@@ -1,0 +1,76 @@
+# Project-specific Semgrep rules (spec 15.1 "security"). The generic
+# registries run in CI via CodeQL; these rules encode SentinelOps invariants.
+rules:
+  - id: no-raw-sql-format
+    languages: [python]
+    severity: ERROR
+    message: SQL must use bound parameters, never string formatting.
+    patterns:
+      - pattern-either:
+          - pattern: sqlalchemy.text(f"...")
+          - pattern: sqlalchemy.text("..." % ...)
+          - pattern: sqlalchemy.text("...".format(...))
+          - pattern: $CONN.execute(f"...", ...)
+  - id: no-subprocess-shell
+    languages: [python]
+    severity: ERROR
+    message: Never start a shell; the product does not execute commands (spec 9.3).
+    pattern-either:
+      - pattern: subprocess.$F(..., shell=True, ...)
+      - pattern: os.system(...)
+      - pattern: os.popen(...)
+  - id: no-yaml-unsafe-load
+    languages: [python]
+    severity: ERROR
+    message: Use yaml.safe_load.
+    pattern-either:
+      - pattern: yaml.load(...)
+      - pattern: yaml.unsafe_load(...)
+  - id: no-stdlib-xml-parsing-of-input
+    languages: [python]
+    severity: ERROR
+    message: Untrusted XML is parsed with defusedxml only.
+    paths:
+      include: [backend/src/sentinelops/parsers/]
+    pattern-either:
+      - pattern: xml.etree.ElementTree.fromstring(...)
+      - pattern: xml.etree.ElementTree.parse(...)
+      - pattern: lxml.etree.fromstring(...)
+  - id: no-pickle
+    languages: [python]
+    severity: ERROR
+    message: pickle is forbidden.
+    pattern-either:
+      - pattern: pickle.loads(...)
+      - pattern: pickle.load(...)
+  - id: jinja-autoescape-or-finalize
+    languages: [python]
+    severity: ERROR
+    message: Jinja environments must escape (autoescape or md finalize).
+    patterns:
+      - pattern: jinja2.Environment(...)
+      - pattern-not: jinja2.Environment(..., autoescape=..., ...)
+      - pattern-not: jinja2.Environment(..., finalize=..., ...)
+  - id: no-dangerously-set-inner-html
+    languages: [typescript]
+    severity: ERROR
+    message: Log content is rendered as text only (spec 12.4).
+    pattern-either:
+      - pattern: <$EL dangerouslySetInnerHTML={...} />
+      - pattern: $X.innerHTML = $Y
+      - pattern: $X.outerHTML = $Y
+      - pattern: document.write(...)
+  - id: no-eval
+    languages: [typescript]
+    severity: ERROR
+    message: eval / Function constructor are forbidden.
+    pattern-either:
+      - pattern: eval(...)
+      - pattern: new Function(...)
+  - id: no-token-in-localstorage
+    languages: [typescript]
+    severity: ERROR
+    message: Tokens are kept in memory only.
+    pattern-either:
+      - pattern: localStorage.setItem($K, $V)
+      - pattern: sessionStorage.setItem($K, $V)

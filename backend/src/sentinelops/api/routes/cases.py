@@ -17,6 +17,7 @@ from sentinelops.api.deps import RuntimeDep, require
 from sentinelops.auth.principal import Principal
 from sentinelops.normalize.dedupe import stable_hash
 from sentinelops.normalize.schema import format_timestamp, parse_timestamp
+from sentinelops.reports.pseudonymize import pseudonymize_report
 from sentinelops.reports.render import build_report, render_json, render_markdown, render_pdf
 from sentinelops.response.actions import Action, ActionStatus, propose
 from sentinelops.response.approvals import Approval, ApprovalError, decide, execute
@@ -690,6 +691,7 @@ async def case_report(
     principal: Annotated[Principal, _p("reports:export")],
     format: Literal["json", "md", "pdf"] = "json",
     created_at: str | None = None,
+    pseudonymize: bool = False,
 ) -> Response:
     try:
         created = parse_timestamp(created_at) if created_at else rt.clock.now()
@@ -701,6 +703,8 @@ async def case_report(
         except NotFoundError as exc:
             raise HTTPException(404, "case not found") from exc
         report = build_report(await report_input(conn, bundle, rt.config.config_hash()), created)
+        if pseudonymize:
+            report = pseudonymize_report(report)
         if format == "json":
             body = render_json(report)
         elif format == "md":
@@ -723,7 +727,13 @@ async def case_report(
             .on_conflict_do_nothing()
         )
         await audit.append(
-            conn, principal.username, "report.exported", "case", case_id, {"format": format, "sha256": digest}, now
+            conn,
+            principal.username,
+            "report.exported",
+            "case",
+            case_id,
+            {"format": format, "sha256": digest, "pseudonymized": pseudonymize},
+            now,
         )
     filename = f"sentinelops-case-{case_id[:12]}.{format}"
     return Response(

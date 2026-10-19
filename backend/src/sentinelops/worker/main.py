@@ -6,6 +6,7 @@ import asyncio
 import logging
 import os
 import socket
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -16,6 +17,7 @@ from sentinelops.ingest.runs import ingest_path
 from sentinelops.runtime import Runtime
 from sentinelops.storage import jobs
 from sentinelops.storage.models import rule_exceptions
+from sentinelops.storage.retention import RetentionPolicy, apply_retention
 from sentinelops.worker.analysis import run_analysis
 
 log = logging.getLogger("sentinelops.worker")
@@ -67,6 +69,8 @@ async def run_job(rt: Runtime, job: dict[str, Any]) -> None:
         finally:
             if payload.get("delete_after"):
                 await asyncio.to_thread(path.unlink, missing_ok=True)
+    elif kind == "retention":
+        await apply_retention(rt.engine, RetentionPolicy.from_settings(rt.settings), rt.clock.now(), "worker")
     else:
         raise ValueError(f"unknown job kind {kind}")
 
@@ -87,8 +91,23 @@ async def work_once(rt: Runtime, worker_id: str) -> bool:
     return True
 
 
+RETENTION_INTERVAL = timedelta(days=1)
+
+
+async def schedule_retention(rt: Runtime, last: datetime | None) -> datetime | None:
+    """Queue the retention job once per interval (deduplicated across workers)."""
+    now = rt.clock.now()
+    if last is not None and now - last < RETENTION_INTERVAL:
+        return last
+    async with rt.engine.begin() as conn:
+        await jobs.enqueue(conn, "retention", {}, now)
+    return now
+
+
 async def run_forever(rt: Runtime, poll_seconds: float = 2.0, stop: asyncio.Event | None = None) -> None:
     worker_id = f"{socket.gethostname()}-{os.getpid()}"
+    last_retention: datetime | None = None
     while stop is None or not stop.is_set():
+        last_retention = await schedule_retention(rt, last_retention)
         if not await work_once(rt, worker_id):
             await asyncio.sleep(poll_seconds)

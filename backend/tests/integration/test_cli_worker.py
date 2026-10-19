@@ -13,7 +13,8 @@ from sentinelops import cli
 from sentinelops.runtime import Runtime
 from sentinelops.storage import jobs
 from sentinelops.storage.models import cases, events, ingest_runs
-from sentinelops.worker.main import run_job, work_once
+from sentinelops.storage.models import jobs as jobs_table
+from sentinelops.worker.main import run_job, schedule_retention, work_once
 from tests.integration.conftest import Database
 from tests.integration.demo_data import generate_dataset, settings_for
 
@@ -76,6 +77,12 @@ def test_migrate_ingest_analyze_commands(
     capsys.readouterr()
     assert cli.main(["analyze"]) == 0
     assert json.loads(capsys.readouterr().out)["cases"] >= 10
+    assert cli.main(["retention", "--dry-run"]) == 0
+    dry = json.loads(capsys.readouterr().out)
+    assert dry["dry_run"] is True
+    assert cli.main(["retention"]) == 0
+    applied = json.loads(capsys.readouterr().out)
+    assert applied == dry | {"dry_run": False}
     assert cli.main(["demo-load", "--out", str(small_dataset)]) == 0
     assert cli.main(["migrate", "--down"]) == 0
 
@@ -114,6 +121,13 @@ def test_worker_runs_queued_jobs(fresh_db: Database, tmp_path: Path) -> None:
                 assert (await conn.execute(select(func.count()).select_from(cases))).scalar() >= 1
             with pytest.raises(ValueError, match="unknown job kind"):
                 await run_job(rt, {"kind": "nope", "payload": {}})
+            # retention is queued once per interval and runs as a normal job
+            first = await schedule_retention(rt, None)
+            assert await schedule_retention(rt, first) == first
+            assert await work_once(rt, "w1")
+            async with rt.engine.connect() as conn:
+                kinds = (await conn.execute(select(jobs_table.c.kind, jobs_table.c.status))).all()
+            assert ("retention", "done") in kinds
         finally:
             await rt.engine.dispose()
 

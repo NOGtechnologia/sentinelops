@@ -1,0 +1,23 @@
+title = "SentinelOps gitleaks configuration"
+
+[extend]
+useDefault = true
+
+# Synthetic test values only. Each entry is a fixture or documented demo value;
+# real secrets never belong in this repository (CLAUDE.md rule 10).
+[allowlist]
+description = "synthetic demo and test values"
+regexTarget = "line"
+paths = [
+  '''backend/tests/fixtures/''',
+  '''generator/src/musterfirma/''',
+  '''docs/api/openapi\.json''',
+  '''frontend/public/fonts/''',
+  '''uv\.lock''',
+  '''pnpm-lock\.yaml''',
+]
+regexes = [
+  '''soi_[a-z0-9]+_test[a-zA-Z0-9]*''',
+  '''demo-approval-secret-not-for-production''',
+  '''SO-[A-Z]+-[0-9]{3}''',  # detection rule ids next to the word "auth"
+]

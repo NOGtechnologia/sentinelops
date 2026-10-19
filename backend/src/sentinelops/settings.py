@@ -31,6 +31,16 @@ def _bool(name: str, default: bool) -> bool:
     return value.strip().lower() in ("1", "true", "yes", "on")
 
 
+def _int(name: str, default: int) -> int:
+    value = os.environ.get(name)
+    if value is None or not value.strip():
+        return default
+    number = int(value)
+    if number < 0:
+        raise ValueError(f"{name} must not be negative")
+    return number
+
+
 @dataclass(frozen=True)
 class Settings:
     database_url: str = field(
@@ -61,3 +71,10 @@ class Settings:
         )
     )
     static_dir: str | None = field(default_factory=lambda: os.environ.get("SENTINELOPS_STATIC_DIR"))
+    #: Retention in days per data type (spec 16.2); 0 keeps data forever.
+    retention_events_days: int = field(default_factory=lambda: _int("SENTINELOPS_RETENTION_EVENTS_DAYS", 90))
+    retention_raw_days: int = field(default_factory=lambda: _int("SENTINELOPS_RETENTION_RAW_DAYS", 90))
+    retention_closed_cases_days: int = field(
+        default_factory=lambda: _int("SENTINELOPS_RETENTION_CLOSED_CASES_DAYS", 365)
+    )
+    retention_jobs_days: int = field(default_factory=lambda: _int("SENTINELOPS_RETENTION_JOBS_DAYS", 30))

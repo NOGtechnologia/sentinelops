@@ -102,6 +102,22 @@ def cmd_analyze(_: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_retention(args: argparse.Namespace) -> int:
+    from sentinelops.storage.retention import RetentionPolicy, apply_retention
+
+    async def run() -> dict[str, Any]:
+        rt = _runtime()
+        try:
+            policy = RetentionPolicy.from_settings(rt.settings)
+            result = await apply_retention(rt.engine, policy, rt.clock.now(), "cli", dry_run=args.dry_run)
+            return result.to_dict()
+        finally:
+            await rt.engine.dispose()
+
+    print(json.dumps(asyncio.run(run())))
+    return 0
+
+
 def cmd_worker(_: argparse.Namespace) -> int:
     from sentinelops.worker.main import run_forever
 
@@ -216,6 +232,9 @@ def main(argv: list[str] | None = None) -> int:
     p.set_defaults(func=cmd_ingest)
     sub.add_parser("analyze", help="run detection and case building").set_defaults(func=cmd_analyze)
     sub.add_parser("worker", help="run the job worker").set_defaults(func=cmd_worker)
+    p = sub.add_parser("retention", help="delete data past its retention period (spec 16.2)")
+    p.add_argument("--dry-run", action="store_true", help="only count what would be deleted")
+    p.set_defaults(func=cmd_retention)
     p = sub.add_parser("serve", help="run the API server")
     p.add_argument("--host", default="127.0.0.1")
     p.add_argument("--port", type=int, default=8000)

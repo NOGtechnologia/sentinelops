@@ -75,7 +75,34 @@ def arch_check() -> None:
     uv("lint-imports")
 
 
+SIGMA_CLI_VERSION = "3.1.0"
+
+
 def rules_check() -> None:
+    # Reference validation with the official sigma-cli in an isolated environment (it ships pySigma 1.x,
+    # the product uses 2.x). Rules with the SentinelOps `sequence` extension are not standard Sigma and
+    # are validated by our own loader only (ADR 0002).
+    # sigma-cli resolves correlation references per argument, so the standard rules are staged in one directory.
+    staging = ROOT / "dist" / "sigma-check"
+    shutil.rmtree(staging, ignore_errors=True)
+    staging.mkdir(parents=True)
+    for directory in ("rules/sigma", "rules/correlations"):
+        for path in sorted((ROOT / directory).rglob("*.yml")):
+            text = path.read_text(encoding="utf-8")
+            if "sentinelops_extension:" not in text and path.name != "curation.yaml":
+                (staging / f"{path.parent.name}__{path.name}").write_text(text, encoding="utf-8")
+    run(
+        [
+            "uvx",
+            "--from",
+            f"sigma-cli=={SIGMA_CLI_VERSION}",
+            "sigma",
+            "check",
+            "--fail-on-error",
+            "--fail-on-issues",
+            str(staging),
+        ]
+    )
     uv("sentinelops", "rules", "check")
     uv("sentinelops", "rules", "test")
     uv("sentinelops", "rules", "catalog-check")
@@ -141,6 +168,7 @@ def openapi_diff() -> None:
             run([exe, "breaking", base, str(ROOT / "docs" / "api" / "openapi.json"), "--fail-on", "ERR"])
 
 
+SEMGREP_VERSION = "1.181.0"
 #: Accepted advisories - each one is justified in docs/security/accepted-risks.md.
 PIP_AUDIT_IGNORED = ("PYSEC-2026-2447",)  # diskcache via pySigma, no fixed release; needs write access to cache dir
 
@@ -148,28 +176,39 @@ PIP_AUDIT_IGNORED = ("PYSEC-2026-2447",)  # diskcache via pySigma, no fixed rele
 def security() -> None:
     requirements = ROOT / "dist" / "requirements-audit.txt"
     requirements.parent.mkdir(exist_ok=True)
-    run(["uv", "export", "--format", "requirements-txt", "--no-emit-workspace", "--all-packages", "--all-groups",
-         "--frozen", "-q", "-o", str(requirements)])
+    run(
+        [
+            "uv",
+            "export",
+            "--format",
+            "requirements-txt",
+            "--no-emit-workspace",
+            "--all-packages",
+            "--all-groups",
+            "--frozen",
+            "-q",
+            "-o",
+            str(requirements),
+        ]
+    )
     ignored = [arg for vuln in PIP_AUDIT_IGNORED for arg in ("--ignore-vuln", vuln)]
-    uv("pip-audit", "-r", str(requirements), "--require-hashes", "--disable-pip", "--strict", "--progress-spinner",
-       "off", *ignored)
-    exe = tool("semgrep")
-    if exe:
-        run(
-            [
-                exe,
-                "scan",
-                "--error",
-                "--metrics=off",
-                "--config",
-                str(ROOT / ".semgrep.yml"),
-                "backend/src",
-                "frontend/src",
-            ]
-        )
+    uv(
+        "pip-audit",
+        "-r",
+        str(requirements),
+        "--require-hashes",
+        "--disable-pip",
+        "--strict",
+        "--progress-spinner",
+        "off",
+        *ignored,
+    )
+    targets = [p for p in ("backend/src", "frontend/src") if (ROOT / p).exists()]
+    semgrep = ["uvx", "--from", f"semgrep=={SEMGREP_VERSION}", "semgrep"]
+    run([*semgrep, "scan", "--error", "--metrics=off", "--config", str(ROOT / ".semgrep.yml"), *targets])
     exe = tool("gitleaks")
     if exe:
-        run([exe, "detect", "--redact", "--no-banner", "--source", str(ROOT)])
+        run([exe, "git", "--redact", "--no-banner", "-c", str(ROOT / ".gitleaks.toml"), str(ROOT)])
     if FRONTEND.joinpath("package.json").exists():
         pnpm("audit", "--prod")
     uv("python", str(ROOT / "scripts" / "check_fixtures.py"))

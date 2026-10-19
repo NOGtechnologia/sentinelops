@@ -99,6 +99,7 @@ source_modules = [
     "sentinelops.correlation",
     "sentinelops.ai.validator",
     "sentinelops.reports.render",
+    "sentinelops.reports.pseudonymize",
 ]
 forbidden_modules = [
     "sqlalchemy",
