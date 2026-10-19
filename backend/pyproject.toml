@@ -85,6 +85,46 @@ markers = [
     "slow: long running",
 ]
 
+[tool.importlinter]
+root_package = "sentinelops"
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "Domain logic is free of I/O (spec 13)"
+type = "forbidden"
+source_modules = [
+    "sentinelops.normalize",
+    "sentinelops.detection.matcher",
+    "sentinelops.detection.correlation",
+    "sentinelops.correlation",
+    "sentinelops.ai.validator",
+    "sentinelops.reports.render",
+]
+forbidden_modules = [
+    "sqlalchemy",
+    "asyncpg",
+    "httpx",
+    "fastapi",
+    "starlette",
+    "sentinelops.storage",
+    "sentinelops.api",
+    "sentinelops.worker",
+    "sentinelops.ingest.runs",
+]
+
+[[tool.importlinter.contracts]]
+name = "The API does not use parsers directly"
+type = "forbidden"
+source_modules = ["sentinelops.api"]
+forbidden_modules = ["sentinelops.parsers"]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "The AI cannot reach response actions"
+type = "forbidden"
+source_modules = ["sentinelops.ai"]
+forbidden_modules = ["sentinelops.response"]
+
 [tool.coverage.run]
 branch = true
 source = ["sentinelops"]
@@ -99,7 +139,10 @@ dev = [
     "httpx>=0.28.1",
     "hypothesis>=6.170.1",
     "import-linter>=2.15",
+    "mkdocs-material>=9.7.7",
+    "mutmut>=3.8.0",
     "mypy>=2.4.0",
+    "pip-audit>=2.10.1",
     "pypdf>=6.21.1",
     "pytest>=9.1.1",
     "pytest-asyncio>=1.4.0",

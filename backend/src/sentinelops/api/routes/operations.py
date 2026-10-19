@@ -20,9 +20,9 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sentinelops.api.deps import RuntimeDep, ingest_principal, require
 from sentinelops.auth.principal import Principal, new_ingest_token
 from sentinelops.ingest.runs import ingest_stream
+from sentinelops.ingest.sources import UnsupportedSourceError, validate_source_type
 from sentinelops.normalize.quality import DEFAULT_LIMITS
 from sentinelops.normalize.schema import format_timestamp, parse_timestamp
-from sentinelops.parsers.registry import UnknownSourceTypeError, get_parser, source_types
 from sentinelops.reports.aggregate import CaseFacts, build_aggregate
 from sentinelops.reports.csv_export import to_csv
 from sentinelops.services.cases import row_dict
@@ -49,9 +49,9 @@ def _p(permission: str) -> Any:
 
 def _check_source_type(rt: Any, source_type: str) -> None:
     try:
-        get_parser(source_type, rt.profiles)
-    except UnknownSourceTypeError as exc:
-        raise HTTPException(422, f"unknown source type {source_type!r}; known: {source_types(rt.profiles)}") from exc
+        validate_source_type(source_type, rt.profiles)
+    except UnsupportedSourceError as exc:
+        raise HTTPException(422, str(exc)) from exc
 
 
 async def _spool(read: Any, gzip_input: bool) -> tuple[Path, str]:
