@@ -6,6 +6,8 @@
 
 <p align="center"><strong>Erklärbares, KI-gestütztes Security-Operations-Werkzeug: von 50.000 Log-Zeilen zum untersuchbaren Fall</strong></p>
 
+<p align="center"><b>Deutsch</b> · <a href="README.en.md">English</a> · <a href="https://OWNER.github.io/sentinelops/">Dokumentation</a> · <a href="docs/tour.md">Rundgang</a></p>
+
 <p align="center">
   <a href="https://github.com/OWNER/sentinelops/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/OWNER/sentinelops/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://github.com/OWNER/sentinelops/actions/workflows/ci.yml"><img alt="Coverage ≥ 90 %" src="https://img.shields.io/badge/coverage-%E2%89%A590%25%20backend%20%C2%B7%20%E2%89%A580%25%20web-brightgreen"></a>
@@ -46,6 +48,28 @@
 | ![Lagebild](docs/images/dashboard-dark.png) **Lagebild** – Kennzahlen mit Zeitraum und Datenstand, Verlauf, häufigste Regeln und Entitäten, Ingestion je Quelle. | ![Fall-Warteschlange](docs/images/queue-dark.png) **Fall-Warteschlange** – Priorität (Farbe, Symbol, Text), Entitäten, Regeln, ATT&CK, Tastatursteuerung, Massenaktionen. |
 | ![Timeline](docs/images/case-timeline-dark.png) **Timeline** – Spuren je Entität, Auslöser markiert, Zeitlücken und Zeitqualität, Zoom, virtualisiert. | ![Belege](docs/images/case-evidence-dark.png) **Belege** – Sigma-YAML mit hervorgehobener Bedingung, passende Felder, unveränderte Rohzeilen. |
 | ![Freigabe](docs/images/approval-dark.png) **Maßnahme freigeben** – Parameter, Begründung, Simulationshinweis, Vier-Augen-Prinzip. | ![Datenqualität](docs/images/quality-dark.png) **Datenqualität** – übernommen/Duplikat/fehlerhaft je Quelle, Fehlercodes, Quarantäne. |
+
+<details>
+<summary><b>Alle Ansichten (hell und dunkel)</b></summary>
+
+| Ansicht | Dunkel | Hell |
+|---|---|---|
+| Lagebild | <img src="docs/images/dashboard-dark.png" width="360" alt="Lagebild, dunkles Design"> | <img src="docs/images/dashboard-light.png" width="360" alt="Lagebild, helles Design"> |
+| Fall-Warteschlange | <img src="docs/images/queue-dark.png" width="360" alt="Fall-Warteschlange, dunkles Design"> | <img src="docs/images/queue-light.png" width="360" alt="Fall-Warteschlange, helles Design"> |
+| Falldetail – Übersicht | <img src="docs/images/case-overview-dark.png" width="360" alt="Falldetail mit Prioritätsbegründung, dunkles Design"> | <img src="docs/images/case-overview-light.png" width="360" alt="Falldetail mit Prioritätsbegründung, helles Design"> |
+| Falldetail – Timeline | <img src="docs/images/case-timeline-dark.png" width="360" alt="Timeline mit Spuren je Entität, dunkles Design"> | <img src="docs/images/case-timeline-light.png" width="360" alt="Timeline mit Spuren je Entität, helles Design"> |
+| Falldetail – Belege | <img src="docs/images/case-evidence-dark.png" width="360" alt="Belege mit Regel, Feldern und Rohzeile, dunkles Design"> | <img src="docs/images/case-evidence-light.png" width="360" alt="Belege mit Regel, Feldern und Rohzeile, helles Design"> |
+| Entitätsgraph | <img src="docs/images/entity-graph-dark.png" width="360" alt="Entitätsgraph, dunkles Design"> | <img src="docs/images/entity-graph-light.png" width="360" alt="Entitätsgraph, helles Design"> |
+| Maßnahme freigeben | <img src="docs/images/approval-dark.png" width="360" alt="Freigabedialog, dunkles Design"> | <img src="docs/images/approval-light.png" width="360" alt="Freigabedialog, helles Design"> |
+| Regeln | <img src="docs/images/rules-dark.png" width="360" alt="Regelliste, dunkles Design"> | <img src="docs/images/rules-light.png" width="360" alt="Regelliste, helles Design"> |
+| Datenqualität | <img src="docs/images/quality-dark.png" width="360" alt="Datenqualität, dunkles Design"> | <img src="docs/images/quality-light.png" width="360" alt="Datenqualität, helles Design"> |
+| Bericht | <img src="docs/images/report-dark.png" width="360" alt="Berichtsvorschau, dunkles Design"> | <img src="docs/images/report-light.png" width="360" alt="Berichtsvorschau, helles Design"> |
+
+Alle Bilder werden mit `make screenshots` reproduzierbar erzeugt; die CI vergleicht sie pixelgenau.
+Eine Schritt-für-Schritt-Erklärung an einem echten Angriffsszenario bietet der
+[Rundgang](docs/tour.md).
+
+</details>
 
 Außerdem: Ingestion von Windows EVTX/XML/JSON, Syslog (RFC 3164/5424), journald und JSON mit
 Mapping-Profilen über Upload, Bulk-API, Drop-Folder und Syslog-Empfänger · Duplikaterkennung ·
@@ -148,7 +172,5 @@ keine Rechtsberatung.
 
 ---
 
-**English summary:** SentinelOps turns raw Windows, Linux and JSON security logs into explainable,
-evidence-backed cases: deterministic Sigma/correlation detection first, an optional AI summary that is
-validated against the evidence, and human approval for every response action. Self-hosted with Docker
-Compose; UI in German and English. See the [documentation](docs/index.md).
+**English:** SentinelOps turns raw Windows, Linux and JSON security logs into explainable,
+evidence-backed cases. Read the [English README](README.en.md).
