@@ -54,7 +54,7 @@ gitleaks git --redact --no-banner -c .gitleaks.toml .
 echo "- keine echten Daten (nur RFC-5737-Adressen und .example-Domains)"
 uv run --package sentinelops python scripts/check_fixtures.py
 echo "- Lizenz- und Community-Dateien"
-for f in LICENSE NOTICE SECURITY.md CONTRIBUTING.md CODE_OF_CONDUCT.md CHANGELOG.md README.md "$META"; do
+for f in LICENSE NOTICE SECURITY.md CONTRIBUTING.md CODE_OF_CONDUCT.md CHANGELOG.md README.md README.en.md SUPPORT.md "$META"; do
   test -s "$f" || { echo "fehlt: $f" >&2; exit 1; }
 done
 echo "- Screenshots vorhanden und aktuell"
@@ -81,7 +81,7 @@ fi
 
 # --- 3. create, push, metadata -------------------------------------------------------------------
 step "3/6 Repository anlegen und pushen"
-PLACEHOLDER_FILES=$(git grep -l "OWNER" -- README.md mkdocs.yml .github SECURITY.md scripts/repo-metadata.json || true)
+PLACEHOLDER_FILES=$(git grep -l "OWNER" -- README.md README.en.md SUPPORT.md mkdocs.yml .github SECURITY.md scripts/repo-metadata.json || true)
 echo "Platzhalter OWNER -> ${OWNER} in: ${PLACEHOLDER_FILES//$'\n'/ }"
 if [ "$DRY_RUN" = 0 ] && [ -n "$PLACEHOLDER_FILES" ]; then
   # shellcheck disable=SC2086
