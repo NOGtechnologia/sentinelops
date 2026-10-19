@@ -1,0 +1,99 @@
+site_name: SentinelOps
+site_description: Erklärbares, KI-gestütztes Security-Operations-Werkzeug - von 50.000 Log-Zeilen zum untersuchbaren Fall
+site_url: https://OWNER.github.io/sentinelops/
+repo_url: https://github.com/OWNER/sentinelops
+repo_name: sentinelops
+edit_uri: edit/main/docs/
+copyright: Apache-2.0 · Demo-Daten sind fiktiv
+
+theme:
+  name: material
+  language: de
+  logo: images/logo.svg
+  favicon: images/logo.svg
+  font: false # no external font requests (spec 16.2)
+  palette:
+    - scheme: slate
+      primary: teal
+      accent: cyan
+      toggle:
+        icon: material/weather-sunny
+        name: Helles Design
+    - scheme: default
+      primary: teal
+      accent: cyan
+      toggle:
+        icon: material/weather-night
+        name: Dunkles Design
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - search.highlight
+
+plugins:
+  - search:
+      lang: de
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+validation:
+  nav:
+    omitted_files: warn
+    not_found: warn
+    absolute_links: warn
+  links:
+    not_found: warn
+    anchors: warn
+    absolute_links: info
+    unrecognized_links: warn
+
+nav:
+  - Start: index.md
+  - Benutzerhandbuch:
+      - Überblick: user-guide/index.md
+      - Lagebild und Fälle: user-guide/cases.md
+      - Belege und Fehlalarme: user-guide/evidence.md
+      - Maßnahmen und Freigaben: user-guide/actions.md
+      - Berichte: user-guide/reports.md
+      - Regeln, Datenqualität, Administration: user-guide/operations.md
+  - Konzepte:
+      - Architektur: architecture.md
+      - Schema: schema.md
+      - Erkennungskatalog: detection-catalog.md
+      - KI-Prinzipien: ai.md
+  - Betrieb:
+      - Installation und Betrieb: operations.md
+      - API: api.md
+      - Rollen und Berechtigungen: permissions.md
+  - Sicherheit und Datenschutz:
+      - Datenschutz: privacy.md
+      - Bedrohungsmodell: threat-model.md
+      - ASVS-Checkliste: security/asvs.md
+      - Akzeptierte Risiken: security/accepted-risks.md
+  - Projekt:
+      - Datenquellen und Lizenzen: data-sources.md
+      - Architekturentscheidungen:
+          - Übersicht: adr/index.md
+          - "0001 Lizenz": adr/0001-lizenz.md
+          - "0002 Schema": adr/0002-schema.md
+          - "0003 Sigma-Auswertung": adr/0003-sigma-auswertung.md
+          - "0004 Queue": adr/0004-queue.md
+          - "0005 EVTX": adr/0005-evtx.md
+          - "0006 Volltextsuche": adr/0006-volltextsuche.md
+          - "0007 KI-Anbieter": adr/0007-ki-anbieter.md
+          - "0008 PDF": adr/0008-pdf.md
+      - Fortschritt und Abnahme: progress.md
+      - Offene Fragen: open-questions.md

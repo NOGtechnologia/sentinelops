@@ -12,11 +12,14 @@ import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "no
 import { join, resolve } from "node:path";
 
 import { chromium, type Browser, type Page } from "@playwright/test";
-import { applyPalette, GIFEncoder, quantize } from "gifenc";
+import gifenc from "gifenc"; // CommonJS module: named exports via the default export
+
+const { applyPalette, GIFEncoder, quantize } = gifenc;
 import { PNG } from "pngjs";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const CHECK = process.argv.includes("--check");
+const GIF_ONLY = process.argv.includes("--gif-only");
 const OUT = CHECK ? join(ROOT, ".cache", "screenshots") : join(ROOT, "docs", "images");
 const MAX_BYTES = 600 * 1024; // per image (spec 17.3)
 const MAX_GIF_BYTES = 8 * 1024 * 1024;
@@ -46,7 +49,6 @@ function startServer(port: string): ChildProcess {
     cwd: ROOT,
     env: { ...process.env, E2E_PORT: port, SENTINELOPS_E2E_DB: "sentinelops_screens" },
     stdio: "inherit",
-    shell: process.platform === "win32",
   });
   return child;
 }
@@ -71,7 +73,7 @@ async function newPage(browser: Browser, base: string, theme: Theme, scale = 2):
 async function login(page: Page, user: DemoUser): Promise<void> {
   await page.goto("/");
   await page.getByTestId(`demo-login-${user}`).click();
-  await page.getByRole("heading", { level: 1 }).first().waitFor();
+  await page.getByRole("navigation", { name: "Hauptnavigation" }).first().waitFor();
 }
 
 async function settle(page: Page): Promise<void> {
@@ -195,6 +197,7 @@ async function demoGif(browser: Browser, base: string): Promise<void> {
   await capture(2200);
   await page.getByRole("link", { name: /^Belege/ }).click();
   await capture(2600);
+  await page.getByRole("link", { name: /^Übersicht/ }).click();
   await page.locator("li", { hasText: "DISABLE_ACCOUNT" }).first().getByRole("button", { name: "Maßnahme vorschlagen" }).click();
   await page.getByRole("dialog").getByLabel("Begründung").fill("Konto kompromittiert");
   await capture(2600); // proposal dialog with simulation notice
@@ -224,7 +227,7 @@ async function main(): Promise<void> {
     await waitForHealth(base, 900_000);
     const browser = await chromium.launch();
     await ensureProposal(browser, base);
-    for (const theme of ["dark", "light"] as const) {
+    for (const theme of GIF_ONLY ? [] : (["dark", "light"] as const)) {
       for (const shot of SHOTS) {
         const page = await newPage(browser, base, theme);
         await login(page, shot.user);

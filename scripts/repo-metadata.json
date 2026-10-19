@@ -1,0 +1,32 @@
+{
+  "name": "sentinelops",
+  "description": "Explainable, AI-assisted security operations: from 50,000 log lines to an investigable case. Sigma detection first, evidence-backed AI summaries, human approval for every action.",
+  "homepage": "https://OWNER.github.io/sentinelops/",
+  "topics": [
+    "security",
+    "soc",
+    "siem",
+    "sigma",
+    "detection-engineering",
+    "incident-response",
+    "threat-detection",
+    "fastapi",
+    "react",
+    "llm"
+  ],
+  "visibility": "public",
+  "default_branch": "main",
+  "social_preview": "docs/images/social-preview.png",
+  "branch_protection": {
+    "required_status_checks": [
+      "make check",
+      "container (hadolint, build, trivy)",
+      "Playwright (Chromium, Firefox, WebKit), axe, XSS, Lighthouse, ZAP",
+      "fresh clone + docker compose up (demo)",
+      "CodeQL (python)",
+      "CodeQL (javascript-typescript)"
+    ],
+    "required_linear_history": true,
+    "required_approving_review_count": 1
+  }
+}
