@@ -2,13 +2,10 @@
 
 from __future__ import annotations
 
-import asyncio
 import gzip
 import io
 import json
 import re
-import uuid
-from collections.abc import AsyncIterator, Iterator
 from pathlib import Path
 from typing import Any
 
@@ -16,38 +13,10 @@ import httpx
 import pytest
 from pypdf import PdfReader
 
-from sentinelops.api.app import PermissionMapError, check_route_permissions, create_app, iter_api_routes
+from sentinelops.api.app import PermissionMapError, check_route_permissions, iter_api_routes
 from sentinelops.auth.principal import DEMO_USERS, issue_demo_token, role_matrix, route_permissions
-from sentinelops.runtime import Runtime
-from tests.integration.conftest import _create_db, _drop_db, migrate
-from tests.integration.demo_data import generate_dataset, load_sync, settings_for
 
 pytestmark = pytest.mark.integration
-
-
-@pytest.fixture(scope="session")
-def demo_db(pg_server: str, tmp_path_factory: pytest.TempPathFactory) -> Iterator[str]:
-    dataset = generate_dataset(tmp_path_factory.mktemp("demo") / "dev")
-    name = f"so_api_{uuid.uuid4().hex[:8]}"
-    url = asyncio.run(_create_db(pg_server, name))
-    migrate(url)
-    summary = load_sync(url, dataset)
-    assert summary["cases"] == 10
-    try:
-        yield url
-    finally:
-        asyncio.run(_drop_db(pg_server, name))
-
-
-@pytest.fixture
-async def client(demo_db: str, monkeypatch: pytest.MonkeyPatch) -> AsyncIterator[httpx.AsyncClient]:
-    monkeypatch.setenv("SENTINELOPS_RATE_LIMIT", "false")
-    rt = Runtime(settings_for(demo_db))
-    app = create_app(rt)
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://testserver") as c:
-        c.app = app  # type: ignore[attr-defined]  # test convenience
-        yield c
-    await rt.engine.dispose()
 
 
 def auth(user: str) -> dict[str, str]:

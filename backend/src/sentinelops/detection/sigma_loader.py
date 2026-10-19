@@ -350,7 +350,10 @@ def load_ruleset(
     except SigmaError as exc:
         raise RuleLoadError(f"unresolved rule reference: {exc}") from exc
     if strict_validation:
-        issues = validate_sigma(collection)
+        try:
+            issues = validate_sigma(collection)
+        except SigmaError as exc:
+            raise RuleLoadError(f"Sigma validation failed: {exc}") from exc
         if issues:
             raise RuleLoadError("Sigma validation issues: " + " | ".join(issues))
 

@@ -42,7 +42,8 @@ BEGIN
 	IF to_regclass(name) IS NULL THEN
 		EXECUTE format(
 			'CREATE TABLE %I PARTITION OF events FOR VALUES FROM (%L) TO (%L)',
-			name, d::timestamptz AT TIME ZONE 'UTC', (d + 1)::timestamptz AT TIME ZONE 'UTC'
+			-- d::timestamp AT TIME ZONE 'UTC' is UTC midnight independent of the session time zone.
+			name, d::timestamp AT TIME ZONE 'UTC', (d + 1)::timestamp AT TIME ZONE 'UTC'
 		);
 	END IF;
 END;

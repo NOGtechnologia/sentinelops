@@ -24,16 +24,26 @@ PROFILES = load_profiles(PROFILES_DIR, REF)
 TYPES = source_types(PROFILES)
 BERLIN = ZoneInfo("Europe/Berlin")
 
-LINE_FRAGMENTS = st.sampled_from([
-    b"Mar 12 10:00:00 srv sshd[1]: Failed password for root from 203.0.113.5 port 22 ssh2",
-    b"<38>1 2026-03-12T10:00:00Z srv sshd 1 - - Accepted password for a from 10.0.0.1 port 2 ssh2",
-    b'{"ts": 1773309000000, "seq": 1, "gateway": "vpn01", "type": "auth", "result": "ok", "user": "a"}',
-    b'{"@timestamp": "2026-03-12T10:00:00Z", "winlog": {"event_id": 4625, "event_data": {"TargetUserName": "x"}}}',
-    b'<Event xmlns="http://schemas.microsoft.com/win/2004/08/events/event"><System><EventID>4625</EventID>'
-    b'<TimeCreated SystemTime="2026-03-12T10:00:00Z"/></System></Event>',
-    b'{"__REALTIME_TIMESTAMP": "1773309000000000", "MESSAGE": "x", "SYSLOG_IDENTIFIER": "sshd"}',
-    b"[", b"]", b"{", b"}", b"\xff\xfe", b"\x00", b"<!DOCTYPE x [<!ENTITY a 'b'>]>", b'"', b"\\",
-])
+LINE_FRAGMENTS = st.sampled_from(
+    [
+        b"Mar 12 10:00:00 srv sshd[1]: Failed password for root from 203.0.113.5 port 22 ssh2",
+        b"<38>1 2026-03-12T10:00:00Z srv sshd 1 - - Accepted password for a from 10.0.0.1 port 2 ssh2",
+        b'{"ts": 1773309000000, "seq": 1, "gateway": "vpn01", "type": "auth", "result": "ok", "user": "a"}',
+        b'{"@timestamp": "2026-03-12T10:00:00Z", "winlog": {"event_id": 4625, "event_data": {"TargetUserName": "x"}}}',
+        b'<Event xmlns="http://schemas.microsoft.com/win/2004/08/events/event"><System><EventID>4625</EventID>'
+        b'<TimeCreated SystemTime="2026-03-12T10:00:00Z"/></System></Event>',
+        b'{"__REALTIME_TIMESTAMP": "1773309000000000", "MESSAGE": "x", "SYSLOG_IDENTIFIER": "sshd"}',
+        b"[",
+        b"]",
+        b"{",
+        b"}",
+        b"\xff\xfe",
+        b"\x00",
+        b"<!DOCTYPE x [<!ENTITY a 'b'>]>",
+        b'"',
+        b"\\",
+    ]
+)
 
 
 def run(source_type: str, data: bytes, dedupe: Deduplicator | None = None) -> list[tuple[str, str | None]]:
@@ -57,8 +67,10 @@ def test_parsers_never_crash_on_structured_garbage(source_type: str, parts: list
 
 
 @settings(max_examples=60, deadline=None)
-@given(st.sampled_from(["syslog_3164", "syslog_5424", "json:musterfirma_vpn", "windows_json", "journald_json"]),
-       st.lists(LINE_FRAGMENTS, min_size=1, max_size=10))
+@given(
+    st.sampled_from(["syslog_3164", "syslog_5424", "json:musterfirma_vpn", "windows_json", "journald_json"]),
+    st.lists(LINE_FRAGMENTS, min_size=1, max_size=10),
+)
 def test_duplicate_import_changes_nothing(source_type: str, parts: list[bytes]) -> None:
     data = b"\n".join(parts) + b"\n"
     dedupe = Deduplicator()

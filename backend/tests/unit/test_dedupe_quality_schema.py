@@ -139,6 +139,9 @@ def test_canonical_event_access_and_serialisation() -> None:
     assert data["@timestamp"] == "2026-03-12T09:30:01.000005Z"
     assert data["event.ingested"] == "2026-03-12T09:30:01.000005Z"
     assert list(data["original"]) == ["a", "b", "winlog.event_data.TargetSid"]
+    assert CanonicalEvent.from_dict(data) == event
+    naive = datetime(2026, 3, 12, 9, 30, 1, 5)  # naive values are taken as UTC
+    assert format_timestamp(naive) == "2026-03-12T09:30:01.000005Z"
     bare = CanonicalEvent(event_id="e2", timestamp=T, fields={"event.action": 5})
     assert bare.action is None
     assert bare.outcome == "unknown"

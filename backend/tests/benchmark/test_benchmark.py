@@ -29,8 +29,10 @@ def holdout(tmp_path_factory: pytest.TempPathFactory) -> Path:
 @pytest.fixture(scope="module")
 def normal_only(tmp_path_factory: pytest.TempPathFactory) -> Path:
     root = tmp_path_factory.mktemp("normal")
-    generate(GeneratorConfig(seed="holdout", events_per_day=50_000, scenarios=False, quality=False,
-                             start=date(2026, 3, 11)), root)
+    generate(
+        GeneratorConfig(seed="holdout", events_per_day=50_000, scenarios=False, quality=False, start=date(2026, 3, 11)),
+        root,
+    )
     return root
 
 
@@ -40,8 +42,9 @@ def test_benchmark_holdout(holdout: Path) -> None:
     elapsed = time.perf_counter() - started
     target = os.environ.get("SENTINELOPS_BENCHMARK_REPORT")
     if target:
-        Path(target).write_text(report.markdown() + f"\nLaufzeit (Parsing + Erkennung + Fallbildung): {elapsed:.1f} s\n",
-                                encoding="utf-8")
+        Path(target).write_text(
+            report.markdown() + f"\nLaufzeit (Parsing + Erkennung + Fallbildung): {elapsed:.1f} s\n", encoding="utf-8"
+        )
     assert report.failures() == []
     assert report.recall >= THRESHOLDS["recall_per_scenario"]
     assert report.single_case_share == 1.0

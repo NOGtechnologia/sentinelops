@@ -197,6 +197,7 @@ def cmd_rules(args: argparse.Namespace) -> int:
             print("docs/detection-catalog.md is outdated - run `sentinelops rules catalog`", file=sys.stderr)
             return 1
         return 0
+    target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(doc, encoding="utf-8", newline="\n")
     print(f"wrote {target}")
     return 0

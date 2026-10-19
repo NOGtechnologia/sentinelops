@@ -13,14 +13,19 @@ from __future__ import annotations
 import asyncio
 import os
 import uuid
-from collections.abc import Iterator
+from collections.abc import AsyncIterator, Iterator
 from dataclasses import dataclass
 from pathlib import Path
 
+import httpx
 import pytest
 from sqlalchemy import text
 from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import create_async_engine
+
+from sentinelops.api.app import create_app
+from sentinelops.runtime import Runtime
+from tests.integration.demo_data import generate_dataset, load_sync, settings_for
 
 BACKEND = Path(__file__).resolve().parents[2]
 
@@ -114,3 +119,31 @@ def empty_db(pg_server: str) -> Iterator[Database]:
         yield Database(pg_server, name, url)
     finally:
         asyncio.run(_drop_db(pg_server, name))
+
+
+# --- shared API fixtures --------------------------------------------------------------
+
+
+@pytest.fixture(scope="session")
+def demo_db(pg_server: str, tmp_path_factory: pytest.TempPathFactory) -> Iterator[str]:
+    dataset = generate_dataset(tmp_path_factory.mktemp("demo") / "dev")
+    name = f"so_api_{uuid.uuid4().hex[:8]}"
+    url = asyncio.run(_create_db(pg_server, name))
+    migrate(url)
+    summary = load_sync(url, dataset)
+    assert summary["cases"] == 10
+    try:
+        yield url
+    finally:
+        asyncio.run(_drop_db(pg_server, name))
+
+
+@pytest.fixture
+async def client(demo_db: str, monkeypatch: pytest.MonkeyPatch) -> AsyncIterator[httpx.AsyncClient]:
+    monkeypatch.setenv("SENTINELOPS_RATE_LIMIT", "false")
+    rt = Runtime(settings_for(demo_db))
+    app = create_app(rt)
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://testserver") as c:
+        c.app = app  # type: ignore[attr-defined]  # test convenience
+        yield c
+    await rt.engine.dispose()

@@ -75,6 +75,19 @@ async def test_partitions_and_retention(fresh_db: Database) -> None:
             }
         assert dropped == 1
         assert names == {"events_20260305"}
+        # Partition bounds are UTC days regardless of the session time zone.
+        async with engine.begin() as conn:
+            await conn.execute(text("SET LOCAL TIME ZONE 'America/New_York'"))
+            await conn.execute(text("select ensure_event_partition('2026-03-12'::date)"))
+            await conn.execute(
+                text(
+                    "insert into events (event_id, ts, day, ingested_at, source_type, raw_record_id, data) values "
+                    "('late', '2026-03-12T23:30:00Z', '2026-03-12', now(), 'x', 'r', '{}'),"
+                    "('early', '2026-03-12T00:10:00Z', '2026-03-12', now(), 'x', 'r', '{}')"
+                )
+            )
+            placed = dict((await conn.execute(text("select event_id, tableoid::regclass::text from events"))).all())
+        assert placed == {"late": "events_20260312", "early": "events_20260312"}
     finally:
         await engine.dispose()
 
