@@ -1,4 +1,6 @@
 10049	IGNORE	(Non-storable content: API responses are intentionally Cache-Control: no-store)
+10109	IGNORE	(Modern Web Application: informational only - SentinelOps is a single-page app by design)
+90005	IGNORE	(Sec-Fetch-Dest missing: concerns the scanner's own requests, not a server response)
 10055	FAIL	(CSP)
 10038	FAIL	(Content Security Policy header not set)
 10020	FAIL	(Anti-clickjacking header)
