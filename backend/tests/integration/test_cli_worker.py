@@ -117,8 +117,12 @@ def test_worker_drop_folder_and_syslog(fresh_db: Database, tmp_path: Path) -> No
             channels: set[str] = set()
             for _ in range(300):
                 async with rt.engine.connect() as conn:
-                    channels = set((await conn.execute(select(ingest_runs.c.channel))).scalars())
-                if {"drop_folder", "syslog"} <= channels and not any((drop / ".processing").glob("*")):
+                    runs = (await conn.execute(select(ingest_runs.c.channel, ingest_runs.c.status))).all()
+                channels = {channel for channel, _ in runs}
+                # A run is visible as "running" (accepted = 0) before its counts are written; wait until both
+                # are finished (flaky on slow CI runners before).
+                finished = all(status != "running" for _, status in runs)
+                if {"drop_folder", "syslog"} <= channels and finished and not any((drop / ".processing").glob("*")):
                     break
                 await asyncio.sleep(0.1)
             assert {"drop_folder", "syslog"} <= channels

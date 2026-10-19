@@ -113,6 +113,20 @@ def test_load_json_errors(text: str, code: MalformedCode) -> None:
     assert result.code is code
 
 
+def test_load_json_recursion_error_is_oversized(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Whether the C JSON parser raises RecursionError for deep nesting depends on the platform
+    (Windows yes, Linux CI no); force the branch so its coverage does not depend on the OS."""
+
+    def too_deep(_text: str) -> None:
+        raise RecursionError("maximum recursion depth exceeded")
+
+    monkeypatch.setattr("sentinelops.normalize.quality.json.loads", too_deep)
+    result = load_json("[[]]")
+    assert isinstance(result, Malformed)
+    assert result.code is MalformedCode.OVERSIZED
+    assert result.detail == "JSON nesting too deep"
+
+
 def test_load_json_ok() -> None:
     assert load_json('{"a": [1, 2]}') == {"a": [1, 2]}
 

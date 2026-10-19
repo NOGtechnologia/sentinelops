@@ -183,7 +183,7 @@ async def test_spa_and_static_serving(demo_db: str, tmp_path: object, monkeypatc
     (static / "fonts").mkdir()
     (static / "index.html").write_text("<!doctype html><title>SentinelOps</title>", encoding="utf-8")
     (static / "favicon.svg").write_text("<svg/>", encoding="utf-8")
-    (static / "assets" / "app.js").write_text("console.log(1)", encoding="utf-8")
+    (static / "assets" / "app.js").write_text("console.log(1);\n" * 200, encoding="utf-8")
     base = settings_for(demo_db)
     from dataclasses import replace
 
@@ -191,9 +191,29 @@ async def test_spa_and_static_serving(demo_db: str, tmp_path: object, monkeypatc
     monkeypatch.setenv("SENTINELOPS_INPROCESS_WORKER", "true")
     app = create_app(rt)
     async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://t") as c:
-        assert "SentinelOps" in (await c.get("/cases/abc")).text
+        page = await c.get("/cases/abc")
+        assert "SentinelOps" in page.text
+        for header, value in {
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "no-referrer",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-embedder-policy": "require-corp",
+            "cross-origin-resource-policy": "same-origin",
+        }.items():
+            assert page.headers[header] == value, header
+        assert "default-src 'self'" in page.headers["content-security-policy"]
         assert (await c.get("/favicon.svg")).text == "<svg/>"
-        assert (await c.get("/assets/app.js")).status_code == 200
+        asset = await c.get("/assets/app.js", headers={"Accept-Encoding": "gzip"})
+        assert asset.status_code == 200
+        assert asset.headers["content-encoding"] == "gzip"
+        assert asset.headers["cache-control"] == "public, max-age=31536000, immutable"
+        assert asset.text.startswith("console.log(1);")
+        # API responses are never compressed (tokens next to user input) and never cached
+        api = await c.get("/api/openapi.json", headers={"Accept-Encoding": "gzip"})
+        assert len(api.content) > 10_000  # large enough that gzip would apply
+        assert "content-encoding" not in api.headers
+        assert api.headers["cache-control"] == "no-store"
         assert (await c.get("/api/unknown")).status_code == 404
         assert "SentinelOps" in (await c.get("/../../etc/passwd")).text
     async with app.router.lifespan_context(app):

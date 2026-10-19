@@ -62,7 +62,12 @@ def keycloak(tmp_path_factory: pytest.TempPathFactory) -> Iterator[str]:
         for credential in user["credentials"]:
             credential["temporary"] = False
     folder = tmp_path_factory.mktemp("realm")
-    (folder / "realm-sentinelops.json").write_text(json.dumps(realm), encoding="utf-8")
+    realm_file = folder / "realm-sentinelops.json"
+    realm_file.write_text(json.dumps(realm), encoding="utf-8")
+    # pytest creates temporary folders with mode 0700; Keycloak runs as a different user in the container
+    # and could not read the bind-mounted realm (first CI run: it exited, every request was refused).
+    folder.chmod(0o755)
+    realm_file.chmod(0o644)
     container = (
         DockerContainer(IMAGE)
         .with_command("start-dev --import-realm")
@@ -81,6 +86,10 @@ def keycloak(tmp_path_factory: pytest.TempPathFactory) -> Iterator[str]:
             except httpx.HTTPError:
                 pass
             time.sleep(1)
+        else:
+            stdout, stderr = container.get_logs()
+            logs = (stdout + stderr).decode("utf-8", "replace")[-4000:]
+            pytest.fail(f"Keycloak did not become ready within 180 s; container log tail:\n{logs}")
         yield issuer
 
 

@@ -14,7 +14,10 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.routing import APIRoute
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.exc import DBAPIError
+from starlette.datastructures import MutableHeaders
+from starlette.middleware.gzip import GZipMiddleware
 from starlette.routing import BaseRoute
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from sentinelops.api.routes import cases, core, data, operations
 from sentinelops.api.security import OriginCheckMiddleware, RateLimitMiddleware, SecurityHeadersMiddleware
@@ -116,6 +119,30 @@ def install_input_error_handler(app: FastAPI) -> None:
         return JSONResponse({"detail": "invalid characters in input"}, status_code=422)
 
 
+class ImmutableCache:
+    """Vite build assets carry a content hash in their name, so a name never changes its content."""
+
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        async def send_with_cache(message: Message) -> None:
+            if message["type"] == "http.response.start" and message["status"] == 200:
+                MutableHeaders(scope=message)["Cache-Control"] = "public, max-age=31536000, immutable"
+            await send(message)
+
+        await self.app(scope, receive, send_with_cache)
+
+
+def static_assets(directory: Path) -> ASGIApp:
+    """Build assets: gzip-compressed and cached for a year.
+
+    Compression is applied here only, never to API responses: those can contain tokens next to
+    user-controlled input (compression side channels such as BREACH).
+    """
+    return GZipMiddleware(ImmutableCache(StaticFiles(directory=directory)), minimum_size=1024)
+
+
 def create_app(runtime: Runtime | None = None) -> FastAPI:
     rt = runtime or Runtime(Settings())
 
@@ -172,7 +199,7 @@ def create_app(runtime: Runtime | None = None) -> FastAPI:
         index = Path(static, "index.html")
         assets = Path(static, "assets")
         if assets.exists():
-            app.mount("/assets", StaticFiles(directory=assets), name="assets")
+            app.mount("/assets", static_assets(assets), name="assets")
         fonts = Path(static, "fonts")
         if fonts.exists():
             app.mount("/fonts", StaticFiles(directory=fonts), name="fonts")

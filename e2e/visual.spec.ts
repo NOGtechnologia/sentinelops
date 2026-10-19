@@ -31,6 +31,8 @@ for (const theme of ["dark", "light"] as const) {
     test("overview and queue", async ({ page }) => {
       await login(page, "analyst");
       await page.waitForLoadState("networkidle");
+      // the chart is loaded lazily; its placeholder carries aria-busy until then
+      await expect(page.locator('[aria-busy="true"]')).toHaveCount(0);
       await expect(page).toHaveScreenshot(`dashboard-${theme}.png`, { fullPage: true });
       await page.getByRole("link", { name: "Fälle" }).first().click();
       await page.waitForLoadState("networkidle");

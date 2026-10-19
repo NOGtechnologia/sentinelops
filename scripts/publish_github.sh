@@ -65,7 +65,10 @@ for img in dashboard queue case-overview case-timeline case-evidence entity-grap
   for theme in dark light; do test -s "docs/images/${img}-${theme}.png" || { echo "fehlt: docs/images/${img}-${theme}.png" >&2; exit 1; }; done
 done
 test -s docs/images/demo.gif && test -s docs/images/social-preview.png && test -s docs/images/logo.svg
-if [ -n "${SENTINELOPS_E2E_ADMIN_URL:-}" ]; then node scripts/screenshots.ts --check; else echo "(Pixelvergleich übersprungen: SENTINELOPS_E2E_ADMIN_URL nicht gesetzt - läuft in der CI)"; fi
+# The committed images are rendered on Linux (CI); font rendering on Windows/macOS differs by a few percent.
+if [ "$(uname -s)" != "Linux" ]; then echo "(Pixelvergleich übersprungen: Referenzplattform ist Linux - läuft in der CI)"
+elif [ -n "${SENTINELOPS_E2E_ADMIN_URL:-}" ]; then node scripts/screenshots.ts --check
+else echo "(Pixelvergleich übersprungen: SENTINELOPS_E2E_ADMIN_URL nicht gesetzt - läuft in der CI)"; fi
 if [ "$SKIP_CHECK" = 0 ]; then
   echo "- make check"
   uv run --package sentinelops python scripts/tasks.py check

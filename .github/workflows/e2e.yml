@@ -54,13 +54,24 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --dir frontend build
       - run: pnpm exec playwright install --with-deps chromium firefox webkit
-      - name: Start demo instance (fresh database, seed dev, fixed clock)
+      - name: Start one demo instance per browser (fresh database, seed dev, fixed clock)
+        # Acceptance tests change data, so every browser gets its own database (see e2e/playwright.config.ts).
         run: |
-          E2E_PORT=8001 uv run --directory backend python ../scripts/e2e_server.py > "${RUNNER_TEMP}/server.log" 2>&1 &
-          for i in $(seq 1 180); do curl -fsS http://127.0.0.1:8001/api/v1/health && break; sleep 5; done
+          port=8001
+          for browser in chromium firefox webkit; do
+            E2E_PORT=$port SENTINELOPS_E2E_DB="sentinelops_e2e_${browser}" E2E_DATASET=".cache/e2e-dataset-${browser}" \
+              uv run --directory backend python ../scripts/e2e_server.py > "${RUNNER_TEMP}/server-${browser}.log" 2>&1 &
+            port=$((port + 1))
+          done
+          for port in 8001 8002 8003; do
+            for i in $(seq 1 180); do curl -fsS "http://127.0.0.1:${port}/api/v1/health" && break; sleep 5; done
+            curl -fsS "http://127.0.0.1:${port}/api/v1/health" > /dev/null
+          done
       - name: Playwright (acceptance A4/A7, XSS, accessibility, core flows, visual regression)
         env:
-          E2E_BASE_URL: http://127.0.0.1:8001
+          E2E_BASE_URL_CHROMIUM: http://127.0.0.1:8001
+          E2E_BASE_URL_FIREFOX: http://127.0.0.1:8002
+          E2E_BASE_URL_WEBKIT: http://127.0.0.1:8003
           CI: "true"
         run: pnpm e2e
       - name: Lighthouse (performance >= 90, accessibility >= 95, best practices >= 95)
@@ -84,7 +95,7 @@ jobs:
           path: |
             .cache/e2e-results
             .cache/e2e-report
-            ${{ runner.temp }}/server.log
+            ${{ runner.temp }}/server-*.log
 
   compose:
     name: fresh clone + docker compose up (demo)

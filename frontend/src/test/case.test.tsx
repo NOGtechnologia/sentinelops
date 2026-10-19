@@ -218,7 +218,8 @@ describe("case graph and report", () => {
     mockApi();
     const { router } = renderApp(`/cases/${CASE}/graph`);
     expect(await screen.findByText("Knoten anklicken, um Details zu sehen.")).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: "select-node" }));
+    // the graph component is loaded lazily (components/LazyCanvas.tsx)
+    await userEvent.click(await screen.findByRole("button", { name: "select-node" }));
     expect(screen.getByText(/40 Ereignisse/)).toBeInTheDocument();
     expect(screen.getByText("Verbindungen (Ereignisse)")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Fälle mit dieser Entität" }));
