@@ -93,7 +93,11 @@ und eine befristete, begründete Ausnahme vorschlagen (Genehmigung durch L2).
 
 Alle Texte stehen in `frontend/src/i18n/de.json` und `en.json`; `pnpm --dir frontend i18n:check`
 prüft Vollständigkeit, ESLint verbietet hart kodierte Texte. Logdaten werden immer als Text
-gerendert (kein `dangerouslySetInnerHTML`). Nach UI-Änderungen `make screenshots` ausführen.
+gerendert (kein `dangerouslySetInnerHTML`). Nach UI-Änderungen die Bilder neu erzeugen: Referenz
+ist **Linux** (die CI vergleicht pixelgenau, Schriften werden unter Windows/macOS anders geglättet).
+Unter Linux genügt `make screenshots`; auf anderen Systemen den PR öffnen – der Workflow
+„Screenshots“ lädt die neu gerenderten Bilder als Artefakt `screenshots` hoch, das man nach
+`docs/images/` kopiert.
 
 ## Lizenz
 
