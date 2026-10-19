@@ -1,7 +1,7 @@
 {
   "name": "sentinelops",
   "description": "Explainable, AI-assisted security operations: from 50,000 log lines to an investigable case. Sigma detection first, evidence-backed AI summaries, human approval for every action.",
-  "homepage": "https://OWNER.github.io/sentinelops/",
+  "homepage": "https://NOGtechnologia.github.io/sentinelops/",
   "topics": [
     "security",
     "soc",

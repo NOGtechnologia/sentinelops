@@ -6,16 +6,16 @@
 
 <p align="center"><strong>Erklärbares, KI-gestütztes Security-Operations-Werkzeug: von 50.000 Log-Zeilen zum untersuchbaren Fall</strong></p>
 
-<p align="center"><b>Deutsch</b> · <a href="README.en.md">English</a> · <a href="https://OWNER.github.io/sentinelops/">Dokumentation</a> · <a href="docs/tour.md">Rundgang</a></p>
+<p align="center"><b>Deutsch</b> · <a href="README.en.md">English</a> · <a href="https://NOGtechnologia.github.io/sentinelops/">Dokumentation</a> · <a href="docs/tour.md">Rundgang</a></p>
 
 <p align="center">
-  <a href="https://github.com/OWNER/sentinelops/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/OWNER/sentinelops/actions/workflows/ci.yml/badge.svg"></a>
-  <a href="https://github.com/OWNER/sentinelops/actions/workflows/ci.yml"><img alt="Coverage ≥ 90 %" src="https://img.shields.io/badge/coverage-%E2%89%A590%25%20backend%20%C2%B7%20%E2%89%A580%25%20web-brightgreen"></a>
-  <a href="https://github.com/OWNER/sentinelops/actions/workflows/codeql.yml"><img alt="CodeQL" src="https://github.com/OWNER/sentinelops/actions/workflows/codeql.yml/badge.svg"></a>
-  <a href="https://scorecard.dev/viewer/?uri=github.com/OWNER/sentinelops"><img alt="OpenSSF Scorecard" src="https://api.scorecard.dev/projects/github.com/OWNER/sentinelops/badge"></a>
+  <a href="https://github.com/NOGtechnologia/sentinelops/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/NOGtechnologia/sentinelops/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://github.com/NOGtechnologia/sentinelops/actions/workflows/ci.yml"><img alt="Coverage ≥ 90 %" src="https://img.shields.io/badge/coverage-%E2%89%A590%25%20backend%20%C2%B7%20%E2%89%A580%25%20web-brightgreen"></a>
+  <a href="https://github.com/NOGtechnologia/sentinelops/actions/workflows/codeql.yml"><img alt="CodeQL" src="https://github.com/NOGtechnologia/sentinelops/actions/workflows/codeql.yml/badge.svg"></a>
+  <a href="https://scorecard.dev/viewer/?uri=github.com/NOGtechnologia/sentinelops"><img alt="OpenSSF Scorecard" src="https://api.scorecard.dev/projects/github.com/NOGtechnologia/sentinelops/badge"></a>
   <a href="LICENSE"><img alt="Lizenz Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-blue"></a>
-  <a href="https://github.com/OWNER/sentinelops/releases"><img alt="Release" src="https://img.shields.io/github/v/release/OWNER/sentinelops"></a>
-  <a href="https://github.com/OWNER/sentinelops/pkgs/container/sentinelops"><img alt="Docker-Image" src="https://img.shields.io/badge/image-ghcr.io%2FOWNER%2Fsentinelops-informational"></a>
+  <a href="https://github.com/NOGtechnologia/sentinelops/releases"><img alt="Release" src="https://img.shields.io/github/v/release/NOGtechnologia/sentinelops"></a>
+  <a href="https://github.com/NOGtechnologia/sentinelops/pkgs/container/sentinelops"><img alt="Docker-Image" src="https://img.shields.io/badge/image-ghcr.io%2FNOGtechnologia%2Fsentinelops-informational"></a>
 </p>
 
 <picture>
@@ -79,7 +79,7 @@ Markdown, PDF und JSON (optional pseudonymisiert) · Audit-Log mit Hash-Kette ·
 ## Schnellstart (Demo)
 
 ```bash
-git clone https://github.com/OWNER/sentinelops.git && cd sentinelops
+git clone https://github.com/NOGtechnologia/sentinelops.git && cd sentinelops
 cp .env.example .env
 docker compose -f deploy/docker-compose.yml --env-file .env up -d --build
 ```

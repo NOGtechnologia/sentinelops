@@ -3,7 +3,7 @@
 **Deutsch** · [English](#english)
 
 - **Dokumentation:** Benutzerhandbuch, Rundgang, Betrieb und Konzepte unter
-  <https://OWNER.github.io/sentinelops/> bzw. im Ordner [`docs/`](docs/index.md).
+  <https://NOGtechnologia.github.io/sentinelops/> bzw. im Ordner [`docs/`](docs/index.md).
 - **Fehler oder Funktionswunsch:** bitte ein Issue mit dem passenden Formular anlegen
   („Fehler melden“, „Funktionswunsch“).
 - **Neue Erkennungsregel oder Fehlalarm:** Formulare „Erkennungsregel vorschlagen“ bzw.
@@ -15,7 +15,7 @@ SentinelOps ist ein Community-Projekt ohne garantierte Reaktionszeiten und ohne 
 
 ## English
 
-- **Documentation:** <https://OWNER.github.io/sentinelops/> (German) and the
+- **Documentation:** <https://NOGtechnologia.github.io/sentinelops/> (German) and the
   [English README](README.en.md).
 - **Bugs and feature requests:** open an issue using the matching form.
 - **New detection rules or false positives:** use the corresponding issue forms. **Do not include

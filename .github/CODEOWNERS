@@ -1,7 +1,7 @@
-# Default owners (replace OWNER with the GitHub user or team after publishing).
-*                                   @OWNER
-/rules/                             @OWNER
-/backend/src/sentinelops/ai/        @OWNER
-/backend/src/sentinelops/response/  @OWNER
-/backend/src/sentinelops/api/permissions.yaml @OWNER
-/.github/                           @OWNER
+# Default owners (replace NOGtechnologia with the GitHub user or team after publishing).
+*                                   @NOGtechnologia
+/rules/                             @NOGtechnologia
+/backend/src/sentinelops/ai/        @NOGtechnologia
+/backend/src/sentinelops/response/  @NOGtechnologia
+/backend/src/sentinelops/api/permissions.yaml @NOGtechnologia
+/.github/                           @NOGtechnologia

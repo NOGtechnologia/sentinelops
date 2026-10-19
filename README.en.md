@@ -6,14 +6,14 @@
 
 <p align="center"><strong>Explainable, AI-assisted security operations: from 50,000 log lines to an investigable case</strong></p>
 
-<p align="center"><a href="README.md">Deutsch</a> · <b>English</b> · <a href="https://OWNER.github.io/sentinelops/">Documentation (German)</a> · <a href="docs/tour.md">Guided tour (German)</a></p>
+<p align="center"><a href="README.md">Deutsch</a> · <b>English</b> · <a href="https://NOGtechnologia.github.io/sentinelops/">Documentation (German)</a> · <a href="docs/tour.md">Guided tour (German)</a></p>
 
 <p align="center">
-  <a href="https://github.com/OWNER/sentinelops/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/OWNER/sentinelops/actions/workflows/ci.yml/badge.svg"></a>
-  <a href="https://github.com/OWNER/sentinelops/actions/workflows/codeql.yml"><img alt="CodeQL" src="https://github.com/OWNER/sentinelops/actions/workflows/codeql.yml/badge.svg"></a>
-  <a href="https://scorecard.dev/viewer/?uri=github.com/OWNER/sentinelops"><img alt="OpenSSF Scorecard" src="https://api.scorecard.dev/projects/github.com/OWNER/sentinelops/badge"></a>
+  <a href="https://github.com/NOGtechnologia/sentinelops/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/NOGtechnologia/sentinelops/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://github.com/NOGtechnologia/sentinelops/actions/workflows/codeql.yml"><img alt="CodeQL" src="https://github.com/NOGtechnologia/sentinelops/actions/workflows/codeql.yml/badge.svg"></a>
+  <a href="https://scorecard.dev/viewer/?uri=github.com/NOGtechnologia/sentinelops"><img alt="OpenSSF Scorecard" src="https://api.scorecard.dev/projects/github.com/NOGtechnologia/sentinelops/badge"></a>
   <a href="LICENSE"><img alt="License Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-blue"></a>
-  <a href="https://github.com/OWNER/sentinelops/releases"><img alt="Release" src="https://img.shields.io/github/v/release/OWNER/sentinelops"></a>
+  <a href="https://github.com/NOGtechnologia/sentinelops/releases"><img alt="Release" src="https://img.shields.io/github/v/release/NOGtechnologia/sentinelops"></a>
 </p>
 
 <picture>
@@ -66,7 +66,7 @@
 ## Quick start (demo)
 
 ```bash
-git clone https://github.com/OWNER/sentinelops.git && cd sentinelops
+git clone https://github.com/NOGtechnologia/sentinelops.git && cd sentinelops
 cp .env.example .env
 docker compose -f deploy/docker-compose.yml --env-file .env up -d --build
 ```

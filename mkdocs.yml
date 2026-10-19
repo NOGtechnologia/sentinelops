@@ -1,7 +1,7 @@
 site_name: SentinelOps
 site_description: Erklärbares, KI-gestütztes Security-Operations-Werkzeug - von 50.000 Log-Zeilen zum untersuchbaren Fall
-site_url: https://OWNER.github.io/sentinelops/
-repo_url: https://github.com/OWNER/sentinelops
+site_url: https://NOGtechnologia.github.io/sentinelops/
+repo_url: https://github.com/NOGtechnologia/sentinelops
 repo_name: sentinelops
 edit_uri: edit/main/docs/
 copyright: Apache-2.0 · Demo-Daten sind fiktiv
