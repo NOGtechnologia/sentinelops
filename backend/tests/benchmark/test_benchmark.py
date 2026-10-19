@@ -6,6 +6,7 @@ Full volume (50,000 events per working day). The Markdown table is written to
 
 from __future__ import annotations
 
+import json
 import os
 import time
 from datetime import date
@@ -14,9 +15,10 @@ from pathlib import Path
 import pytest
 from musterfirma.generate import GeneratorConfig, generate
 
-from sentinelops.evaluation.benchmark import THRESHOLDS, evaluate, evaluate_normal_only
+from sentinelops.evaluation.benchmark import THRESHOLDS, evaluate, evaluate_normal_only, regressions
 
 pytestmark = pytest.mark.benchmark
+BASELINE = Path(__file__).with_name("baseline.json")
 
 
 @pytest.fixture(scope="module")
@@ -52,6 +54,11 @@ def test_benchmark_holdout(holdout: Path) -> None:
     trap = next(s for s in report.scenarios if s.id == "S09")
     assert trap.priority == "P4"
     assert len(result.cases) == 10
+    # Gate against main: the committed baseline is the state of main; a pull request that improves the
+    # benchmark updates it (SENTINELOPS_BENCHMARK_WRITE_BASELINE=1), one that degrades it fails.
+    if os.environ.get("SENTINELOPS_BENCHMARK_WRITE_BASELINE"):
+        BASELINE.write_text(json.dumps(report.baseline(), indent=2) + "\n", encoding="utf-8")
+    assert regressions(report.baseline(), json.loads(BASELINE.read_text(encoding="utf-8"))) == []
 
 
 def test_benchmark_normal_behaviour(normal_only: Path) -> None:

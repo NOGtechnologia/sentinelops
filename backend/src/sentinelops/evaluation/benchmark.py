@@ -40,6 +40,26 @@ THRESHOLDS = {
     "normal_p3_p4": 5,
     "single_case_share": 1.0,
 }
+# A pull request fails when a metric drops by more than one percentage point against main (spec 15.4).
+MAX_REGRESSION = 0.01
+
+
+def regressions(current: dict[str, Any], baseline: dict[str, Any]) -> list[str]:
+    """Metrics of ``current`` that are worse than ``baseline`` by more than ``MAX_REGRESSION``.
+
+    Both arguments have the shape of ``BenchmarkReport.baseline()``. A rule that is in the baseline
+    but produced no alerts any more counts as precision 0; new rules have no reference yet.
+    """
+    problems: list[str] = []
+    pairs = [(name, float(current[name]), float(baseline[name])) for name in ("recall", "single_case_share")]
+    pairs += [
+        (f"precision {rule}", float(current["precision"].get(rule, 0.0)), float(value))
+        for rule, value in sorted(baseline["precision"].items())
+    ]
+    for name, now, before in pairs:
+        if before - now > MAX_REGRESSION + 1e-9:
+            problems.append(f"{name}: {now:.4f} < {before:.4f} on main (> {MAX_REGRESSION:.0%} worse)")
+    return problems
 
 
 @dataclass
@@ -108,6 +128,14 @@ class BenchmarkReport:
             "normal_cases": dict(sorted(self.normal_cases.items())),
             "scenarios": [s.__dict__ for s in self.scenarios],
             "failures": self.failures(),
+        }
+
+    def baseline(self) -> dict[str, Any]:
+        """The metrics compared against the committed baseline (``tests/benchmark/baseline.json``)."""
+        return {
+            "recall": round(self.recall, 4),
+            "single_case_share": round(self.single_case_share, 4),
+            "precision": {k: round(v, 4) for k, v in sorted(self.precision.items())},
         }
 
     def markdown(self) -> str:

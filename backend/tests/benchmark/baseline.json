@@ -1,0 +1,19 @@
+{
+  "recall": 1.0,
+  "single_case_share": 1.0,
+  "precision": {
+    "SIGMAHQ-D99B79D2": 1.0,
+    "SO-ACC-001": 1.0,
+    "SO-ACC-002": 1.0,
+    "SO-AUTH-001": 1.0,
+    "SO-AUTH-002": 1.0,
+    "SO-AUTH-003": 1.0,
+    "SO-AUTH-005": 1.0,
+    "SO-AUTH-006": 1.0,
+    "SO-AUTH-007": 1.0,
+    "SO-DEF-001": 1.0,
+    "SO-PRIV-001": 1.0,
+    "SO-PRIV-002": 1.0,
+    "SO-PRIV-003": 1.0
+  }
+}
