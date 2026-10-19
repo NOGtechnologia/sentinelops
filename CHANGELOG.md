@@ -5,6 +5,13 @@ Alle nennenswerten Änderungen dieses Projekts. Format nach
 [Semantic Versioning](https://semver.org/lang/de/). Ab dem ersten Release pflegt
 release-please diese Datei aus den Conventional Commits.
 
+## [1.0.1](https://github.com/NOGtechnologia/sentinelops/compare/v1.0.0...v1.0.1) (2026-10-19)
+
+
+### Bug Fixes
+
+* **release:** lower-case image name for SBOM, signature and attestation ([#4](https://github.com/NOGtechnologia/sentinelops/issues/4)) ([c12c5f2](https://github.com/NOGtechnologia/sentinelops/commit/c12c5f230ba368b7ac4d5eb35ff7b7e532fa9164))
+
 ## [1.0.0](https://github.com/NOGtechnologia/sentinelops/compare/v0.9.0...v1.0.0) (2026-10-19)
 
 
